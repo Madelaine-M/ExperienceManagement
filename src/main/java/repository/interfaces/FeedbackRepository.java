@@ -15,5 +15,9 @@ public interface FeedbackRepository {
 
     List<FeedbackItem> findLowScores(int maxScore);
 
+    List<FeedbackItem> findByCategory(String category);
+
+    List<Feedback> findByOverallRatingLessThan(int threshold);
+
     void deleteById(int id);
 }

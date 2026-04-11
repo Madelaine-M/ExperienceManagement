@@ -25,8 +25,8 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
     @Override
     public void save(Feedback feedback) {
         String feedbackSql = """
-            INSERT INTO feedbacks (customer_id, created_at)
-            VALUES (?, ?);
+            INSERT INTO feedbacks (customer_id, created_at, total_score, customer_sat_score)
+            VALUES (?, ?, ?, ?);
             """;
         String itemSql = """
             INSERT INTO feedback_items (feedback_id, category, score, comment)
@@ -41,6 +41,8 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
 
                 feedbackStmt.setInt(1, feedback.getCustomerId());
                 setCreatedAt(feedbackStmt, 2, feedback.getCreatedAt());
+                feedbackStmt.setDouble(3, feedback.getTotalScore() != 0.0 ? feedback.getTotalScore() : feedback.getOverallScore());
+                feedbackStmt.setInt(4, feedback.getCustomerSatScore());
                 feedbackStmt.executeUpdate();
 
                 int feedbackId = extractGeneratedId(feedbackStmt, "feedback");
@@ -142,6 +144,52 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
     }
 
     @Override
+    public List<FeedbackItem> findByCategory(String category) {
+        List<FeedbackItem> items = new ArrayList<>();
+        String sql = "SELECT * FROM feedback_items WHERE category = ? ORDER BY id ASC;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, category);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    items.add(mapResultSetToFeedbackItem(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while loading feedback items by category {}", category, e);
+        }
+
+        return items;
+    }
+
+    @Override
+    public List<Feedback> findByOverallRatingLessThan(int threshold) {
+        List<Feedback> feedbacks = new ArrayList<>();
+        String sql = "SELECT * FROM feedbacks WHERE total_score < ? ORDER BY total_score ASC, id ASC;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, threshold);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Feedback feedback = mapResultSetToFeedback(rs);
+                    feedback.setItems(loadItemsByFeedbackId(conn, feedback.getId()));
+                    feedbacks.add(feedback);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while loading feedbacks below rating {}", threshold, e);
+        }
+
+        return feedbacks;
+    }
+
+    @Override
     public void deleteById(int id) {
         String sql = "DELETE FROM feedbacks WHERE id = ?;";
 
@@ -184,6 +232,8 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
         if (createdAt != null) {
             feedback.setCreatedAt(createdAt.toLocalDateTime());
         }
+        feedback.setTotalScore(rs.getDouble("total_score"));
+        feedback.setCustomerSatScore(rs.getInt("customer_sat_score"));
 
         return feedback;
     }

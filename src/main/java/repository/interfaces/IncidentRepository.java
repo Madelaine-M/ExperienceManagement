@@ -9,7 +9,8 @@ public interface IncidentRepository {
     Incident findById(int id);
     List<Incident> findAllByCustomerId(int customerId);
     void deleteById(int id);
-    // Später nützlich: Alle offenen Probleme anzeigen
+    // alle offenen Probleme
     List<Incident> findByStatus(IncidentStatus status);
     List<Incident> findUnassigned();
+    List<Incident> findByAdvisorId(Long advisorId);
 }

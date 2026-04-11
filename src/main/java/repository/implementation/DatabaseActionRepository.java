@@ -3,6 +3,7 @@ package repository.implementation;
 import database.connection.DatabaseManager;
 import model.ActionItem;
 import model.enums.ActionStatus;
+import model.enums.PriorityLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import repository.interfaces.ActionRepository;
@@ -21,8 +22,8 @@ public class DatabaseActionRepository implements ActionRepository {
     @Override
     public void save(ActionItem actionItem) {
         String sql = """
-            INSERT INTO action_items (incident_id, description, status, priority)
-            VALUES (?, ?, ?, ?);
+            INSERT INTO action_items (incident_id, description, suggestion_1, suggestion_2, status, priority, score_impact, expected_rec, expected_rebooking)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -30,8 +31,13 @@ public class DatabaseActionRepository implements ActionRepository {
 
             pstmt.setInt(1, actionItem.getIncidentId());
             pstmt.setString(2, actionItem.getDescription());
-            pstmt.setString(3, actionItem.getStatus() != null ? actionItem.getStatus().name() : null);
-            pstmt.setInt(4, actionItem.getPriority());
+            pstmt.setString(3, actionItem.getSugegstion1());
+            pstmt.setString(4, actionItem.getSuggestion2());
+            pstmt.setString(5, actionItem.getStatus() != null ? actionItem.getStatus().name() : null);
+            pstmt.setInt(6, actionItem.getPriority());
+            pstmt.setDouble(7, actionItem.getScoreImpact());
+            pstmt.setDouble(8, actionItem.getExpectedRec());
+            pstmt.setDouble(9, actionItem.getExpectedRebooking());
             pstmt.executeUpdate();
 
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
@@ -90,6 +96,50 @@ public class DatabaseActionRepository implements ActionRepository {
     }
 
     @Override
+    public List<ActionItem> findByStatus(String status) {
+        List<ActionItem> actionItems = new ArrayList<>();
+        String sql = "SELECT * FROM action_items WHERE status = ? ORDER BY priority DESC, id ASC;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, status);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    actionItems.add(mapResultSetToActionItem(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while loading action items by status {}", status, e);
+        }
+
+        return actionItems;
+    }
+
+    @Override
+    public List<ActionItem> filterByPriority(PriorityLevel prio) {
+        List<ActionItem> actionItems = new ArrayList<>();
+        String sql = "SELECT * FROM action_items WHERE priority >= ? ORDER BY priority DESC, id ASC;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, minimumPriorityFor(prio));
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    actionItems.add(mapResultSetToActionItem(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while filtering action items by priority {}", prio, e);
+        }
+
+        return actionItems;
+    }
+
+    @Override
     public void deleteById(int id) {
         String sql = "DELETE FROM action_items WHERE id = ?;";
 
@@ -108,6 +158,8 @@ public class DatabaseActionRepository implements ActionRepository {
         actionItem.setId(rs.getInt("id"));
         actionItem.setIncidentId(rs.getInt("incident_id"));
         actionItem.setDescription(rs.getString("description"));
+        actionItem.setSugegstion1(rs.getString("suggestion_1"));
+        actionItem.setSuggestion2(rs.getString("suggestion_2"));
 
         String status = rs.getString("status");
         if (status != null) {
@@ -115,6 +167,22 @@ public class DatabaseActionRepository implements ActionRepository {
         }
 
         actionItem.setPriority(rs.getInt("priority"));
+        actionItem.setScoreImpact(rs.getDouble("score_impact"));
+        actionItem.setExpectedRec(rs.getDouble("expected_rec"));
+        actionItem.setExpectedRebooking(rs.getDouble("expected_rebooking"));
         return actionItem;
+    }
+
+    private int minimumPriorityFor(PriorityLevel priorityLevel) {
+        if (priorityLevel == null) {
+            return 0;
+        }
+
+        return switch (priorityLevel) {
+            case LOW -> 1;
+            case MEDIUM -> 4;
+            case HIGH -> 7;
+            case CRITICAL -> 9;
+        };
     }
 }

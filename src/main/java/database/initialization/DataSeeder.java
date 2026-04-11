@@ -65,7 +65,7 @@ public class DataSeeder {
             Incident i1 = new Incident();
             i1.setCustomerId(maxId);
             i1.setType(IncidentType.DELAY);
-            i1.setDescription("Flug LH123 hatte 4 Stunden Verspätung.");
+            i1.setDescription("Flight LH123 has a 4 hour delay.");
             i1.setPriorityScore(8.5);
             i1.setScoreImpact(-1.2);
             i1.setStatus(IncidentStatus.OPEN);
@@ -77,7 +77,7 @@ public class DataSeeder {
             Incident i2 = new Incident();
             i2.setCustomerId(erikaId);
             i2.setType(IncidentType.FEEDBACK);
-            i2.setDescription("Essen war hervorragend, aber Sitzplatz war defekt.");
+            i2.setDescription("Food was great, but seat was bad.");
             i2.setPriorityScore(3.0);
             i2.setScoreImpact(-0.4);
             i2.setStatus(IncidentStatus.CLOSED);

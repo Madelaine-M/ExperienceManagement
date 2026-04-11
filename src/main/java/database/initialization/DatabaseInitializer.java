@@ -27,6 +27,9 @@ public class DatabaseInitializer {
                 is_returning INTEGER DEFAULT 0,
                 assigned_advisor_id INTEGER,
                 clv_score REAL DEFAULT 0.0,
+                notes TEXT,
+                preferences TEXT,
+                apply_to_next_booking TEXT,
 
                 FOREIGN KEY (assigned_advisor_id) REFERENCES advisors(id)
                     ON DELETE SET NULL
@@ -37,9 +40,11 @@ public class DatabaseInitializer {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER,
                 type TEXT,
+                feedback_type TEXT,
                 description TEXT,
                 priority_score REAL DEFAULT 0.0,
                 score_impact REAL DEFAULT 0.0,
+                revenue_risk INTEGER DEFAULT 0,
                 status TEXT,
                 assigned_advisor_id INTEGER,
                 source_feedback_item_id INTEGER,
@@ -58,6 +63,8 @@ public class DatabaseInitializer {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                total_score REAL DEFAULT 0.0,
+                customer_sat_score INTEGER DEFAULT 0,
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
                     ON DELETE CASCADE
@@ -90,8 +97,13 @@ public class DatabaseInitializer {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 incident_id INTEGER NOT NULL,
                 description TEXT NOT NULL,
+                suggestion_1 TEXT,
+                suggestion_2 TEXT,
                 status TEXT NOT NULL,
                 priority INTEGER NOT NULL,
+                score_impact REAL DEFAULT 0.0,
+                expected_rec REAL DEFAULT 0.0,
+                expected_rebooking REAL DEFAULT 0.0,
 
                 FOREIGN KEY (incident_id) REFERENCES incidents(id)
                     ON DELETE CASCADE
@@ -104,9 +116,12 @@ public class DatabaseInitializer {
                 recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 clv_score REAL,
                 score_impact REAL,
+                feedback_id INTEGER,
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
-                    ON DELETE CASCADE
+                    ON DELETE CASCADE,
+                FOREIGN KEY (feedback_id) REFERENCES feedbacks(id)
+                    ON DELETE SET NULL
             );
             """;
 
@@ -120,7 +135,10 @@ public class DatabaseInitializer {
             executeSql(conn, createActionItems);
             executeSql(conn, createSentimentHistory);
             ensureCustomerColumnsExist(conn);
+            ensureFeedbackColumnsExist(conn);
             ensureIncidentColumnsExist(conn);
+            ensureActionItemColumnsExist(conn);
+            ensureSentimentHistoryColumnsExist(conn);
 
             logger.info("Database was correctly initialized");
 
@@ -130,6 +148,20 @@ public class DatabaseInitializer {
     }
 
     private static void ensureIncidentColumnsExist(Connection conn) throws SQLException {
+        if (!columnExists(conn, "incidents", "feedback_type")) {
+            executeSql(conn, """
+                ALTER TABLE incidents
+                ADD COLUMN feedback_type TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "incidents", "revenue_risk")) {
+            executeSql(conn, """
+                ALTER TABLE incidents
+                ADD COLUMN revenue_risk INTEGER DEFAULT 0;
+                """);
+        }
+
         if (!columnExists(conn, "incidents", "assigned_advisor_id")) {
             executeSql(conn, """
                 ALTER TABLE incidents
@@ -150,6 +182,89 @@ public class DatabaseInitializer {
             executeSql(conn, """
                 ALTER TABLE customers
                 ADD COLUMN is_returning INTEGER DEFAULT 0;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "notes")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN notes TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "preferences")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN preferences TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "apply_to_next_booking")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN apply_to_next_booking TEXT;
+                """);
+        }
+    }
+
+    private static void ensureFeedbackColumnsExist(Connection conn) throws SQLException {
+        if (!columnExists(conn, "feedbacks", "total_score")) {
+            executeSql(conn, """
+                ALTER TABLE feedbacks
+                ADD COLUMN total_score REAL DEFAULT 0.0;
+                """);
+        }
+
+        if (!columnExists(conn, "feedbacks", "customer_sat_score")) {
+            executeSql(conn, """
+                ALTER TABLE feedbacks
+                ADD COLUMN customer_sat_score INTEGER DEFAULT 0;
+                """);
+        }
+    }
+
+    private static void ensureActionItemColumnsExist(Connection conn) throws SQLException {
+        if (!columnExists(conn, "action_items", "suggestion_1")) {
+            executeSql(conn, """
+                ALTER TABLE action_items
+                ADD COLUMN suggestion_1 TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "action_items", "suggestion_2")) {
+            executeSql(conn, """
+                ALTER TABLE action_items
+                ADD COLUMN suggestion_2 TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "action_items", "score_impact")) {
+            executeSql(conn, """
+                ALTER TABLE action_items
+                ADD COLUMN score_impact REAL DEFAULT 0.0;
+                """);
+        }
+
+        if (!columnExists(conn, "action_items", "expected_rec")) {
+            executeSql(conn, """
+                ALTER TABLE action_items
+                ADD COLUMN expected_rec REAL DEFAULT 0.0;
+                """);
+        }
+
+        if (!columnExists(conn, "action_items", "expected_rebooking")) {
+            executeSql(conn, """
+                ALTER TABLE action_items
+                ADD COLUMN expected_rebooking REAL DEFAULT 0.0;
+                """);
+        }
+    }
+
+    private static void ensureSentimentHistoryColumnsExist(Connection conn) throws SQLException {
+        if (!columnExists(conn, "sentiment_history", "feedback_id")) {
+            executeSql(conn, """
+                ALTER TABLE sentiment_history
+                ADD COLUMN feedback_id INTEGER REFERENCES feedbacks(id) ON DELETE SET NULL;
                 """);
         }
     }

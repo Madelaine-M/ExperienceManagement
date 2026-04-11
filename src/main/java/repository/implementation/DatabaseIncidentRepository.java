@@ -2,6 +2,7 @@ package repository.implementation;
 
 import database.connection.DatabaseManager;
 import model.Incident;
+import model.enums.FeedbackCategory;
 import model.enums.IncidentStatus;
 import model.enums.IncidentType;
 import repository.interfaces.IncidentRepository;
@@ -18,8 +19,8 @@ public class DatabaseIncidentRepository implements IncidentRepository {
     @Override
     public void save(Incident incident) {
         String sql = """
-            INSERT INTO incidents (customer_id, type, description, priority_score, score_impact, status, assigned_advisor_id, source_feedback_item_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO incidents (customer_id, type, feedback_type, description, priority_score, score_impact, revenue_risk, status, assigned_advisor_id, source_feedback_item_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -27,19 +28,21 @@ public class DatabaseIncidentRepository implements IncidentRepository {
 
             pstmt.setInt(1, incident.getCustomerId());
             pstmt.setString(2, incident.getType() != null ? incident.getType().name() : null);
-            pstmt.setString(3, incident.getDescription());
-            pstmt.setDouble(4, incident.getPriorityScore());
-            pstmt.setDouble(5, incident.getScoreImpact());
-            pstmt.setString(6, incident.getStatus() != null ? incident.getStatus().name() : null);
+            pstmt.setString(3, incident.getFeedbackType() != null ? incident.getFeedbackType().name() : null);
+            pstmt.setString(4, incident.getDescription());
+            pstmt.setDouble(5, incident.getPriorityScore());
+            pstmt.setDouble(6, incident.getScoreImpact());
+            pstmt.setInt(7, incident.getRevenueRisk());
+            pstmt.setString(8, incident.getStatus() != null ? incident.getStatus().name() : null);
             if (incident.getAssignedAdvisorId() != null) {
-                pstmt.setInt(7, incident.getAssignedAdvisorId());
+                pstmt.setInt(9, incident.getAssignedAdvisorId());
             } else {
-                pstmt.setNull(7, Types.INTEGER);
+                pstmt.setNull(9, Types.INTEGER);
             }
             if (incident.getSourceFeedbackItemId() != null) {
-                pstmt.setInt(8, incident.getSourceFeedbackItemId());
+                pstmt.setInt(10, incident.getSourceFeedbackItemId());
             } else {
-                pstmt.setNull(8, Types.INTEGER);
+                pstmt.setNull(10, Types.INTEGER);
             }
 
             pstmt.executeUpdate();
@@ -130,6 +133,32 @@ public class DatabaseIncidentRepository implements IncidentRepository {
         return incidents;
     }
 
+    @Override
+    public List<Incident> findByAdvisorId(Long advisorId) {
+        List<Incident> incidents = new ArrayList<>();
+        String sql = "SELECT * FROM incidents WHERE assigned_advisor_id = ?;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            if (advisorId != null) {
+                pstmt.setLong(1, advisorId);
+            } else {
+                pstmt.setNull(1, Types.INTEGER);
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    incidents.add(mapResultSetToIncident(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while loading incidents for advisor {}", advisorId, e);
+        }
+
+        return incidents;
+    }
+
     // Hilfsmethode für das Mapping (SRP!)
     private Incident mapResultSetToIncident(ResultSet rs) throws SQLException {
         Incident incident = new Incident();
@@ -138,10 +167,13 @@ public class DatabaseIncidentRepository implements IncidentRepository {
 
         String typeStr = rs.getString("type");
         if (typeStr != null) incident.setType(IncidentType.valueOf(typeStr));
+        String feedbackTypeStr = rs.getString("feedback_type");
+        if (feedbackTypeStr != null) incident.setFeedbackType(FeedbackCategory.valueOf(feedbackTypeStr));
 
         incident.setDescription(rs.getString("description"));
         incident.setPriorityScore(rs.getDouble("priority_score"));
         incident.setScoreImpact(rs.getDouble("score_impact"));
+        incident.setRevenueRisk(rs.getInt("revenue_risk"));
         String statusStr = rs.getString("status");
         if (statusStr != null) {
             incident.setStatus(IncidentStatus.valueOf(statusStr));

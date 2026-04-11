@@ -15,6 +15,8 @@ public interface CustomerRepository {
 
     List<Customer> findByAdvisor(int advisorId);
 
-    List<Customer> findAtRisk(double clvThreshold);
+    List<Customer> findByStatus(String status);
+
+    List<Customer> findByClvScore(String clvScore);
 
 }

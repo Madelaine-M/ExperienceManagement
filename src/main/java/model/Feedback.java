@@ -9,6 +9,8 @@ public class Feedback {
     private int customerId;
     private LocalDateTime createdAt;
     private List<FeedbackItem> items;
+    private double totalScore;//noch in DB einfügen
+    private int customerSatScore; //noch in DB
 
     public Feedback() {
         this.items = new ArrayList<>();
@@ -63,5 +65,21 @@ public class Feedback {
         }
 
         return (double) totalScore / items.size();
+    }
+
+    public int getCustomerSatScore() {
+        return customerSatScore;
+    }
+
+    public void setCustomerSatScore(int customerSatScore) {
+        this.customerSatScore = customerSatScore;
+    }
+
+    public double getTotalScore() {
+        return totalScore;
+    }
+
+    public void setTotalScore(double totalScore) {
+        this.totalScore = totalScore;
     }
 }

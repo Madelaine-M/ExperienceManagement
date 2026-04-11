@@ -1,5 +1,6 @@
 package model;
 
+import model.enums.FeedbackCategory;
 import model.enums.IncidentStatus;
 import model.enums.IncidentType;
 import java.time.LocalDateTime;
@@ -8,9 +9,11 @@ public class Incident {
     private int id;
     private int customerId;
     private IncidentType type;
+    private FeedbackCategory feedbackType; // noch in DB ergänzen
     private String description;
     private double priorityScore;
     private double scoreImpact;
+    private int revenueRisk; //noch in DB einfügen
     private IncidentStatus status;
     private Integer assignedAdvisorId;
     private Integer sourceFeedbackItemId;
@@ -38,6 +41,14 @@ public class Incident {
 
     public void setType(IncidentType type) {
         this.type = type;
+    }
+
+    public FeedbackCategory getFeedbackType() {
+        return feedbackType;
+    }
+
+    public void setFeedbackType(FeedbackCategory feedbackType) {
+        this.feedbackType = feedbackType;
     }
 
     public String getDescription() {
@@ -94,6 +105,14 @@ public class Incident {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public int getRevenueRisk() {
+        return revenueRisk;
+    }
+
+    public void setRevenueRisk(int revenueRisk) {
+        this.revenueRisk = revenueRisk;
     }
 
     public Incident() {}

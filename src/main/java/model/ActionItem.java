@@ -6,8 +6,14 @@ public class ActionItem {
     private int id;
     private int incidentId;
     private String description;
+    private String sugegstion1; //noch in DB einfügen
+    private String suggestion2; //noch in DB einfügen
     private ActionStatus status;
     private int priority;
+    private double scoreImpact; //noch in DB einfügen
+    private double expectedRec; //noch in DB einfügen
+    private double expectedRebooking; //noch in DB einfügen
+
 
     public ActionItem() {
     }
@@ -57,5 +63,45 @@ public class ActionItem {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public String getSugegstion1() {
+        return sugegstion1;
+    }
+
+    public void setSugegstion1(String sugegstion1) {
+        this.sugegstion1 = sugegstion1;
+    }
+
+    public String getSuggestion2() {
+        return suggestion2;
+    }
+
+    public void setSuggestion2(String suggestion2) {
+        this.suggestion2 = suggestion2;
+    }
+
+    public double getScoreImpact() {
+        return scoreImpact;
+    }
+
+    public void setScoreImpact(double scoreImpact) {
+        this.scoreImpact = scoreImpact;
+    }
+
+    public double getExpectedRec() {
+        return expectedRec;
+    }
+
+    public void setExpectedRec(double expectedRec) {
+        this.expectedRec = expectedRec;
+    }
+
+    public double getExpectedRebooking() {
+        return expectedRebooking;
+    }
+
+    public void setExpectedRebooking(double expectedRebooking) {
+        this.expectedRebooking = expectedRebooking;
     }
 }

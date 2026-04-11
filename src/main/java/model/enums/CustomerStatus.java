@@ -6,7 +6,12 @@ public enum CustomerStatus {
     INFO_SESSION_ATTENDED,
     BOOKED,
     ADVISOR_ASSIGNED,
+    MEDICAL_CHECK,
+    ONBOARDING,
+    SHUTTLE,
     PRE_FLIGHT,
     FLIGHT,
+    LANDING,
+    FEEDBACK,
     COMPLETED
 }

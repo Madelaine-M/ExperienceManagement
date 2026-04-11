@@ -23,8 +23,8 @@ public class DatabaseHistoryRepository implements HistoryRepository {
     @Override
     public void save(SentimentHistory historyEntry) {
         String sql = """
-            INSERT INTO sentiment_history (customer_id, recorded_at, clv_score, score_impact)
-            VALUES (?, ?, ?, ?);
+            INSERT INTO sentiment_history (customer_id, recorded_at, clv_score, score_impact, feedback_id)
+            VALUES (?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -34,6 +34,11 @@ public class DatabaseHistoryRepository implements HistoryRepository {
             setRecordedAt(pstmt, 2, historyEntry.getRecordedAt());
             pstmt.setDouble(3, historyEntry.getClvScore());
             pstmt.setDouble(4, historyEntry.getScoreImpact());
+            if (historyEntry.getFeedbackId() > 0) {
+                pstmt.setInt(5, historyEntry.getFeedbackId());
+            } else {
+                pstmt.setNull(5, Types.INTEGER);
+            }
             pstmt.executeUpdate();
 
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
@@ -117,6 +122,7 @@ public class DatabaseHistoryRepository implements HistoryRepository {
 
         history.setClvScore(rs.getDouble("clv_score"));
         history.setScoreImpact(rs.getDouble("score_impact"));
+        history.setFeedbackId(rs.getInt("feedback_id"));
         return history;
     }
 

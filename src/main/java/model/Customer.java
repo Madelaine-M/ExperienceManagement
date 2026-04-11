@@ -16,6 +16,9 @@ public class Customer {
     private boolean returning;
     private int assignedAdvisorId;
     private float clvScore;
+    private String notes; // in DB ergänzen
+    private String preferences; //in DB ergänzen
+    private String applyToNextBooking; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
 
     private int id;
 
@@ -115,15 +118,39 @@ public class Customer {
         this.clvScore= clv_score;
     }
 
-    // Leerer Konstruktor (wichtig für später)
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public String getApplyToNextBooking() {
+        return applyToNextBooking;
+    }
+
+    public void setApplyToNextBooking(String applyToNextBooking) {
+        this.applyToNextBooking = applyToNextBooking;
+    }
+
+    public String getPreferences() {
+        return preferences;
+    }
+
+    public void setPreferences(String preferences) {
+        this.preferences = preferences;
+    }
+
+    // constructor
     public Customer() {}
 
-    // Konstruktor für schnelles Erstellen (z.B. für Testdaten)
     public Customer(String firstName, String lastName, String email, CustomerStatus status) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.status = status;
     }
+
 
 }

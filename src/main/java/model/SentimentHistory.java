@@ -8,6 +8,7 @@ public class SentimentHistory {
     private LocalDateTime recordedAt;
     private double clvScore;
     private double scoreImpact;
+    private int feedbackId; // noch in DB ergenzen und als Fremdschlüsselk mit feedback DB verknüfen dann
 
     public SentimentHistory() {
     }
@@ -57,5 +58,13 @@ public class SentimentHistory {
 
     public void setScoreImpact(double scoreImpact) {
         this.scoreImpact = scoreImpact;
+    }
+
+    public int getFeedbackId() {
+        return feedbackId;
+    }
+
+    public void setFeedbackId(int feedbackId) {
+        this.feedbackId = feedbackId;
     }
 }

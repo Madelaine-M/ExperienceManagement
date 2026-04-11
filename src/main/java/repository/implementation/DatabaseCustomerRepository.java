@@ -20,8 +20,8 @@ public class DatabaseCustomerRepository implements CustomerRepository {
         String sql = """
             INSERT INTO customers (first_name, last_name, email, birth_date, status, 
                                  booking_package, booking_date, flight_date,
-                                 is_returning, assigned_advisor_id, clv_score)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                 is_returning, assigned_advisor_id, clv_score, notes, preferences, apply_to_next_booking)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -42,6 +42,9 @@ public class DatabaseCustomerRepository implements CustomerRepository {
                 pstmt.setNull(10, Types.INTEGER);
             }
             pstmt.setFloat(11, customer.getClvScore());
+            pstmt.setString(12, customer.getNotes());
+            pstmt.setString(13, customer.getPreferences());
+            pstmt.setString(14, customer.getApplyToNextBooking());
 
             pstmt.executeUpdate();
             logger.info("Customer saved: {} {}", customer.getFirstName(), customer.getLastName());
@@ -88,6 +91,52 @@ public class DatabaseCustomerRepository implements CustomerRepository {
     }
 
     @Override
+    public List<Customer> findByStatus(String status) {
+        List<Customer> customers = new ArrayList<>();
+        String sql = "SELECT * FROM customers WHERE status = ?;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, status);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    customers.add(mapResultSetToCustomer(rs));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while searching customers by status {}", status, e);
+        }
+
+        return customers;
+    }
+
+    @Override
+    public List<Customer> findByClvScore(String clvScore) {
+        List<Customer> customers = new ArrayList<>();
+        String sql = "SELECT * FROM customers WHERE clv_score = ?;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setDouble(1, Double.parseDouble(clvScore));
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    customers.add(mapResultSetToCustomer(rs));
+                }
+            }
+        } catch (NumberFormatException e) {
+            logger.error("Invalid CLV score value {}", clvScore, e);
+        } catch (SQLException e) {
+            logger.error("Error while searching customers by CLV score {}", clvScore, e);
+        }
+
+        return customers;
+    }
+
+    @Override
     public void deleteById(int id) {
         String sql = "DELETE FROM customers WHERE id = ?;";
         try (Connection conn = DatabaseManager.getConnection();
@@ -130,27 +179,6 @@ public class DatabaseCustomerRepository implements CustomerRepository {
         return customers;
     }
 
-    @Override
-    public List<Customer> findAtRisk(double clvThreshold) {
-        List<Customer> customers = new ArrayList<>();
-        String sql = "SELECT * FROM customers WHERE clv_score < ? ORDER BY clv_score ASC;";
-
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setDouble(1, clvThreshold);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    customers.add(mapResultSetToCustomer(rs));
-                }
-            }
-        } catch (SQLException e) {
-            logger.error("Error while searching for at-risk customers below CLV {}", clvThreshold, e);
-        }
-
-        return customers;
-    }
 
     // Hilfsmethode: Wandelt eine DB-Zeile (ResultSet) in ein Java-Objekt (Customer) um
     private Customer mapResultSetToCustomer(ResultSet rs) throws SQLException {
@@ -173,6 +201,9 @@ public class DatabaseCustomerRepository implements CustomerRepository {
         customer.setReturning(rs.getBoolean("is_returning"));
         customer.setAssignedAdvisorId(rs.getInt("assigned_advisor_id"));
         customer.setClvScore(rs.getFloat("clv_score"));
+        customer.setNotes(rs.getString("notes"));
+        customer.setPreferences(rs.getString("preferences"));
+        customer.setApplyToNextBooking(rs.getString("apply_to_next_booking"));
 
         return customer;
     }
