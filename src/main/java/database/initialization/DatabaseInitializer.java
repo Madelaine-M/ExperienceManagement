@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DatabaseInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
@@ -165,14 +166,14 @@ public class DatabaseInitializer {
         if (!columnExists(conn, "incidents", "assigned_advisor_id")) {
             executeSql(conn, """
                 ALTER TABLE incidents
-                ADD COLUMN assigned_advisor_id INTEGER REFERENCES advisors(id) ON DELETE SET NULL;
+                ADD COLUMN assigned_advisor_id INTEGER;
                 """);
         }
 
         if (!columnExists(conn, "incidents", "source_feedback_item_id")) {
             executeSql(conn, """
                 ALTER TABLE incidents
-                ADD COLUMN source_feedback_item_id INTEGER REFERENCES feedback_items(id) ON DELETE SET NULL;
+                ADD COLUMN source_feedback_item_id INTEGER;
                 """);
         }
     }
@@ -264,7 +265,7 @@ public class DatabaseInitializer {
         if (!columnExists(conn, "sentiment_history", "feedback_id")) {
             executeSql(conn, """
                 ALTER TABLE sentiment_history
-                ADD COLUMN feedback_id INTEGER REFERENCES feedbacks(id) ON DELETE SET NULL;
+                ADD COLUMN feedback_id INTEGER;
                 """);
         }
     }
@@ -276,8 +277,8 @@ public class DatabaseInitializer {
     }
 
     private static boolean columnExists(Connection conn, String tableName, String columnName) throws SQLException {
-        try (PreparedStatement pstmt = conn.prepareStatement("PRAGMA table_info(" + tableName + ");");
-             ResultSet rs = pstmt.executeQuery()) {
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("PRAGMA table_info(" + tableName + ")")) {
 
             while (rs.next()) {
                 if (columnName.equalsIgnoreCase(rs.getString("name"))) {
