@@ -12,13 +12,6 @@ public class Advisor {
     public Advisor() {
     }
 
-    public Advisor(String firstName, String lastName, String email, String speciality) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.speciality = speciality;
-    }
-
     public Advisor(String firstName, String lastName, String email, String speciality, double workloadScore) {
         this.firstName = firstName;
         this.lastName = lastName;

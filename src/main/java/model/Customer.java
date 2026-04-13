@@ -1,7 +1,9 @@
 package model;
 
 import model.enums.CustomerStatus;
+import model.enums.CustomerType;
 import model.enums.Packages;
+import model.enums.PaymentMethod;
 
 public class Customer {
 
@@ -11,14 +13,22 @@ public class Customer {
     private String birthDate;
     private CustomerStatus status;
     private Packages bookingPackage;
+    private Packages previousBookingPackage;
     private String bookingDate;
     private String flightDate;
+    private int flightId;
     private boolean returning;
     private int assignedAdvisorId;
     private float clvScore;
-    private String notes; // in DB ergänzen
-    private String preferences; //in DB ergänzen
+    private String notes;
+    private String preferences;
     private String applyToNextBooking; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
+    private boolean marketingPurpose;
+    private boolean newsletterSubscription;
+    private boolean referralCode;
+    private PaymentMethod paymentMethod;
+    private boolean publicPerson;
+    private CustomerType customerType;
 
     private int id;
 
@@ -76,6 +86,14 @@ public class Customer {
 
     public void setBookingPackage(Packages bookingPackage) {
         this.bookingPackage = bookingPackage;
+    }
+
+    public Packages getPreviousBookingPackage() {
+        return previousBookingPackage;
+    }
+
+    public void setPreviousBookingPackage(Packages previousBookingPackage) {
+        this.previousBookingPackage = previousBookingPackage;
     }
 
     public String getBookingDate() {
@@ -140,6 +158,62 @@ public class Customer {
 
     public void setPreferences(String preferences) {
         this.preferences = preferences;
+    }
+
+    public boolean isMarketingPurpose() {
+        return marketingPurpose;
+    }
+
+    public void setMarketingPurpose(boolean marketingPurpose) {
+        this.marketingPurpose = marketingPurpose;
+    }
+
+    public boolean isNewsletterSubscription() {
+        return newsletterSubscription;
+    }
+
+    public void setNewsletterSubscription(boolean newsletterSubscription) {
+        this.newsletterSubscription = newsletterSubscription;
+    }
+
+    public boolean isReferralCode() {
+        return referralCode;
+    }
+
+    public void setReferralCode(boolean referralCode) {
+        this.referralCode = referralCode;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public boolean isPublicPerson() {
+        return publicPerson;
+    }
+
+    public void setPublicPerson(boolean publicPerson) {
+        this.publicPerson = publicPerson;
+    }
+
+    public CustomerType getCustomerType() {
+        return customerType;
+    }
+
+    public void setCustomerType(CustomerType customerType) {
+        this.customerType = customerType;
+    }
+
+    public int getFlightId() {
+        return flightId;
+    }
+
+    public void setFlightId(int flightId) {
+        this.flightId = flightId;
     }
 
     // constructor

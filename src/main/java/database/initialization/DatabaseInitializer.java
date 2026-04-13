@@ -31,6 +31,14 @@ public class DatabaseInitializer {
                 notes TEXT,
                 preferences TEXT,
                 apply_to_next_booking TEXT,
+                previous_booking_package TEXT,
+                marketing_purpose INTEGER DEFAULT 0,
+                newsletter_subscription INTEGER DEFAULT 0,
+                referral_code INTEGER DEFAULT 0,
+                payment_method TEXT,
+                public_person INTEGER DEFAULT 0,
+                customer_type TEXT,
+                flight_id INTEGER DEFAULT 0,
 
                 FOREIGN KEY (assigned_advisor_id) REFERENCES advisors(id)
                     ON DELETE SET NULL
@@ -49,6 +57,7 @@ public class DatabaseInitializer {
                 status TEXT,
                 assigned_advisor_id INTEGER,
                 source_feedback_item_id INTEGER,
+                flight_id INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
@@ -66,6 +75,7 @@ public class DatabaseInitializer {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 total_score REAL DEFAULT 0.0,
                 customer_sat_score INTEGER DEFAULT 0,
+                flight_id INTEGER DEFAULT 0,
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
                     ON DELETE CASCADE
@@ -110,22 +120,6 @@ public class DatabaseInitializer {
                     ON DELETE CASCADE
             );
             """;
-        String createSentimentHistory = """
-            CREATE TABLE IF NOT EXISTS sentiment_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                customer_id INTEGER NOT NULL,
-                recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                clv_score REAL,
-                score_impact REAL,
-                feedback_id INTEGER,
-
-                FOREIGN KEY (customer_id) REFERENCES customers(id)
-                    ON DELETE CASCADE,
-                FOREIGN KEY (feedback_id) REFERENCES feedbacks(id)
-                    ON DELETE SET NULL
-            );
-            """;
-
         try (Connection conn = DatabaseManager.getConnection()) {
 
             executeSql(conn, createAdvisors);
@@ -134,12 +128,10 @@ public class DatabaseInitializer {
             executeSql(conn, createFeedbackItems);
             executeSql(conn, createIncidents);
             executeSql(conn, createActionItems);
-            executeSql(conn, createSentimentHistory);
             ensureCustomerColumnsExist(conn);
             ensureFeedbackColumnsExist(conn);
             ensureIncidentColumnsExist(conn);
             ensureActionItemColumnsExist(conn);
-            ensureSentimentHistoryColumnsExist(conn);
 
             logger.info("Database was correctly initialized");
 
@@ -176,6 +168,13 @@ public class DatabaseInitializer {
                 ADD COLUMN source_feedback_item_id INTEGER;
                 """);
         }
+
+        if (!columnExists(conn, "incidents", "flight_id")) {
+            executeSql(conn, """
+                ALTER TABLE incidents
+                ADD COLUMN flight_id INTEGER DEFAULT 0;
+                """);
+        }
     }
 
     private static void ensureCustomerColumnsExist(Connection conn) throws SQLException {
@@ -206,6 +205,62 @@ public class DatabaseInitializer {
                 ADD COLUMN apply_to_next_booking TEXT;
                 """);
         }
+
+        if (!columnExists(conn, "customers", "previous_booking_package")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN previous_booking_package TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "marketing_purpose")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN marketing_purpose INTEGER DEFAULT 0;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "newsletter_subscription")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN newsletter_subscription INTEGER DEFAULT 0;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "referral_code")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN referral_code INTEGER DEFAULT 0;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "payment_method")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN payment_method TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "public_person")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN public_person INTEGER DEFAULT 0;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "customer_type")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN customer_type TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "customers", "flight_id")) {
+            executeSql(conn, """
+                ALTER TABLE customers
+                ADD COLUMN flight_id INTEGER DEFAULT 0;
+                """);
+        }
     }
 
     private static void ensureFeedbackColumnsExist(Connection conn) throws SQLException {
@@ -220,6 +275,13 @@ public class DatabaseInitializer {
             executeSql(conn, """
                 ALTER TABLE feedbacks
                 ADD COLUMN customer_sat_score INTEGER DEFAULT 0;
+                """);
+        }
+
+        if (!columnExists(conn, "feedbacks", "flight_id")) {
+            executeSql(conn, """
+                ALTER TABLE feedbacks
+                ADD COLUMN flight_id INTEGER DEFAULT 0;
                 """);
         }
     }
@@ -257,15 +319,6 @@ public class DatabaseInitializer {
             executeSql(conn, """
                 ALTER TABLE action_items
                 ADD COLUMN expected_rebooking REAL DEFAULT 0.0;
-                """);
-        }
-    }
-
-    private static void ensureSentimentHistoryColumnsExist(Connection conn) throws SQLException {
-        if (!columnExists(conn, "sentiment_history", "feedback_id")) {
-            executeSql(conn, """
-                ALTER TABLE sentiment_history
-                ADD COLUMN feedback_id INTEGER;
                 """);
         }
     }

@@ -6,7 +6,9 @@ import model.enums.ActionStatus;
 import model.enums.PriorityLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import repository.interfaces.ActionRepository;
+import repository.interfaces.ActionLookup;
+import repository.interfaces.ActionManagement;
+import repository.interfaces.ActionUpdate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,7 +18,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseActionRepository implements ActionRepository {
+public class DatabaseActionRepository implements ActionLookup, ActionUpdate, ActionManagement {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseActionRepository.class);
 
     @Override
@@ -49,6 +51,21 @@ public class DatabaseActionRepository implements ActionRepository {
             logger.info("Action item saved for incident {}", actionItem.getIncidentId());
         } catch (SQLException e) {
             logger.error("Error while saving action item", e);
+        }
+    }
+
+    @Override
+    public void updateStatus(int id, String status) {
+        String sql = "UPDATE action_items SET status = ? WHERE id = ?;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, status);
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Error while updating action item status for action item {}", id, e);
         }
     }
 
@@ -94,65 +111,7 @@ public class DatabaseActionRepository implements ActionRepository {
 
         return actionItems;
     }
-
-    @Override
-    public List<ActionItem> findByStatus(String status) {
-        List<ActionItem> actionItems = new ArrayList<>();
-        String sql = "SELECT * FROM action_items WHERE status = ? ORDER BY priority DESC, id ASC;";
-
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, status);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    actionItems.add(mapResultSetToActionItem(rs));
-                }
-            }
-        } catch (SQLException e) {
-            logger.error("Error while loading action items by status {}", status, e);
-        }
-
-        return actionItems;
-    }
-
-    @Override
-    public List<ActionItem> filterByPriority(PriorityLevel prio) {
-        List<ActionItem> actionItems = new ArrayList<>();
-        String sql = "SELECT * FROM action_items WHERE priority >= ? ORDER BY priority DESC, id ASC;";
-
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, minimumPriorityFor(prio));
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    actionItems.add(mapResultSetToActionItem(rs));
-                }
-            }
-        } catch (SQLException e) {
-            logger.error("Error while filtering action items by priority {}", prio, e);
-        }
-
-        return actionItems;
-    }
-
-    @Override
-    public void deleteById(int id) {
-        String sql = "DELETE FROM action_items WHERE id = ?;";
-
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            logger.error("Error while deleting action item", e);
-        }
-    }
-
+    
     private ActionItem mapResultSetToActionItem(ResultSet rs) throws SQLException {
         ActionItem actionItem = new ActionItem();
         actionItem.setId(rs.getInt("id"));
@@ -184,5 +143,35 @@ public class DatabaseActionRepository implements ActionRepository {
             case HIGH -> 7;
             case CRITICAL -> 9;
         };
+    }
+
+    @Override
+    public List<ActionItem> findPriorityActionsForAdvisor(int advisorId) {
+        List<ActionItem> actions = new ArrayList<>();
+
+        String sql = """
+        SELECT ai.*
+        FROM action_items ai
+        JOIN incidents i ON ai.incident_id = i.id
+        WHERE i.assigned_advisor_id = ? 
+        AND ai.status = 'SUGGESTED'
+        ORDER BY ai.priority DESC;
+        """;
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, advisorId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    actions.add(mapResultSetToActionItem(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Database error: " + e.getMessage());
+        }
+
+        return actions;
     }
 }

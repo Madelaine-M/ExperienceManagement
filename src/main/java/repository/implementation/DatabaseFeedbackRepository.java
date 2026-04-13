@@ -6,7 +6,9 @@ import model.FeedbackItem;
 import model.enums.FeedbackCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import repository.interfaces.FeedbackRepository;
+import repository.interfaces.FeedbackAnalytics;
+import repository.interfaces.FeedbackLookup;
+import repository.interfaces.FeedbackUpdate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,14 +21,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseFeedbackRepository implements FeedbackRepository {
+public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdate, FeedbackAnalytics {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseFeedbackRepository.class);
 
     @Override
     public void save(Feedback feedback) {
         String feedbackSql = """
-            INSERT INTO feedbacks (customer_id, created_at, total_score, customer_sat_score)
-            VALUES (?, ?, ?, ?);
+            INSERT INTO feedbacks (customer_id, created_at, total_score, customer_sat_score, flight_id)
+            VALUES (?, ?, ?, ?, ?);
             """;
         String itemSql = """
             INSERT INTO feedback_items (feedback_id, category, score, comment)
@@ -43,6 +45,7 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
                 setCreatedAt(feedbackStmt, 2, feedback.getCreatedAt());
                 feedbackStmt.setDouble(3, feedback.getTotalScore() != 0.0 ? feedback.getTotalScore() : feedback.getOverallScore());
                 feedbackStmt.setInt(4, feedback.getCustomerSatScore());
+                feedbackStmt.setInt(5, feedback.getFlightId());
                 feedbackStmt.executeUpdate();
 
                 int feedbackId = extractGeneratedId(feedbackStmt, "feedback");
@@ -70,6 +73,32 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while saving feedback", e);
+        }
+    }
+
+    @Override
+    public void save(FeedbackItem item) {
+        String sql = """
+            INSERT INTO feedback_items (feedback_id, category, score, comment)
+            VALUES (?, ?, ?, ?);
+            """;
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setInt(1, item.getFeedbackId());
+            pstmt.setString(2, item.getCategory() != null ? item.getCategory().name() : null);
+            pstmt.setInt(3, item.getScore());
+            pstmt.setString(4, item.getComment());
+            pstmt.executeUpdate();
+
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    item.setId(generatedKeys.getInt(1));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while saving feedback item", e);
         }
     }
 
@@ -144,6 +173,16 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
     }
 
     @Override
+    public List<FeedbackItem> findItemsByFeedbackId(int id) {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            return loadItemsByFeedbackId(conn, id);
+        } catch (SQLException e) {
+            logger.error("Error while loading feedback items for feedback {}", id, e);
+            return new ArrayList<>();
+        }
+    }
+
+    @Override
     public List<FeedbackItem> findByCategory(String category) {
         List<FeedbackItem> items = new ArrayList<>();
         String sql = "SELECT * FROM feedback_items WHERE category = ? ORDER BY id ASC;";
@@ -190,20 +229,24 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
     }
 
     @Override
-    public void deleteById(int id) {
-        String sql = "DELETE FROM feedbacks WHERE id = ?;";
+    public double getAverageRating(String category) {
+        String sql = "SELECT AVG(score) AS average_score FROM feedback_items WHERE category = ?;";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, id);
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) {
-                logger.info("Feedback with id {} was deleted", id);
+            pstmt.setString(1, category);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("average_score");
+                }
             }
         } catch (SQLException e) {
-            logger.error("Error while deleting feedback", e);
+            logger.error("Error while calculating average rating for category {}", category, e);
         }
+
+        return 0.0;
     }
 
     private List<FeedbackItem> loadItemsByFeedbackId(Connection conn, int feedbackId) throws SQLException {
@@ -234,6 +277,7 @@ public class DatabaseFeedbackRepository implements FeedbackRepository {
         }
         feedback.setTotalScore(rs.getDouble("total_score"));
         feedback.setCustomerSatScore(rs.getInt("customer_sat_score"));
+        feedback.setFlightId(rs.getInt("flight_id"));
 
         return feedback;
     }

@@ -3,16 +3,20 @@ package repository.implementation;
 import database.connection.DatabaseManager;
 import model.Customer;
 import model.enums.CustomerStatus;
+import model.enums.CustomerType;
 import model.enums.Packages;
-import repository.interfaces.CustomerRepository;
+import model.enums.PaymentMethod;
+import repository.interfaces.CustomerLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.interfaces.CustomerSearch;
+import repository.interfaces.CustomerUpdate;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseCustomerRepository implements CustomerRepository {
+public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdate, CustomerSearch {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseCustomerRepository.class);
 
     @Override
@@ -20,8 +24,10 @@ public class DatabaseCustomerRepository implements CustomerRepository {
         String sql = """
             INSERT INTO customers (first_name, last_name, email, birth_date, status, 
                                  booking_package, booking_date, flight_date,
-                                 is_returning, assigned_advisor_id, clv_score, notes, preferences, apply_to_next_booking)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                 is_returning, assigned_advisor_id, clv_score, notes, preferences, apply_to_next_booking,
+                                 previous_booking_package, marketing_purpose, newsletter_subscription, referral_code,
+                                 payment_method, public_person, customer_type, flight_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -45,6 +51,14 @@ public class DatabaseCustomerRepository implements CustomerRepository {
             pstmt.setString(12, customer.getNotes());
             pstmt.setString(13, customer.getPreferences());
             pstmt.setString(14, customer.getApplyToNextBooking());
+            pstmt.setString(15, customer.getPreviousBookingPackage() != null ? customer.getPreviousBookingPackage().name() : null);
+            pstmt.setBoolean(16, customer.isMarketingPurpose());
+            pstmt.setBoolean(17, customer.isNewsletterSubscription());
+            pstmt.setBoolean(18, customer.isReferralCode());
+            pstmt.setString(19, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
+            pstmt.setBoolean(20, customer.isPublicPerson());
+            pstmt.setString(21, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
+            pstmt.setInt(22, customer.getFlightId());
 
             pstmt.executeUpdate();
             logger.info("Customer saved: {} {}", customer.getFirstName(), customer.getLastName());
@@ -113,46 +127,6 @@ public class DatabaseCustomerRepository implements CustomerRepository {
     }
 
     @Override
-    public List<Customer> findByClvScore(String clvScore) {
-        List<Customer> customers = new ArrayList<>();
-        String sql = "SELECT * FROM customers WHERE clv_score = ?;";
-
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setDouble(1, Double.parseDouble(clvScore));
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    customers.add(mapResultSetToCustomer(rs));
-                }
-            }
-        } catch (NumberFormatException e) {
-            logger.error("Invalid CLV score value {}", clvScore, e);
-        } catch (SQLException e) {
-            logger.error("Error while searching customers by CLV score {}", clvScore, e);
-        }
-
-        return customers;
-    }
-
-    @Override
-    public void deleteById(int id) {
-        String sql = "DELETE FROM customers WHERE id = ?;";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) {
-                logger.info("Customer with id {} was deleted", id);
-            }
-        } catch (SQLException e) {
-            logger.error("Error while deleting customer", e);
-        }
-    }
-
-    @Override
     public List<Customer> findByAdvisor(int advisorId) {
         List<Customer> customers = new ArrayList<>();
         // SQL: Suche alle Kunden, bei denen die Berater-ID passt
@@ -195,6 +169,8 @@ public class DatabaseCustomerRepository implements CustomerRepository {
 
         String packageStr = rs.getString("booking_package");
         if (packageStr != null) customer.setBookingPackage(Packages.valueOf(packageStr));
+        String previousPackageStr = rs.getString("previous_booking_package");
+        if (previousPackageStr != null) customer.setPreviousBookingPackage(Packages.valueOf(previousPackageStr));
 
         customer.setBookingDate(rs.getString("booking_date"));
         customer.setFlightDate(rs.getString("flight_date"));
@@ -204,6 +180,15 @@ public class DatabaseCustomerRepository implements CustomerRepository {
         customer.setNotes(rs.getString("notes"));
         customer.setPreferences(rs.getString("preferences"));
         customer.setApplyToNextBooking(rs.getString("apply_to_next_booking"));
+        customer.setMarketingPurpose(rs.getBoolean("marketing_purpose"));
+        customer.setNewsletterSubscription(rs.getBoolean("newsletter_subscription"));
+        customer.setReferralCode(rs.getBoolean("referral_code"));
+        String paymentMethodStr = rs.getString("payment_method");
+        if (paymentMethodStr != null) customer.setPaymentMethod(PaymentMethod.valueOf(paymentMethodStr));
+        customer.setPublicPerson(rs.getBoolean("public_person"));
+        String customerTypeStr = rs.getString("customer_type");
+        if (customerTypeStr != null) customer.setCustomerType(CustomerType.valueOf(customerTypeStr));
+        customer.setFlightId(rs.getInt("flight_id"));
 
         return customer;
     }

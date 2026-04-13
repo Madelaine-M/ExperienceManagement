@@ -5,22 +5,24 @@ import model.Incident;
 import model.enums.FeedbackCategory;
 import model.enums.IncidentStatus;
 import model.enums.IncidentType;
-import repository.interfaces.IncidentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.interfaces.IncidentLookup;
+import repository.interfaces.IncidentManagement;
+import repository.interfaces.IncidentUpdate;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseIncidentRepository implements IncidentRepository {
+public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdate, IncidentManagement {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseIncidentRepository.class);
 
     @Override
     public void save(Incident incident) {
         String sql = """
-            INSERT INTO incidents (customer_id, type, feedback_type, description, priority_score, score_impact, revenue_risk, status, assigned_advisor_id, source_feedback_item_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO incidents (customer_id, type, feedback_type, description, priority_score, score_impact, revenue_risk, status, assigned_advisor_id, source_feedback_item_id, flight_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -44,12 +46,28 @@ public class DatabaseIncidentRepository implements IncidentRepository {
             } else {
                 pstmt.setNull(10, Types.INTEGER);
             }
+            pstmt.setInt(11, incident.getFlightId());
 
             pstmt.executeUpdate();
             logger.info("Incident type {} for customer {} saved.", incident.getType(), incident.getCustomerId());
 
         } catch (SQLException e) {
             logger.error("Error while saving incident", e);
+        }
+    }
+
+    @Override
+    public void updateStatus(int id, IncidentStatus status) {
+        String sql = "UPDATE incidents SET status = ? WHERE id = ?;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, status != null ? status.name() : null);
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Error while updating incident status for incident {}", id, e);
         }
     }
 
@@ -85,18 +103,6 @@ public class DatabaseIncidentRepository implements IncidentRepository {
             logger.error("Error while searching for incidents", e);
         }
         return null;
-    }
-
-    @Override
-    public void deleteById(int id) {
-        String sql = "DELETE FROM incidents WHERE id = ?;";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            logger.error("Error while deleting incidents", e);
-        }
     }
 
     @Override
@@ -159,6 +165,32 @@ public class DatabaseIncidentRepository implements IncidentRepository {
         return incidents;
     }
 
+    @Override
+    public List<Incident> findPendingActionItems() {
+        List<Incident> incidents = new ArrayList<>();
+        String sql = """
+        SELECT i.*
+        FROM incidents i
+        LEFT JOIN action_items ai ON i.id = ai.incident_id
+        WHERE i.status = 'OPEN' 
+        AND ai.id IS NULL
+        ORDER BY i.id ASC;
+        """;
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                incidents.add(mapResultSetToIncident(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Database error: " + e.getMessage());
+        }
+
+        return incidents;
+    }
+
     // Hilfsmethode für das Mapping (SRP!)
     private Incident mapResultSetToIncident(ResultSet rs) throws SQLException {
         Incident incident = new Incident();
@@ -186,6 +218,7 @@ public class DatabaseIncidentRepository implements IncidentRepository {
         if (!rs.wasNull()) {
             incident.setSourceFeedbackItemId(sourceFeedbackItemId);
         }
+        incident.setFlightId(rs.getInt("flight_id"));
 
         // Timestamp umwandeln (SQLite speichert das als String)
         Timestamp ts = rs.getTimestamp("created_at");

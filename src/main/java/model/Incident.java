@@ -18,6 +18,8 @@ public class Incident {
     private Integer assignedAdvisorId;
     private Integer sourceFeedbackItemId;
     private LocalDateTime createdAt;
+    private int flightId;
+    private ActionItem suggestedAction;
 
     public int getId() {
         return id;
@@ -113,6 +115,22 @@ public class Incident {
 
     public void setRevenueRisk(int revenueRisk) {
         this.revenueRisk = revenueRisk;
+    }
+
+    public int getFlightId() {
+        return flightId;
+    }
+
+    public void setFlightId(int flightId) {
+        this.flightId = flightId;
+    }
+
+    public ActionItem getSuggestedAction() {
+        return suggestedAction;
+    }
+
+    public void setSuggestedAction(ActionItem suggestedAction) {
+        this.suggestedAction = suggestedAction;
     }
 
     public Incident() {}

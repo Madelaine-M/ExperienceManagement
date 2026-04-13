@@ -1,7 +1,7 @@
 package model.enums;
 
 public enum CustomerStatus {
-    INTERSTED,
+    INTERESTED,
     INFO_SESSION_INVITED,
     INFO_SESSION_ATTENDED,
     BOOKED,

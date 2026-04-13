@@ -9,8 +9,9 @@ public class Feedback {
     private int customerId;
     private LocalDateTime createdAt;
     private List<FeedbackItem> items;
-    private double totalScore;//noch in DB einfügen
-    private int customerSatScore; //noch in DB
+    private double totalScore;
+    private int customerSatScore;
+    private int flightId;
 
     public Feedback() {
         this.items = new ArrayList<>();
@@ -81,5 +82,13 @@ public class Feedback {
 
     public void setTotalScore(double totalScore) {
         this.totalScore = totalScore;
+    }
+
+    public int getFlightId() {
+        return flightId;
+    }
+
+    public void setFlightId(int flightId) {
+        this.flightId = flightId;
     }
 }

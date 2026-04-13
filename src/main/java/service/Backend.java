@@ -5,54 +5,106 @@ import repository.implementation.DatabaseActionRepository;
 import repository.implementation.DatabaseAdvisorRepository;
 import repository.implementation.DatabaseCustomerRepository;
 import repository.implementation.DatabaseFeedbackRepository;
-import repository.implementation.DatabaseHistoryRepository;
 import repository.implementation.DatabaseIncidentRepository;
-import repository.interfaces.ActionRepository;
+import repository.interfaces.ActionLookup;
+import repository.interfaces.ActionManagement;
+import repository.interfaces.ActionUpdate;
 import repository.interfaces.AdvisorRepository;
-import repository.interfaces.CustomerRepository;
-import repository.interfaces.FeedbackRepository;
-import repository.interfaces.HistoryRepository;
-import repository.interfaces.IncidentRepository;
+import repository.interfaces.CustomerLookup;
+import repository.interfaces.CustomerSearch;
+import repository.interfaces.CustomerUpdate;
+import repository.interfaces.FeedbackAnalytics;
+import repository.interfaces.FeedbackLookup;
+import repository.interfaces.FeedbackUpdate;
+import repository.interfaces.IncidentLookup;
+import repository.interfaces.IncidentManagement;
+import repository.interfaces.IncidentUpdate;
 
 public class Backend {
-    private final ActionRepository actionRepository;
+    private final ActionLookup actionLookup;
+    private final ActionManagement actionManagement;
+    private final ActionUpdate actionUpdate;
     private final AdvisorRepository advisorRepository;
-    private final CustomerRepository customerRepository;
-    private final IncidentRepository incidentRepository;
-    private final FeedbackRepository feedbackRepository;
-    private final HistoryRepository historyRepository;
+    private final CustomerLookup customerLookup;
+    private final CustomerSearch customerSearch;
+    private final CustomerUpdate customerUpdate;
+    private final FeedbackAnalytics feedbackAnalytics;
+    private final FeedbackLookup feedbackLookup;
+    private final FeedbackUpdate feedbackUpdate;
+    private final IncidentLookup incidentLookup;
+    private final IncidentManagement incidentManagement;
+    private final IncidentUpdate incidentUpdate;
 
     public Backend() {
         DatabaseInitializer.initialize();
-        this.actionRepository = new DatabaseActionRepository();
+        DatabaseCustomerRepository customerRepository = new DatabaseCustomerRepository();
+        DatabaseFeedbackRepository feedbackRepository = new DatabaseFeedbackRepository();
+        DatabaseIncidentRepository incidentRepository = new DatabaseIncidentRepository();
+        DatabaseActionRepository actionRepository = new DatabaseActionRepository();
+        this.actionLookup = actionRepository;
+        this.actionManagement = actionRepository;
+        this.actionUpdate = actionRepository;
         this.advisorRepository = new DatabaseAdvisorRepository();
-        this.customerRepository = new DatabaseCustomerRepository();
-        this.incidentRepository = new DatabaseIncidentRepository();
-        this.feedbackRepository = new DatabaseFeedbackRepository();
-        this.historyRepository = new DatabaseHistoryRepository();
+        this.customerLookup = customerRepository;
+        this.customerSearch = customerRepository;
+        this.customerUpdate = customerRepository;
+        this.feedbackAnalytics = feedbackRepository;
+        this.feedbackLookup = feedbackRepository;
+        this.feedbackUpdate = feedbackRepository;
+        this.incidentLookup = incidentRepository;
+        this.incidentManagement = incidentRepository;
+        this.incidentUpdate = incidentRepository;
     }
 
-    public ActionRepository getActionRepository() {
-        return actionRepository;
+    public ActionLookup getActionLookup() {
+        return actionLookup;
+    }
+
+    public ActionManagement getActionManagement() {
+        return actionManagement;
+    }
+
+    public ActionUpdate getActionUpdate() {
+        return actionUpdate;
     }
 
     public AdvisorRepository getAdvisorRepository() {
         return advisorRepository;
     }
 
-    public CustomerRepository getCustomerRepository() {
-        return customerRepository;
+    public CustomerLookup getCustomerLookup() {
+        return customerLookup;
     }
 
-    public IncidentRepository getIncidentRepository() {
-        return incidentRepository;
+    public CustomerSearch getCustomerSearch() {
+        return customerSearch;
     }
 
-    public FeedbackRepository getFeedbackRepository() {
-        return feedbackRepository;
+    public CustomerUpdate getCustomerUpdate() {
+        return customerUpdate;
     }
 
-    public HistoryRepository getHistoryRepository() {
-        return historyRepository;
+    public IncidentLookup getIncidentLookup() {
+        return incidentLookup;
+    }
+
+    public IncidentManagement getIncidentManagement() {
+        return incidentManagement;
+    }
+
+    public IncidentUpdate getIncidentUpdate() {
+        return incidentUpdate;
+    }
+
+    public FeedbackLookup getFeedbackLookup() {
+        return feedbackLookup;
+    }
+
+    public FeedbackUpdate getFeedbackUpdate() {
+        return feedbackUpdate;
+    }
+
+    public FeedbackAnalytics getFeedbackAnalytics() {
+        return feedbackAnalytics;
     }
 }

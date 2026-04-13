@@ -6,13 +6,13 @@ public class ActionItem {
     private int id;
     private int incidentId;
     private String description;
-    private String sugegstion1; //noch in DB einfügen
-    private String suggestion2; //noch in DB einfügen
+    private String sugegstion1;
+    private String suggestion2;
     private ActionStatus status;
     private int priority;
-    private double scoreImpact; //noch in DB einfügen
-    private double expectedRec; //noch in DB einfügen
-    private double expectedRebooking; //noch in DB einfügen
+    private double scoreImpact;
+    private double expectedRec;
+    private double expectedRebooking;
 
 
     public ActionItem() {
