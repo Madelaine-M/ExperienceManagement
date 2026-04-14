@@ -91,7 +91,7 @@ public class DataSeeder {
             ActionItem actionItem1 = new ActionItem(firstIncidentId, "Offer lounge voucher and proactive delay updates.", ActionStatus.SUGGESTED, 9);
             actionUpdate.save(actionItem1);
 
-            ActionItem actionItem2 = new ActionItem(firstIncidentId, "Rebook to the next available direct flight.", ActionStatus.PLANNED, 10);
+            ActionItem actionItem2 = new ActionItem(firstIncidentId, "Rebook to the next available direct flight.", ActionStatus.SUGGESTED, 10);
             actionUpdate.save(actionItem2);
         }
 

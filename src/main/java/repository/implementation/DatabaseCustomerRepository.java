@@ -69,6 +69,11 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
     }
 
     @Override
+    public void update(Customer customer) {
+
+    }
+
+    @Override
     public Customer findById(int id) {
         String sql = "SELECT * FROM customers WHERE id = ?;";
         try (Connection conn = DatabaseManager.getConnection();

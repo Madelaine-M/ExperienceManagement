@@ -11,6 +11,7 @@ public class Feedback {
     private List<FeedbackItem> items;
     private double totalScore;
     private int customerSatScore;
+    private int referralScore; //noch in DB und getter setter
     private int flightId;
 
     public Feedback() {

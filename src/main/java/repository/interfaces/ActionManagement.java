@@ -1,7 +1,6 @@
 package repository.interfaces;
 
 import model.ActionItem;
-import model.enums.PriorityLevel;
 
 import java.util.List;
 

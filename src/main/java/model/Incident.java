@@ -9,7 +9,7 @@ public class Incident {
     private int id;
     private int customerId;
     private IncidentType type;
-    private FeedbackCategory feedbackType; // noch in DB ergänzen
+    private FeedbackCategory feedbackType;  // noch in DB ergänzen
     private String description;
     private double priorityScore;
     private double scoreImpact;

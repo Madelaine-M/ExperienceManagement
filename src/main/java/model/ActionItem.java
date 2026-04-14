@@ -10,7 +10,7 @@ public class ActionItem {
     private String suggestion2;
     private ActionStatus status;
     private int priority;
-    private double scoreImpact;
+    private double scoreImpact; //raus
     private double expectedRec;
     private double expectedRebooking;
 
