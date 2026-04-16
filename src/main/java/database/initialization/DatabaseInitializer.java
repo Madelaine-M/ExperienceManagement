@@ -22,23 +22,19 @@ public class DatabaseInitializer {
                 email TEXT UNIQUE,
                 birth_date TEXT,
                 status TEXT,
-                booking_package TEXT,
                 booking_date TEXT,
-                flight_date TEXT,
                 is_returning INTEGER DEFAULT 0,
                 assigned_advisor_id INTEGER,
                 clv_score REAL DEFAULT 0.0,
                 notes TEXT,
                 preferences TEXT,
                 apply_to_next_booking TEXT,
-                previous_booking_package TEXT,
                 marketing_purpose INTEGER DEFAULT 0,
                 newsletter_subscription INTEGER DEFAULT 0,
                 referral_code INTEGER DEFAULT 0,
                 payment_method TEXT,
                 public_person INTEGER DEFAULT 0,
                 customer_type TEXT,
-                flight_id INTEGER DEFAULT 0,
 
                 FOREIGN KEY (assigned_advisor_id) REFERENCES advisors(id)
                     ON DELETE SET NULL
@@ -62,6 +58,8 @@ public class DatabaseInitializer {
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
                     ON DELETE CASCADE,
+                FOREIGN KEY (flight_id) REFERENCES flights(id)
+                    ON DELETE SET NULL,
                 FOREIGN KEY (assigned_advisor_id) REFERENCES advisors(id)
                     ON DELETE SET NULL,
                 FOREIGN KEY (source_feedback_item_id) REFERENCES feedback_items(id)
@@ -78,6 +76,8 @@ public class DatabaseInitializer {
                 flight_id INTEGER DEFAULT 0,
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
+                    ON DELETE CASCADE,
+                FOREIGN KEY (flight_id) REFERENCES flights(id)
                     ON DELETE CASCADE
             );
             """;
@@ -120,15 +120,31 @@ public class DatabaseInitializer {
                     ON DELETE CASCADE
             );
             """;
+        String createFlights = """
+            CREATE TABLE IF NOT EXISTS flights (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id INTEGER NOT NULL,
+                flight_number TEXT,
+                flight_date TEXT,
+                booking_package TEXT,
+                status TEXT,
+                is_current INTEGER DEFAULT 0,
+
+                FOREIGN KEY (customer_id) REFERENCES customers(id)
+                    ON DELETE CASCADE
+            );
+            """;
         try (Connection conn = DatabaseManager.getConnection()) {
 
             executeSql(conn, createAdvisors);
             executeSql(conn, createCustomers);
+            executeSql(conn, createFlights);
             executeSql(conn, createFeedbacks);
             executeSql(conn, createFeedbackItems);
             executeSql(conn, createIncidents);
             executeSql(conn, createActionItems);
             ensureCustomerColumnsExist(conn);
+            ensureFlightColumnsExist(conn);
             ensureFeedbackColumnsExist(conn);
             ensureIncidentColumnsExist(conn);
             ensureActionItemColumnsExist(conn);
@@ -177,6 +193,43 @@ public class DatabaseInitializer {
         }
     }
 
+    private static void ensureFlightColumnsExist(Connection conn) throws SQLException {
+        if (!columnExists(conn, "flights", "flight_number")) {
+            executeSql(conn, """
+                ALTER TABLE flights
+                ADD COLUMN flight_number TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "flights", "flight_date")) {
+            executeSql(conn, """
+                ALTER TABLE flights
+                ADD COLUMN flight_date TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "flights", "booking_package")) {
+            executeSql(conn, """
+                ALTER TABLE flights
+                ADD COLUMN booking_package TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "flights", "status")) {
+            executeSql(conn, """
+                ALTER TABLE flights
+                ADD COLUMN status TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "flights", "is_current")) {
+            executeSql(conn, """
+                ALTER TABLE flights
+                ADD COLUMN is_current INTEGER DEFAULT 0;
+                """);
+        }
+    }
+
     private static void ensureCustomerColumnsExist(Connection conn) throws SQLException {
         if (!columnExists(conn, "customers", "is_returning")) {
             executeSql(conn, """
@@ -203,13 +256,6 @@ public class DatabaseInitializer {
             executeSql(conn, """
                 ALTER TABLE customers
                 ADD COLUMN apply_to_next_booking TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "customers", "previous_booking_package")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN previous_booking_package TEXT;
                 """);
         }
 
@@ -255,12 +301,6 @@ public class DatabaseInitializer {
                 """);
         }
 
-        if (!columnExists(conn, "customers", "flight_id")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN flight_id INTEGER DEFAULT 0;
-                """);
-        }
     }
 
     private static void ensureFeedbackColumnsExist(Connection conn) throws SQLException {

@@ -8,21 +8,35 @@ public class ActionItem {
     private String description;
     private String sugegstion1;
     private String suggestion2;
-    private ActionStatus status;
-    private int priority;
-    private double scoreImpact; //raus
-    private double expectedRec;
-    private double expectedRebooking;
+    private ActionStatus status = ActionStatus.SUGGESTED;
+    private int priority = 0;
+    private double scoreImpact = 0; //raus
+    private double expectedRec = 0;
+    private double expectedRebooking = 0;
 
 
     public ActionItem() {
     }
 
-    public ActionItem(int incidentId, String description, ActionStatus status, int priority) {
+    public ActionItem(int id, int incidentId, String description) {
+        this.id = id;
         this.incidentId = incidentId;
         this.description = description;
+    }
+
+    public ActionItem(int id, int incidentId, String description, String sugegstion1, String suggestion2,
+                      ActionStatus status, int priority, double scoreImpact, double expectedRec,
+                      double expectedRebooking) {
+        this.id = id;
+        this.incidentId = incidentId;
+        this.description = description;
+        this.sugegstion1 = sugegstion1;
+        this.suggestion2 = suggestion2;
         this.status = status;
         this.priority = priority;
+        this.scoreImpact = scoreImpact;
+        this.expectedRec = expectedRec;
+        this.expectedRebooking = expectedRebooking;
     }
 
     public int getId() {

@@ -4,7 +4,6 @@ import database.connection.DatabaseManager;
 import model.Customer;
 import model.enums.CustomerStatus;
 import model.enums.CustomerType;
-import model.enums.Packages;
 import model.enums.PaymentMethod;
 import repository.interfaces.CustomerLookup;
 import org.slf4j.Logger;
@@ -23,11 +22,56 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
     public void save(Customer customer) {
         String sql = """
             INSERT INTO customers (first_name, last_name, email, birth_date, status, 
-                                 booking_package, booking_date, flight_date,
-                                 is_returning, assigned_advisor_id, clv_score, notes, preferences, apply_to_next_booking,
-                                 previous_booking_package, marketing_purpose, newsletter_subscription, referral_code,
-                                 payment_method, public_person, customer_type, flight_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                 booking_date, is_returning, assigned_advisor_id, clv_score, notes,
+                                 preferences, apply_to_next_booking, marketing_purpose, newsletter_subscription,
+                                 referral_code, payment_method, public_person, customer_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """;
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setString(1, customer.getFirstName());
+            pstmt.setString(2, customer.getLastName());
+            pstmt.setString(3, customer.getEmail());
+            pstmt.setString(4, customer.getBirthDate());
+            pstmt.setString(5, customer.getStatus() != null ? customer.getStatus().name() : null);
+            pstmt.setString(6, customer.getBookingDate());
+            pstmt.setBoolean(7, customer.isReturning());
+            if (customer.getAssignedAdvisorId() != null) {
+                pstmt.setInt(8, customer.getAssignedAdvisorId());
+            } else {
+                pstmt.setNull(8, Types.INTEGER);
+            }
+            pstmt.setFloat(9, customer.getClvScore());
+            pstmt.setString(10, customer.getNotes());
+            pstmt.setString(11, customer.getPreferences());
+            pstmt.setString(12, customer.getApplyToNextBooking());
+            pstmt.setBoolean(13, customer.isMarketingPurpose());
+            pstmt.setBoolean(14, customer.isNewsletterSubscription());
+            pstmt.setBoolean(15, customer.isReferralCode());
+            pstmt.setString(16, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
+            pstmt.setBoolean(17, customer.isPublicPerson());
+            pstmt.setString(18, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
+
+            pstmt.executeUpdate();
+            customer.setId(extractGeneratedId(pstmt, "customer"));
+            logger.info("Customer saved: {} {}", customer.getFirstName(), customer.getLastName());
+
+        } catch (SQLException e) {
+            logger.error("Error while saving customer ", e);
+        }
+    }
+
+    @Override
+    public void update(Customer customer) {
+        String sql = """
+            UPDATE customers
+            SET first_name = ?, last_name = ?, email = ?, birth_date = ?, status = ?,
+                booking_date = ?, is_returning = ?, assigned_advisor_id = ?, clv_score = ?, notes = ?,
+                preferences = ?, apply_to_next_booking = ?, marketing_purpose = ?, newsletter_subscription = ?,
+                referral_code = ?, payment_method = ?, public_person = ?, customer_type = ?
+            WHERE id = ?;
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -38,39 +82,29 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             pstmt.setString(3, customer.getEmail());
             pstmt.setString(4, customer.getBirthDate());
             pstmt.setString(5, customer.getStatus() != null ? customer.getStatus().name() : null);
-            pstmt.setString(6, customer.getBookingPackage() != null ? customer.getBookingPackage().name() : null);
-            pstmt.setString(7, customer.getBookingDate());
-            pstmt.setString(8, customer.getFlightDate());
-            pstmt.setBoolean(9, customer.isReturning());
-            if (customer.getAssignedAdvisorId() > 0) {
-                pstmt.setInt(10, customer.getAssignedAdvisorId());
+            pstmt.setString(6, customer.getBookingDate());
+            pstmt.setBoolean(7, customer.isReturning());
+            if (customer.getAssignedAdvisorId() != null) {
+                pstmt.setInt(8, customer.getAssignedAdvisorId());
             } else {
-                pstmt.setNull(10, Types.INTEGER);
+                pstmt.setNull(8, Types.INTEGER);
             }
-            pstmt.setFloat(11, customer.getClvScore());
-            pstmt.setString(12, customer.getNotes());
-            pstmt.setString(13, customer.getPreferences());
-            pstmt.setString(14, customer.getApplyToNextBooking());
-            pstmt.setString(15, customer.getPreviousBookingPackage() != null ? customer.getPreviousBookingPackage().name() : null);
-            pstmt.setBoolean(16, customer.isMarketingPurpose());
-            pstmt.setBoolean(17, customer.isNewsletterSubscription());
-            pstmt.setBoolean(18, customer.isReferralCode());
-            pstmt.setString(19, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
-            pstmt.setBoolean(20, customer.isPublicPerson());
-            pstmt.setString(21, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
-            pstmt.setInt(22, customer.getFlightId());
+            pstmt.setFloat(9, customer.getClvScore());
+            pstmt.setString(10, customer.getNotes());
+            pstmt.setString(11, customer.getPreferences());
+            pstmt.setString(12, customer.getApplyToNextBooking());
+            pstmt.setBoolean(13, customer.isMarketingPurpose());
+            pstmt.setBoolean(14, customer.isNewsletterSubscription());
+            pstmt.setBoolean(15, customer.isReferralCode());
+            pstmt.setString(16, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
+            pstmt.setBoolean(17, customer.isPublicPerson());
+            pstmt.setString(18, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
+            pstmt.setInt(19, customer.getId());
 
             pstmt.executeUpdate();
-            logger.info("Customer saved: {} {}", customer.getFirstName(), customer.getLastName());
-
         } catch (SQLException e) {
-            logger.error("Error while saving customer ", e);
+            logger.error("Error while updating customer {}", customer.getId(), e);
         }
-    }
-
-    @Override
-    public void update(Customer customer) {
-
     }
 
     @Override
@@ -172,13 +206,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
         String statusStr = rs.getString("status");
         if (statusStr != null) customer.setStatus(CustomerStatus.valueOf(statusStr));
 
-        String packageStr = rs.getString("booking_package");
-        if (packageStr != null) customer.setBookingPackage(Packages.valueOf(packageStr));
-        String previousPackageStr = rs.getString("previous_booking_package");
-        if (previousPackageStr != null) customer.setPreviousBookingPackage(Packages.valueOf(previousPackageStr));
-
         customer.setBookingDate(rs.getString("booking_date"));
-        customer.setFlightDate(rs.getString("flight_date"));
         customer.setReturning(rs.getBoolean("is_returning"));
         customer.setAssignedAdvisorId(rs.getInt("assigned_advisor_id"));
         customer.setClvScore(rs.getFloat("clv_score"));
@@ -193,8 +221,17 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
         customer.setPublicPerson(rs.getBoolean("public_person"));
         String customerTypeStr = rs.getString("customer_type");
         if (customerTypeStr != null) customer.setCustomerType(CustomerType.valueOf(customerTypeStr));
-        customer.setFlightId(rs.getInt("flight_id"));
 
         return customer;
+    }
+
+    private int extractGeneratedId(PreparedStatement pstmt, String entityName) throws SQLException {
+        try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                return generatedKeys.getInt(1);
+            }
+        }
+
+        throw new SQLException("Could not retrieve generated key for " + entityName);
     }
 }

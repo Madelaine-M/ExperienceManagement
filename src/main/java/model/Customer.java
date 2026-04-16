@@ -2,7 +2,6 @@ package model;
 
 import model.enums.CustomerStatus;
 import model.enums.CustomerType;
-import model.enums.Packages;
 import model.enums.PaymentMethod;
 
 public class Customer {
@@ -11,22 +10,18 @@ public class Customer {
     private String lastName;
     private String email;
     private String birthDate;
-    private CustomerStatus status;
-    private Packages bookingPackage;
-    private Packages previousBookingPackage;
+    private CustomerStatus status = CustomerStatus.BOOKED;
     private String bookingDate;
-    private String flightDate;
-    private int flightId;
     private boolean returning;
-    private int assignedAdvisorId;
+    private Integer assignedAdvisorId;
     private float clvScore;
-    private String notes;
-    private String preferences;
-    private String applyToNextBooking; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
+    private String notes = "";
+    private String preferences = "";
+    private String applyToNextBooking = ""; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
     private boolean marketingPurpose;
     private boolean newsletterSubscription;
     private boolean referralCode;
-    private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod = PaymentMethod.IMMEDIATE;
     private boolean publicPerson;
     private CustomerType customerType;
 
@@ -80,36 +75,12 @@ public class Customer {
         this.birthDate = birthDate;
     }
 
-    public Packages getBookingPackage() {
-        return bookingPackage;
-    }
-
-    public void setBookingPackage(Packages bookingPackage) {
-        this.bookingPackage = bookingPackage;
-    }
-
-    public Packages getPreviousBookingPackage() {
-        return previousBookingPackage;
-    }
-
-    public void setPreviousBookingPackage(Packages previousBookingPackage) {
-        this.previousBookingPackage = previousBookingPackage;
-    }
-
     public String getBookingDate() {
         return bookingDate;
     }
 
     public void setBookingDate(String bookingDate) {
         this.bookingDate = bookingDate;
-    }
-
-    public String getFlightDate() {
-        return flightDate;
-    }
-
-    public void setFlightDate(String flightDate) {
-        this.flightDate = flightDate;
     }
 
     public boolean isReturning() {
@@ -120,11 +91,11 @@ public class Customer {
         this.returning = returning;
     }
 
-    public int getAssignedAdvisorId() {
+    public Integer getAssignedAdvisorId() {
         return assignedAdvisorId;
     }
 
-    public void setAssignedAdvisorId(int assignedAdvisorId) {
+    public void setAssignedAdvisorId(Integer assignedAdvisorId) {
         this.assignedAdvisorId = assignedAdvisorId;
     }
 
@@ -208,23 +179,43 @@ public class Customer {
         this.customerType = customerType;
     }
 
-    public int getFlightId() {
-        return flightId;
-    }
-
-    public void setFlightId(int flightId) {
-        this.flightId = flightId;
-    }
-
-    // constructor
     public Customer() {}
 
-    public Customer(String firstName, String lastName, String email, CustomerStatus status) {
+    public Customer(int id, String firstName, String lastName, String email, String birthDate,
+                    String bookingDate, CustomerType customerType) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.status = status;
+        this.birthDate = birthDate;
+        this.bookingDate = bookingDate;
+        this.customerType = customerType;
     }
 
+    public Customer(int id, String firstName, String lastName, String email, String birthDate, CustomerStatus status,
+                    String bookingDate, boolean returning, Integer assignedAdvisorId, float clvScore, String notes,
+                    String preferences, String applyToNextBooking, boolean marketingPurpose,
+                    boolean newsletterSubscription, boolean referralCode, PaymentMethod paymentMethod,
+                    boolean publicPerson, CustomerType customerType) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.birthDate = birthDate;
+        this.status = status;
+        this.bookingDate = bookingDate;
+        this.returning = returning;
+        this.assignedAdvisorId = assignedAdvisorId;
+        this.clvScore = clvScore;
+        this.notes = notes;
+        this.preferences = preferences;
+        this.applyToNextBooking = applyToNextBooking;
+        this.marketingPurpose = marketingPurpose;
+        this.newsletterSubscription = newsletterSubscription;
+        this.referralCode = referralCode;
+        this.paymentMethod = paymentMethod;
+        this.publicPerson = publicPerson;
+        this.customerType = customerType;
+    }
 
 }

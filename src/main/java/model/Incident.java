@@ -11,15 +11,49 @@ public class Incident {
     private IncidentType type;
     private FeedbackCategory feedbackType;  // noch in DB ergänzen
     private String description;
-    private double priorityScore;
-    private double scoreImpact;
-    private int revenueRisk; //noch in DB einfügen
-    private IncidentStatus status;
+    private double priorityScore = 0;
+    private double scoreImpact = 0;
+    private int revenueRisk = 0; //noch in DB einfügen
+    private IncidentStatus status = IncidentStatus.OPEN;
     private Integer assignedAdvisorId;
     private Integer sourceFeedbackItemId;
     private LocalDateTime createdAt;
     private int flightId;
     private ActionItem suggestedAction;
+
+    public Incident() {}
+
+    public Incident(int id, int customerId, IncidentType type, FeedbackCategory feedbackType, String description,
+                    Integer sourceFeedbackItemId, LocalDateTime createdAt, int flightId) {
+        this.id = id;
+        this.customerId = customerId;
+        this.type = type;
+        this.feedbackType = feedbackType;
+        this.description = description;
+        this.sourceFeedbackItemId = sourceFeedbackItemId;
+        this.createdAt = createdAt;
+        this.flightId = flightId;
+    }
+
+    public Incident(int id, int customerId, IncidentType type, FeedbackCategory feedbackType, String description,
+                    double priorityScore, double scoreImpact, int revenueRisk, IncidentStatus status,
+                    Integer assignedAdvisorId, Integer sourceFeedbackItemId, LocalDateTime createdAt, int flightId,
+                    ActionItem suggestedAction) {
+        this.id = id;
+        this.customerId = customerId;
+        this.type = type;
+        this.feedbackType = feedbackType;
+        this.description = description;
+        this.priorityScore = priorityScore;
+        this.scoreImpact = scoreImpact;
+        this.revenueRisk = revenueRisk;
+        this.status = status;
+        this.assignedAdvisorId = assignedAdvisorId;
+        this.sourceFeedbackItemId = sourceFeedbackItemId;
+        this.createdAt = createdAt;
+        this.flightId = flightId;
+        this.suggestedAction = suggestedAction;
+    }
 
     public int getId() {
         return id;
@@ -132,6 +166,4 @@ public class Incident {
     public void setSuggestedAction(ActionItem suggestedAction) {
         this.suggestedAction = suggestedAction;
     }
-
-    public Incident() {}
 }

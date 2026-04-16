@@ -12,7 +12,8 @@ public class Advisor {
     public Advisor() {
     }
 
-    public Advisor(String firstName, String lastName, String email, String speciality, double workloadScore) {
+    public Advisor(int id, String firstName, String lastName, String email, String speciality, double workloadScore) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;

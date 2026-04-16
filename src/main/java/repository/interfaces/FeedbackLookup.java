@@ -11,5 +11,7 @@ public interface FeedbackLookup {
 
     List<Feedback> findAllByCustomerId(int customerId);
 
+    List<Feedback> findAllByFlightId(int flightId);
+
     List<FeedbackItem> findItemsByFeedbackId(int id);
 }

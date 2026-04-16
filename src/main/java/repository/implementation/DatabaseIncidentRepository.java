@@ -26,7 +26,8 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            Integer resolvedFlightId = resolveFlightId(conn, incident);
 
             pstmt.setInt(1, incident.getCustomerId());
             pstmt.setString(2, incident.getType() != null ? incident.getType().name() : null);
@@ -46,9 +47,15 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             } else {
                 pstmt.setNull(10, Types.INTEGER);
             }
-            pstmt.setInt(11, incident.getFlightId());
+            if (resolvedFlightId != null) {
+                pstmt.setInt(11, resolvedFlightId);
+                incident.setFlightId(resolvedFlightId);
+            } else {
+                pstmt.setNull(11, Types.INTEGER);
+            }
 
             pstmt.executeUpdate();
+            incident.setId(extractGeneratedId(pstmt, "incident"));
             logger.info("Incident type {} for customer {} saved.", incident.getType(), incident.getCustomerId());
 
         } catch (SQLException e) {
@@ -185,7 +192,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
                 incidents.add(mapResultSetToIncident(rs));
             }
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+            logger.error("Error while loading pending action items", e);
         }
 
         return incidents;
@@ -225,5 +232,53 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
         if (ts != null) incident.setCreatedAt(ts.toLocalDateTime());
 
         return incident;
+    }
+
+    private Integer resolveFlightId(Connection conn, Incident incident) throws SQLException {
+        int requestedFlightId = incident.getFlightId();
+        if (requestedFlightId > 0 && flightExists(conn, requestedFlightId)) {
+            return requestedFlightId;
+        }
+
+        return findCurrentFlightIdByCustomerId(conn, incident.getCustomerId());
+    }
+
+    private boolean flightExists(Connection conn, int flightId) throws SQLException {
+        String sql = "SELECT 1 FROM flights WHERE id = ? LIMIT 1;";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, flightId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private Integer findCurrentFlightIdByCustomerId(Connection conn, int customerId) throws SQLException {
+        String sql = """
+            SELECT id
+            FROM flights
+            WHERE customer_id = ? AND is_current = 1
+            ORDER BY id DESC
+            LIMIT 1;
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, customerId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+            }
+        }
+        return null;
+    }
+
+    private int extractGeneratedId(PreparedStatement pstmt, String entityName) throws SQLException {
+        try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                return generatedKeys.getInt(1);
+            }
+        }
+
+        throw new SQLException("Could not retrieve generated key for " + entityName);
     }
 }

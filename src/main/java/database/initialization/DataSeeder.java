@@ -3,19 +3,30 @@ package database.initialization;
 import model.ActionItem;
 import model.Advisor;
 import model.Customer;
+import model.Feedback;
+import model.FeedbackItem;
+import model.Flight;
 import model.Incident;
 import model.enums.ActionStatus;
 import model.enums.CustomerStatus;
+import model.enums.CustomerType;
+import model.enums.FeedbackCategory;
 import model.enums.IncidentStatus;
 import model.enums.IncidentType;
 import model.enums.Packages;
+import model.enums.PaymentMethod;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionUpdate;
 import repository.interfaces.AdvisorRepository;
 import repository.interfaces.CustomerLookup;
 import repository.interfaces.CustomerUpdate;
+import repository.interfaces.FeedbackUpdate;
+import repository.interfaces.FlightRepository;
 import repository.interfaces.IncidentLookup;
 import repository.interfaces.IncidentUpdate;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class DataSeeder {
 
@@ -23,78 +34,206 @@ public class DataSeeder {
             AdvisorRepository advisorRepo,
             CustomerLookup customerLookup,
             CustomerUpdate customerUpdate,
+            FlightRepository flightRepository,
+            FeedbackUpdate feedbackUpdate,
             IncidentLookup incidentLookup,
             IncidentUpdate incidentUpdate,
             ActionLookup actionLookup,
             ActionUpdate actionUpdate
     ) {
-        System.out.println("Seeding initial data...");
-
-        if (advisorRepo.findAll().isEmpty()) {
-            Advisor a1 = new Advisor("Anna", "Schmidt", "anna.schmidt@test.de", "Premium Support", 42.5);
-            advisorRepo.save(a1);
-
-            Advisor a2 = new Advisor("Lukas", "Weber", "lukas.weber@test.de", "Flight Recovery", 27.0);
-            advisorRepo.save(a2);
+        if (!customerLookup.findAll().isEmpty()) {
+            return;
         }
 
-        var allAdvisors = advisorRepo.findAll();
-        int annaId = allAdvisors.get(0).getId();
-        int lukasId = allAdvisors.get(1).getId();
+        Advisor advisorOne = createAdvisor("Anna", "Schmidt", "anna.schmidt@test.de", "Premium Support", 42.5, advisorRepo);
+        Advisor advisorTwo = createAdvisor("Lukas", "Weber", "lukas.weber@test.de", "Flight Recovery", 27.0, advisorRepo);
 
-        if (customerLookup.findAll().isEmpty()) {
-            Customer c1 = new Customer("Max", "Mustermann", "max@test.de", CustomerStatus.BOOKED);
-            c1.setClvScore(1500.50f);
-            c1.setBookingPackage(Packages.VIP);
-            c1.setReturning(true);
-            c1.setAssignedAdvisorId(annaId);
-            customerUpdate.save(c1);
+        Customer customerOne = createCustomer(
+                "Max", "Mustermann", "max@test.de", "1989-04-17",
+                "2026-05-20", true, advisorOne.getId(), 84.0f, "Window seat preferred",
+                "Quiet cabin", CustomerType.SCIENTIST, PaymentMethod.IMMEDIATE, customerUpdate
+        );
+        Customer customerTwo = createCustomer(
+                "Erika", "Musterfrau", "erika@web.de", "1993-09-02",
+                "2026-06-11", false, advisorTwo.getId(), 58.0f, "Vegetarian meals",
+                "Aisle seat", CustomerType.NORMAL, PaymentMethod.MONTHS, customerUpdate
+        );
 
-            Customer c2 = new Customer("Erika", "Musterfrau", "erika@web.de", CustomerStatus.BOOKED);
-            c2.setClvScore(5000.00f);
-            c2.setBookingPackage(Packages.VIP);
-            c2.setReturning(false);
-            c2.setAssignedAdvisorId(lukasId);
-            customerUpdate.save(c2);
-        }
+        Flight customerOnePreviousFlight = createFlight(customerOne.getId(), "EM1001", "2025-11-03", Packages.GOLD, "COMPLETED", false, flightRepository);
+        Flight customerOneCurrentFlight = createFlight(customerOne.getId(), "EM2001", "2026-05-22", Packages.VIP, "BOOKED", true, flightRepository);
+        Flight customerTwoCurrentFlight = createFlight(customerTwo.getId(), "EM2104", "2026-06-14", Packages.STANDARD, "BOOKED", true, flightRepository);
 
-        var allCustomers = customerLookup.findAll();
-        int maxId = allCustomers.get(0).getId();
-        int erikaId = allCustomers.size() > 1 ? allCustomers.get(1).getId() : maxId;
+        createFeedback(
+                customerOne.getId(),
+                customerOnePreviousFlight.getId(),
+                LocalDateTime.now().minusMonths(3),
+                9,
+                List.of(
+                        feedbackItem(FeedbackCategory.FLIGHT, 9, "Smooth boarding and attentive crew."),
+                        feedbackItem(FeedbackCategory.SERVICE, 10, "Advisor follow-up was excellent.")
+                ),
+                feedbackUpdate
+        );
+        createFeedback(
+                customerTwo.getId(),
+                customerTwoCurrentFlight.getId(),
+                LocalDateTime.now().minusDays(2),
+                5,
+                List.of(
+                        feedbackItem(FeedbackCategory.FLIGHT, 4, "Delay communication was weak."),
+                        feedbackItem(FeedbackCategory.ORGANIZATION, 6, "Transfer details arrived too late.")
+                ),
+                feedbackUpdate
+        );
 
-        if (incidentLookup.findAllByCustomerId(maxId).isEmpty()) {
-            Incident i1 = new Incident();
-            i1.setCustomerId(maxId);
-            i1.setType(IncidentType.DELAY);
-            i1.setDescription("Flight LH123 has a 4 hour delay.");
-            i1.setPriorityScore(8.5);
-            i1.setScoreImpact(-1.2);
-            i1.setStatus(IncidentStatus.OPEN);
-            i1.setAssignedAdvisorId(annaId);
-            incidentUpdate.save(i1);
-        }
+        Incident firstIncident = createIncident(
+                customerOne.getId(),
+                customerOneCurrentFlight.getId(),
+                IncidentType.FEEDBACK,
+                FeedbackCategory.SERVICE,
+                "VIP passenger requested proactive concierge updates before departure.",
+                8.7,
+                1.4,
+                12000,
+                IncidentStatus.OPEN,
+                advisorOne.getId(),
+                incidentUpdate
+        );
+        Incident secondIncident = createIncident(
+                customerTwo.getId(),
+                customerTwoCurrentFlight.getId(),
+                IncidentType.DELAY,
+                FeedbackCategory.FLIGHT,
+                "Customer reported missed assistance during a schedule change.",
+                9.4,
+                2.1,
+                18500,
+                IncidentStatus.OPEN,
+                advisorTwo.getId(),
+                incidentUpdate
+        );
 
-        if (incidentLookup.findAllByCustomerId(erikaId).isEmpty()) {
-            Incident i2 = new Incident();
-            i2.setCustomerId(erikaId);
-            i2.setType(IncidentType.FEEDBACK);
-            i2.setDescription("Food was great, but seat was bad.");
-            i2.setPriorityScore(3.0);
-            i2.setScoreImpact(-0.4);
-            i2.setStatus(IncidentStatus.CLOSED);
-            incidentUpdate.save(i2);
-        }
+        createAction(
+                firstIncident.getId(),
+                "Schedule a same-day concierge call before boarding.",
+                "Offer lounge access as part of the recovery plan.",
+                "Send a tailored travel brief 24h before departure.",
+                8,
+                0.9,
+                0.15,
+                0.22,
+                actionUpdate
+        );
+        createAction(
+                secondIncident.getId(),
+                "Proactively confirm the revised transfer and boarding timeline.",
+                "Provide a goodwill service credit for the disruption.",
+                "Escalate future schedule changes to the assigned advisor immediately.",
+                10,
+                1.8,
+                0.28,
+                0.35,
+                actionUpdate
+        );
+    }
 
-        int firstIncidentId = incidentLookup.findAllByCustomerId(maxId).get(0).getId();
+    private static Advisor createAdvisor(String firstName, String lastName, String email, String speciality,
+                                         double workloadScore, AdvisorRepository advisorRepo) {
+        Advisor advisor = new Advisor(0, firstName, lastName, email, speciality, workloadScore);
+        advisorRepo.save(advisor);
+        return advisor;
+    }
 
-        if (actionLookup.findByIncidentId(firstIncidentId).isEmpty()) {
-            ActionItem actionItem1 = new ActionItem(firstIncidentId, "Offer lounge voucher and proactive delay updates.", ActionStatus.SUGGESTED, 9);
-            actionUpdate.save(actionItem1);
+    private static Customer createCustomer(String firstName, String lastName, String email, String birthDate,
+                                           String bookingDate, boolean returning, Integer advisorId, float clvScore,
+                                           String notes, String preferences, CustomerType customerType,
+                                           PaymentMethod paymentMethod, CustomerUpdate customerUpdate) {
+        Customer customer = new Customer(
+                0,
+                firstName,
+                lastName,
+                email,
+                birthDate,
+                CustomerStatus.BOOKED,
+                bookingDate,
+                returning,
+                advisorId,
+                clvScore,
+                notes,
+                preferences,
+                "Priority follow-up",
+                false,
+                true,
+                false,
+                paymentMethod,
+                false,
+                customerType
+        );
+        customerUpdate.save(customer);
+        return customer;
+    }
 
-            ActionItem actionItem2 = new ActionItem(firstIncidentId, "Rebook to the next available direct flight.", ActionStatus.SUGGESTED, 10);
-            actionUpdate.save(actionItem2);
-        }
+    private static Flight createFlight(int customerId, String flightNumber, String flightDate, Packages bookingPackage,
+                                       String status, boolean current, FlightRepository flightRepository) {
+        Flight flight = new Flight(0, customerId, flightNumber, flightDate, bookingPackage, status, current);
+        flightRepository.save(flight);
+        return flight;
+    }
 
-        System.out.println("Seeding complete! Advisors, customers, incidents and action items created.");
+    private static Feedback createFeedback(int customerId, int flightId, LocalDateTime createdAt,
+                                           int customerSatScore, List<FeedbackItem> items,
+                                           FeedbackUpdate feedbackUpdate) {
+        Feedback feedback = new Feedback(0, customerId, createdAt, items, 0.0, customerSatScore, 0, flightId);
+        feedback.setTotalScore(feedback.getOverallScore());
+        feedbackUpdate.save(feedback);
+        return feedback;
+    }
+
+    private static FeedbackItem feedbackItem(FeedbackCategory category, int score, String comment) {
+        return new FeedbackItem(0, 0, category, score, comment);
+    }
+
+    private static Incident createIncident(int customerId, int flightId, IncidentType type,
+                                           FeedbackCategory feedbackCategory, String description,
+                                           double priorityScore, double scoreImpact, int revenueRisk,
+                                           IncidentStatus status, Integer advisorId, IncidentUpdate incidentUpdate) {
+        Incident incident = new Incident(
+                0,
+                customerId,
+                type,
+                feedbackCategory,
+                description,
+                priorityScore,
+                scoreImpact,
+                revenueRisk,
+                status,
+                advisorId,
+                null,
+                null,
+                flightId,
+                null
+        );
+        incidentUpdate.save(incident);
+        return incident;
+    }
+
+    private static ActionItem createAction(int incidentId, String description, String suggestionOne,
+                                           String suggestionTwo, int priority, double scoreImpact,
+                                           double expectedRec, double expectedRebooking,
+                                           ActionUpdate actionUpdate) {
+        ActionItem actionItem = new ActionItem(
+                0,
+                incidentId,
+                description,
+                suggestionOne,
+                suggestionTwo,
+                ActionStatus.SUGGESTED,
+                priority,
+                scoreImpact,
+                expectedRec,
+                expectedRebooking
+        );
+        actionUpdate.save(actionItem);
+        return actionItem;
     }
 }

@@ -169,7 +169,7 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+            logger.error("Error while loading priority actions for advisor {}", advisorId, e);
         }
 
         return actions;

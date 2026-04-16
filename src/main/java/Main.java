@@ -10,6 +10,8 @@ public class Main {
                 backend.getAdvisorRepository(),
                 backend.getCustomerLookup(),
                 backend.getCustomerUpdate(),
+                backend.getFlightRepository(),
+                backend.getFeedbackUpdate(),
                 backend.getIncidentLookup(),
                 backend.getIncidentUpdate(),
                 backend.getActionLookup(),

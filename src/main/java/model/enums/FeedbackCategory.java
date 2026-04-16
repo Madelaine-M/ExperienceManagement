@@ -9,5 +9,6 @@ public enum FeedbackCategory {
     ORGANIZATION,
     TRAINING,
     GENERAL,
-    OTHER
+    OTHER,
+    NOFEEDBACK
 }

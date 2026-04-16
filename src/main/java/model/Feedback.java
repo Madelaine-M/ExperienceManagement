@@ -18,10 +18,16 @@ public class Feedback {
         this.items = new ArrayList<>();
     }
 
-    public Feedback(int customerId, LocalDateTime createdAt, List<FeedbackItem> items) {
+    public Feedback(int id, int customerId, LocalDateTime createdAt, List<FeedbackItem> items, double totalScore,
+                    int customerSatScore, int referralScore, int flightId) {
+        this.id = id;
         this.customerId = customerId;
         this.createdAt = createdAt;
         this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
+        this.totalScore = totalScore;
+        this.customerSatScore = customerSatScore;
+        this.referralScore = referralScore;
+        this.flightId = flightId;
     }
 
     public int getId() {

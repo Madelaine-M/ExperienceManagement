@@ -25,7 +25,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             """;
 
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, advisor.getFirstName());
             pstmt.setString(2, advisor.getLastName());
@@ -34,6 +34,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             pstmt.setDouble(5, advisor.getWorkloadScore());
 
             pstmt.executeUpdate();
+            advisor.setId(extractGeneratedId(pstmt, "advisor"));
             logger.info("Advisor saved: {} {}", advisor.getFirstName(), advisor.getLastName());
 
         } catch (SQLException e) {
@@ -129,5 +130,15 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
         advisor.setSpeciality(rs.getString("speciality"));
         advisor.setWorkloadScore(rs.getDouble("workload_score"));
         return advisor;
+    }
+
+    private int extractGeneratedId(PreparedStatement pstmt, String entityName) throws SQLException {
+        try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                return generatedKeys.getInt(1);
+            }
+        }
+
+        throw new SQLException("Could not retrieve generated key for " + entityName);
     }
 }

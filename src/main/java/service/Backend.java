@@ -5,7 +5,9 @@ import repository.implementation.DatabaseActionRepository;
 import repository.implementation.DatabaseAdvisorRepository;
 import repository.implementation.DatabaseCustomerRepository;
 import repository.implementation.DatabaseFeedbackRepository;
+import repository.implementation.DatabaseFlightRepository;
 import repository.implementation.DatabaseIncidentRepository;
+import repository.implementation.DatabaseIncidentView;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
@@ -16,9 +18,12 @@ import repository.interfaces.CustomerUpdate;
 import repository.interfaces.FeedbackAnalytics;
 import repository.interfaces.FeedbackLookup;
 import repository.interfaces.FeedbackUpdate;
+import repository.interfaces.FlightRepository;
 import repository.interfaces.IncidentLookup;
 import repository.interfaces.IncidentManagement;
 import repository.interfaces.IncidentUpdate;
+import repository.interfaces.IncidentView;
+import repository.interfaces.NPSScores;
 
 public class Backend {
     private final ActionLookup actionLookup;
@@ -31,15 +36,20 @@ public class Backend {
     private final FeedbackAnalytics feedbackAnalytics;
     private final FeedbackLookup feedbackLookup;
     private final FeedbackUpdate feedbackUpdate;
+    private final NPSScores npsScores;
+    private final FlightRepository flightRepository;
     private final IncidentLookup incidentLookup;
     private final IncidentManagement incidentManagement;
     private final IncidentUpdate incidentUpdate;
+    private final IncidentView incidentView;
 
     public Backend() {
         DatabaseInitializer.initialize();
         DatabaseCustomerRepository customerRepository = new DatabaseCustomerRepository();
         DatabaseFeedbackRepository feedbackRepository = new DatabaseFeedbackRepository();
+        DatabaseFlightRepository flightRepository = new DatabaseFlightRepository();
         DatabaseIncidentRepository incidentRepository = new DatabaseIncidentRepository();
+        DatabaseIncidentView incidentViewRepository = new DatabaseIncidentView();
         DatabaseActionRepository actionRepository = new DatabaseActionRepository();
         this.actionLookup = actionRepository;
         this.actionManagement = actionRepository;
@@ -51,9 +61,12 @@ public class Backend {
         this.feedbackAnalytics = feedbackRepository;
         this.feedbackLookup = feedbackRepository;
         this.feedbackUpdate = feedbackRepository;
+        this.npsScores = feedbackRepository;
+        this.flightRepository = flightRepository;
         this.incidentLookup = incidentRepository;
         this.incidentManagement = incidentRepository;
         this.incidentUpdate = incidentRepository;
+        this.incidentView = incidentViewRepository;
     }
 
     public ActionLookup getActionLookup() {
@@ -96,6 +109,10 @@ public class Backend {
         return incidentUpdate;
     }
 
+    public IncidentView getIncidentView() {
+        return incidentView;
+    }
+
     public FeedbackLookup getFeedbackLookup() {
         return feedbackLookup;
     }
@@ -106,5 +123,13 @@ public class Backend {
 
     public FeedbackAnalytics getFeedbackAnalytics() {
         return feedbackAnalytics;
+    }
+
+    public NPSScores getNpsScores() {
+        return npsScores;
+    }
+
+    public FlightRepository getFlightRepository() {
+        return flightRepository;
     }
 }

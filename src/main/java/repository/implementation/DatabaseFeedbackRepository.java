@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import repository.interfaces.FeedbackAnalytics;
 import repository.interfaces.FeedbackLookup;
 import repository.interfaces.FeedbackUpdate;
+import repository.interfaces.NPSScores;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdate, FeedbackAnalytics {
+public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdate, FeedbackAnalytics, NPSScores {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseFeedbackRepository.class);
 
     @Override
@@ -40,12 +41,18 @@ public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdat
 
             try (PreparedStatement feedbackStmt = conn.prepareStatement(feedbackSql, Statement.RETURN_GENERATED_KEYS);
                  PreparedStatement itemStmt = conn.prepareStatement(itemSql, Statement.RETURN_GENERATED_KEYS)) {
+                Integer resolvedFlightId = resolveFlightId(conn, feedback);
 
                 feedbackStmt.setInt(1, feedback.getCustomerId());
                 setCreatedAt(feedbackStmt, 2, feedback.getCreatedAt());
                 feedbackStmt.setDouble(3, feedback.getTotalScore() != 0.0 ? feedback.getTotalScore() : feedback.getOverallScore());
                 feedbackStmt.setInt(4, feedback.getCustomerSatScore());
-                feedbackStmt.setInt(5, feedback.getFlightId());
+                if (resolvedFlightId != null) {
+                    feedbackStmt.setInt(5, resolvedFlightId);
+                    feedback.setFlightId(resolvedFlightId);
+                } else {
+                    feedbackStmt.setNull(5, Types.INTEGER);
+                }
                 feedbackStmt.executeUpdate();
 
                 int feedbackId = extractGeneratedId(feedbackStmt, "feedback");
@@ -148,6 +155,52 @@ public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdat
         }
 
         return feedbacks;
+    }
+
+    @Override
+    public List<Feedback> findAllByFlightId(int flightId) {
+        List<Feedback> feedbacks = new ArrayList<>();
+        String sql = "SELECT * FROM feedbacks WHERE flight_id = ? ORDER BY created_at DESC, id DESC;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, flightId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Feedback feedback = mapResultSetToFeedback(rs);
+                    feedback.setItems(loadItemsByFeedbackId(conn, feedback.getId()));
+                    feedbacks.add(feedback);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while loading feedbacks for flight {}", flightId, e);
+        }
+
+        return feedbacks;
+    }
+
+    @Override
+    public int countByScoreRange(int min, int max) {
+        String sql = "SELECT COUNT(*) AS feedback_count FROM feedbacks WHERE total_score BETWEEN ? AND ?;";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, min);
+            pstmt.setInt(2, max);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("feedback_count");
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while counting feedbacks for score range {} to {}", min, max, e);
+        }
+
+        return 0;
     }
 
     @Override
@@ -313,5 +366,43 @@ public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdat
         }
 
         throw new SQLException("Could not retrieve generated key for " + entityName);
+    }
+
+    private Integer resolveFlightId(Connection conn, Feedback feedback) throws SQLException {
+        int requestedFlightId = feedback.getFlightId();
+        if (requestedFlightId > 0 && flightExists(conn, requestedFlightId)) {
+            return requestedFlightId;
+        }
+
+        return findCurrentFlightIdByCustomerId(conn, feedback.getCustomerId());
+    }
+
+    private boolean flightExists(Connection conn, int flightId) throws SQLException {
+        String sql = "SELECT 1 FROM flights WHERE id = ? LIMIT 1;";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, flightId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private Integer findCurrentFlightIdByCustomerId(Connection conn, int customerId) throws SQLException {
+        String sql = """
+            SELECT id
+            FROM flights
+            WHERE customer_id = ? AND is_current = 1
+            ORDER BY id DESC
+            LIMIT 1;
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, customerId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                }
+            }
+        }
+        return null;
     }
 }
