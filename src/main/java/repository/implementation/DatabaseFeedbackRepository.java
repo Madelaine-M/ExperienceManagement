@@ -84,32 +84,6 @@ public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdat
     }
 
     @Override
-    public void save(FeedbackItem item) {
-        String sql = """
-            INSERT INTO feedback_items (feedback_id, category, score, comment)
-            VALUES (?, ?, ?, ?);
-            """;
-
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            pstmt.setInt(1, item.getFeedbackId());
-            pstmt.setString(2, item.getCategory() != null ? item.getCategory().name() : null);
-            pstmt.setInt(3, item.getScore());
-            pstmt.setString(4, item.getComment());
-            pstmt.executeUpdate();
-
-            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    item.setId(generatedKeys.getInt(1));
-                }
-            }
-        } catch (SQLException e) {
-            logger.error("Error while saving feedback item", e);
-        }
-    }
-
-    @Override
     public Feedback findById(int id) {
         String feedbackSql = "SELECT * FROM feedbacks WHERE id = ?;";
 
@@ -281,6 +255,23 @@ public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdat
         return feedbacks;
     }
 
+    private List<FeedbackItem> loadItemsByFeedbackId(Connection conn, int feedbackId) throws SQLException {
+        List<FeedbackItem> items = new ArrayList<>();
+        String sql = "SELECT * FROM feedback_items WHERE feedback_id = ? ORDER BY id;";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, feedbackId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    items.add(mapResultSetToFeedbackItem(rs));
+                }
+            }
+        }
+
+        return items;
+    }
+
     @Override
     public double getAverageRating(String category) {
         String sql = "SELECT AVG(score) AS average_score FROM feedback_items WHERE category = ?;";
@@ -300,23 +291,6 @@ public class DatabaseFeedbackRepository implements FeedbackLookup, FeedbackUpdat
         }
 
         return 0.0;
-    }
-
-    private List<FeedbackItem> loadItemsByFeedbackId(Connection conn, int feedbackId) throws SQLException {
-        List<FeedbackItem> items = new ArrayList<>();
-        String sql = "SELECT * FROM feedback_items WHERE feedback_id = ? ORDER BY id;";
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, feedbackId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    items.add(mapResultSetToFeedbackItem(rs));
-                }
-            }
-        }
-
-        return items;
     }
 
     private Feedback mapResultSetToFeedback(ResultSet rs) throws SQLException {

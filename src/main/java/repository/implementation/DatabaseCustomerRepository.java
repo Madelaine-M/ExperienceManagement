@@ -168,7 +168,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
     @Override
     public List<Customer> findByAdvisor(int advisorId) {
         List<Customer> customers = new ArrayList<>();
-        // SQL: Suche alle Kunden, bei denen die Berater-ID passt
+
         String sql = "SELECT * FROM customers WHERE assigned_advisor_id = ?;";
 
         try (Connection conn = DatabaseManager.getConnection();
@@ -178,7 +178,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    // Hier nutzen wir wieder unsere praktische Hilfsmethode
+
                     customers.add(mapResultSetToCustomer(rs));
                 }
             }

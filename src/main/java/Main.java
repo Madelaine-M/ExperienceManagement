@@ -5,7 +5,7 @@ public class Main {
     public static void main(String[] args) {
         Backend backend = new Backend();
 
-        // 3. Testdaten generieren (nur beim ersten Mal)
+        //  Testdaten generieren (nur beim ersten Mal)
         DataSeeder.seed(
                 backend.getAdvisorRepository(),
                 backend.getCustomerLookup(),
@@ -18,7 +18,7 @@ public class Main {
                 backend.getActionUpdate()
         );
 
-        // 2. Danach erst Services oder UI starten
+        // Danach erst Services oder UI starten
         System.out.println("Ready!");
     }
 }

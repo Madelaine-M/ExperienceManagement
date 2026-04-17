@@ -132,19 +132,6 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
         return actionItem;
     }
 
-    private int minimumPriorityFor(PriorityLevel priorityLevel) {
-        if (priorityLevel == null) {
-            return 0;
-        }
-
-        return switch (priorityLevel) {
-            case LOW -> 1;
-            case MEDIUM -> 4;
-            case HIGH -> 7;
-            case CRITICAL -> 9;
-        };
-    }
-
     @Override
     public List<ActionItem> findPriorityActionsForAdvisor(int advisorId) {
         List<ActionItem> actions = new ArrayList<>();

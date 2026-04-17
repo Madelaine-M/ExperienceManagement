@@ -7,5 +7,4 @@ public interface FeedbackUpdate {
 
     void save(Feedback feedback);
 
-    void save(FeedbackItem item);
 }
