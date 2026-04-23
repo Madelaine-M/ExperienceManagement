@@ -4,6 +4,7 @@ import database.initialization.DatabaseInitializer;
 import repository.implementation.DatabaseActionRepository;
 import repository.implementation.DatabaseAdvisorRepository;
 import repository.implementation.DatabaseCustomerRepository;
+import repository.implementation.DatabaseCustomerView;
 import repository.implementation.DatabaseFeedbackRepository;
 import repository.implementation.DatabaseFlightRepository;
 import repository.implementation.DatabaseIncidentRepository;
@@ -15,6 +16,7 @@ import repository.interfaces.AdvisorRepository;
 import repository.interfaces.CustomerLookup;
 import repository.interfaces.CustomerSearch;
 import repository.interfaces.CustomerUpdate;
+import repository.interfaces.CustomerView;
 import repository.interfaces.FeedbackAnalytics;
 import repository.interfaces.FeedbackLookup;
 import repository.interfaces.FeedbackUpdate;
@@ -33,6 +35,7 @@ public class Backend {
     private final CustomerLookup customerLookup;
     private final CustomerSearch customerSearch;
     private final CustomerUpdate customerUpdate;
+    private final CustomerView customerView;
     private final FeedbackAnalytics feedbackAnalytics;
     private final FeedbackLookup feedbackLookup;
     private final FeedbackUpdate feedbackUpdate;
@@ -46,6 +49,7 @@ public class Backend {
     public Backend() {
         DatabaseInitializer.initialize();
         DatabaseCustomerRepository customerRepository = new DatabaseCustomerRepository();
+        DatabaseCustomerView customerViewRepository = new DatabaseCustomerView();
         DatabaseFeedbackRepository feedbackRepository = new DatabaseFeedbackRepository();
         DatabaseFlightRepository flightRepository = new DatabaseFlightRepository();
         DatabaseIncidentRepository incidentRepository = new DatabaseIncidentRepository();
@@ -58,6 +62,7 @@ public class Backend {
         this.customerLookup = customerRepository;
         this.customerSearch = customerRepository;
         this.customerUpdate = customerRepository;
+        this.customerView = customerViewRepository;
         this.feedbackAnalytics = feedbackRepository;
         this.feedbackLookup = feedbackRepository;
         this.feedbackUpdate = feedbackRepository;
@@ -95,6 +100,10 @@ public class Backend {
 
     public CustomerUpdate getCustomerUpdate() {
         return customerUpdate;
+    }
+
+    public CustomerView getCustomerView() {
+        return customerView;
     }
 
     public IncidentLookup getIncidentLookup() {
