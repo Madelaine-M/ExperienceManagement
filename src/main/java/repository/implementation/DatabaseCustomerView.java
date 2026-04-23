@@ -1,6 +1,7 @@
 package repository.implementation;
 
-import database.connection.DatabaseManager;
+import database.connection.ConnectionProvider;
+import database.connection.DatabaseConnectionProvider;
 import model.CustomerDetailView;
 import model.CustomerOverview;
 import model.Flight;
@@ -26,9 +27,11 @@ public class DatabaseCustomerView implements CustomerView {
     private final OpenIncidentSummaryLoader openIncidentSummaryLoader;
     private final FlightViewLoader flightViewLoader;
     private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
+    private final ConnectionProvider connectionProvider;
 
     public DatabaseCustomerView() {
         this(
+                new DatabaseConnectionProvider(),
                 new CustomerViewMapper(),
                 new OpenIncidentSummaryLoader(),
                 new FlightViewLoader(),
@@ -36,10 +39,12 @@ public class DatabaseCustomerView implements CustomerView {
         );
     }
 
-    public DatabaseCustomerView(CustomerViewMapper customerViewMapper,
+    public DatabaseCustomerView(ConnectionProvider connectionProvider,
+                                CustomerViewMapper customerViewMapper,
                                 OpenIncidentSummaryLoader openIncidentSummaryLoader,
                                 FlightViewLoader flightViewLoader,
                                 PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter) {
+        this.connectionProvider = connectionProvider;
         this.customerViewMapper = customerViewMapper;
         this.openIncidentSummaryLoader = openIncidentSummaryLoader;
         this.flightViewLoader = flightViewLoader;
@@ -65,7 +70,7 @@ public class DatabaseCustomerView implements CustomerView {
             ORDER BY c.last_name ASC, c.first_name ASC, c.id ASC;
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, advisorId);
@@ -105,7 +110,7 @@ public class DatabaseCustomerView implements CustomerView {
             WHERE id = ?;
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, customerId);

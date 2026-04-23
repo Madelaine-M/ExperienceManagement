@@ -11,7 +11,7 @@ public class CustomerOverview {
     private CustomerStatus status;
     private CustomerType customerType;
     private Packages bookingPackage;
-    private float clvScore;
+    private float clvScore; //umbennen zu cv score
     private boolean returning;
     private boolean hasOpenIncident;
     private Integer openIncidentId;

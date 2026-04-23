@@ -1,12 +1,14 @@
 package repository.implementation;
 
-import database.connection.DatabaseManager;
+import database.connection.ConnectionProvider;
+import database.connection.DatabaseConnectionProvider;
 import model.Incident;
-import model.enums.FeedbackCategory;
 import model.enums.IncidentStatus;
-import model.enums.IncidentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.implementation.mapper.IncidentResultSetMapper;
+import repository.implementation.support.FlightIdResolver;
+import repository.implementation.support.GeneratedKeyExtractor;
 import repository.interfaces.IncidentLookup;
 import repository.interfaces.IncidentManagement;
 import repository.interfaces.IncidentUpdate;
@@ -17,6 +19,27 @@ import java.util.List;
 
 public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdate, IncidentManagement {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseIncidentRepository.class);
+    private final ConnectionProvider connectionProvider;
+    private final IncidentResultSetMapper incidentMapper;
+    private final GeneratedKeyExtractor generatedKeyExtractor;
+    private final FlightIdResolver flightIdResolver;
+
+    public DatabaseIncidentRepository() {
+        this(
+                new DatabaseConnectionProvider(),
+                new IncidentResultSetMapper(),
+                new GeneratedKeyExtractor(),
+                new FlightIdResolver()
+        );
+    }
+
+    public DatabaseIncidentRepository(ConnectionProvider connectionProvider, IncidentResultSetMapper incidentMapper,
+                                      GeneratedKeyExtractor generatedKeyExtractor, FlightIdResolver flightIdResolver) {
+        this.connectionProvider = connectionProvider;
+        this.incidentMapper = incidentMapper;
+        this.generatedKeyExtractor = generatedKeyExtractor;
+        this.flightIdResolver = flightIdResolver;
+    }
 
     @Override
     public void save(Incident incident) {
@@ -25,9 +48,13 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            Integer resolvedFlightId = resolveFlightId(conn, incident);
+            Integer resolvedFlightId = flightIdResolver.resolveFlightId(
+                    conn,
+                    incident.getFlightId(),
+                    incident.getCustomerId()
+            );
 
             pstmt.setInt(1, incident.getCustomerId());
             pstmt.setString(2, incident.getType() != null ? incident.getType().name() : null);
@@ -55,7 +82,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             }
 
             pstmt.executeUpdate();
-            incident.setId(extractGeneratedId(pstmt, "incident"));
+            incident.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "incident"));
             logger.info("Incident type {} for customer {} saved.", incident.getType(), incident.getCustomerId());
 
         } catch (SQLException e) {
@@ -67,7 +94,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
     public void updateStatus(int id, IncidentStatus status) {
         String sql = "UPDATE incidents SET status = ? WHERE id = ?;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, status != null ? status.name() : null);
@@ -83,14 +110,14 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
         List<Incident> incidents = new ArrayList<>();
         String sql = "SELECT * FROM incidents WHERE customer_id = ?;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, customerId);
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                incidents.add(mapResultSetToIncident(rs));
+                incidents.add(incidentMapper.map(rs));
             }
         } catch (SQLException e) {
             logger.error("Error while loading Incidents for customer " + customerId, e);
@@ -101,11 +128,11 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
     @Override
     public Incident findById(int id) {
         String sql = "SELECT * FROM incidents WHERE id = ?;";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) return mapResultSetToIncident(rs);
+            if (rs.next()) return incidentMapper.map(rs);
         } catch (SQLException e) {
             logger.error("Error while searching for incidents", e);
         }
@@ -116,11 +143,11 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
     public List<Incident> findByStatus(IncidentStatus status) {
         List<Incident> incidents = new ArrayList<>();
         String sql = "SELECT * FROM incidents WHERE status = ?;";
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, status != null ? status.name() : null);
             ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) incidents.add(mapResultSetToIncident(rs));
+            while (rs.next()) incidents.add(incidentMapper.map(rs));
         } catch (SQLException e) {
             logger.error("Error while filtering status", e);
         }
@@ -132,12 +159,12 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
         List<Incident> incidents = new ArrayList<>();
         String sql = "SELECT * FROM incidents WHERE assigned_advisor_id IS NULL;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
-                incidents.add(mapResultSetToIncident(rs));
+                incidents.add(incidentMapper.map(rs));
             }
         } catch (SQLException e) {
             logger.error("Error while loading unassigned incidents", e);
@@ -151,7 +178,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
         List<Incident> incidents = new ArrayList<>();
         String sql = "SELECT * FROM incidents WHERE assigned_advisor_id = ?;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             if (advisorId != null) {
@@ -162,7 +189,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    incidents.add(mapResultSetToIncident(rs));
+                    incidents.add(incidentMapper.map(rs));
                 }
             }
         } catch (SQLException e) {
@@ -184,12 +211,12 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
         ORDER BY i.id ASC;
         """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
-                incidents.add(mapResultSetToIncident(rs));
+                incidents.add(incidentMapper.map(rs));
             }
         } catch (SQLException e) {
             logger.error("Error while loading pending action items", e);
@@ -198,87 +225,4 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
         return incidents;
     }
 
-    // Hilfsmethode für das Mapping (SRP!)
-    private Incident mapResultSetToIncident(ResultSet rs) throws SQLException {
-        Incident incident = new Incident();
-        incident.setId(rs.getInt("id"));
-        incident.setCustomerId(rs.getInt("customer_id"));
-
-        String typeStr = rs.getString("type");
-        if (typeStr != null) incident.setType(IncidentType.valueOf(typeStr));
-        String feedbackTypeStr = rs.getString("feedback_type");
-        if (feedbackTypeStr != null) incident.setFeedbackType(FeedbackCategory.valueOf(feedbackTypeStr));
-
-        incident.setDescription(rs.getString("description"));
-        incident.setPriorityScore(rs.getDouble("priority_score"));
-        incident.setScoreImpact(rs.getDouble("score_impact"));
-        incident.setRevenueRisk(rs.getInt("revenue_risk"));
-        String statusStr = rs.getString("status");
-        if (statusStr != null) {
-            incident.setStatus(IncidentStatus.valueOf(statusStr));
-        }
-        int assignedAdvisorId = rs.getInt("assigned_advisor_id");
-        if (!rs.wasNull()) {
-            incident.setAssignedAdvisorId(assignedAdvisorId);
-        }
-        int sourceFeedbackItemId = rs.getInt("source_feedback_item_id");
-        if (!rs.wasNull()) {
-            incident.setSourceFeedbackItemId(sourceFeedbackItemId);
-        }
-        incident.setFlightId(rs.getInt("flight_id"));
-
-        // Timestamp umwandeln (SQLite speichert das als String)
-        Timestamp ts = rs.getTimestamp("created_at");
-        if (ts != null) incident.setCreatedAt(ts.toLocalDateTime());
-
-        return incident;
-    }
-
-    private Integer resolveFlightId(Connection conn, Incident incident) throws SQLException {
-        int requestedFlightId = incident.getFlightId();
-        if (requestedFlightId > 0 && flightExists(conn, requestedFlightId)) {
-            return requestedFlightId;
-        }
-
-        return findCurrentFlightIdByCustomerId(conn, incident.getCustomerId());
-    }
-
-    private boolean flightExists(Connection conn, int flightId) throws SQLException {
-        String sql = "SELECT 1 FROM flights WHERE id = ? LIMIT 1;";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, flightId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return rs.next();
-            }
-        }
-    }
-
-    private Integer findCurrentFlightIdByCustomerId(Connection conn, int customerId) throws SQLException {
-        String sql = """
-            SELECT id
-            FROM flights
-            WHERE customer_id = ? AND is_current = 1
-            ORDER BY id DESC
-            LIMIT 1;
-            """;
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, customerId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt("id");
-                }
-            }
-        }
-        return null;
-    }
-
-    private int extractGeneratedId(PreparedStatement pstmt, String entityName) throws SQLException {
-        try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-            if (generatedKeys.next()) {
-                return generatedKeys.getInt(1);
-            }
-        }
-
-        throw new SQLException("Could not retrieve generated key for " + entityName);
-    }
 }

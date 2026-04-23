@@ -1,6 +1,7 @@
 package repository.implementation;
 
-import database.connection.DatabaseManager;
+import database.connection.ConnectionProvider;
+import database.connection.DatabaseConnectionProvider;
 import model.Flight;
 import model.IncidentDetailView;
 import model.IncidentOverview;
@@ -23,13 +24,22 @@ public class DatabaseIncidentView implements IncidentView {
     private final IncidentViewMapper incidentViewMapper;
     private final FlightViewLoader flightViewLoader;
     private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
+    private final ConnectionProvider connectionProvider;
 
     public DatabaseIncidentView() {
-        this(new IncidentViewMapper(), new FlightViewLoader(), new PreviousFlightsSummaryFormatter());
+        this(
+                new DatabaseConnectionProvider(),
+                new IncidentViewMapper(),
+                new FlightViewLoader(),
+                new PreviousFlightsSummaryFormatter()
+        );
     }
 
-    public DatabaseIncidentView(IncidentViewMapper incidentViewMapper, FlightViewLoader flightViewLoader,
+    public DatabaseIncidentView(ConnectionProvider connectionProvider,
+                                IncidentViewMapper incidentViewMapper,
+                                FlightViewLoader flightViewLoader,
                                 PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter) {
+        this.connectionProvider = connectionProvider;
         this.incidentViewMapper = incidentViewMapper;
         this.flightViewLoader = flightViewLoader;
         this.previousFlightsSummaryFormatter = previousFlightsSummaryFormatter;
@@ -56,7 +66,7 @@ public class DatabaseIncidentView implements IncidentView {
             ORDER BY i.priority_score DESC, i.created_at ASC;
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, advisorId);
@@ -94,7 +104,7 @@ public class DatabaseIncidentView implements IncidentView {
             WHERE i.id = ?;
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, incidentId);

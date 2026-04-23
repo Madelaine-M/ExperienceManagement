@@ -1,9 +1,12 @@
 package repository.implementation;
 
-import database.connection.DatabaseManager;
+import database.connection.ConnectionProvider;
+import database.connection.DatabaseConnectionProvider;
 import model.Advisor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.implementation.mapper.AdvisorResultSetMapper;
+import repository.implementation.support.GeneratedKeyExtractor;
 import repository.interfaces.AdvisorRepository;
 
 import java.sql.Connection;
@@ -16,6 +19,20 @@ import java.util.List;
 
 public class DatabaseAdvisorRepository implements AdvisorRepository {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseAdvisorRepository.class);
+    private final ConnectionProvider connectionProvider;
+    private final AdvisorResultSetMapper advisorMapper;
+    private final GeneratedKeyExtractor generatedKeyExtractor;
+
+    public DatabaseAdvisorRepository() {
+        this(new DatabaseConnectionProvider(), new AdvisorResultSetMapper(), new GeneratedKeyExtractor());
+    }
+
+    public DatabaseAdvisorRepository(ConnectionProvider connectionProvider, AdvisorResultSetMapper advisorMapper,
+                                     GeneratedKeyExtractor generatedKeyExtractor) {
+        this.connectionProvider = connectionProvider;
+        this.advisorMapper = advisorMapper;
+        this.generatedKeyExtractor = generatedKeyExtractor;
+    }
 
     @Override
     public void save(Advisor advisor) {
@@ -24,7 +41,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             VALUES (?, ?, ?, ?, ?);
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, advisor.getFirstName());
@@ -34,7 +51,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             pstmt.setDouble(5, advisor.getWorkloadScore());
 
             pstmt.executeUpdate();
-            advisor.setId(extractGeneratedId(pstmt, "advisor"));
+            advisor.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "advisor"));
             logger.info("Advisor saved: {} {}", advisor.getFirstName(), advisor.getLastName());
 
         } catch (SQLException e) {
@@ -46,14 +63,14 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
     public Advisor findById(int id) {
         String sql = "SELECT * FROM advisors WHERE id = ?;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, id);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToAdvisor(rs);
+                    return advisorMapper.map(rs);
                 }
             }
         } catch (SQLException e) {
@@ -68,12 +85,12 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
         List<Advisor> advisors = new ArrayList<>();
         String sql = "SELECT * FROM advisors;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                advisors.add(mapResultSetToAdvisor(rs));
+                advisors.add(advisorMapper.map(rs));
             }
         } catch (SQLException e) {
             logger.error("Error while getting all advisors", e);
@@ -86,7 +103,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
     public void deleteById(int id) {
         String sql = "DELETE FROM advisors WHERE id = ?;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, id);
@@ -104,14 +121,14 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
         List<Advisor> advisors = new ArrayList<>();
         String sql = "SELECT * FROM advisors WHERE speciality = ?;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, speciality);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    advisors.add(mapResultSetToAdvisor(rs));
+                    advisors.add(advisorMapper.map(rs));
                 }
             }
         } catch (SQLException e) {
@@ -121,24 +138,4 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
         return advisors;
     }
 
-    private Advisor mapResultSetToAdvisor(ResultSet rs) throws SQLException {
-        Advisor advisor = new Advisor();
-        advisor.setId(rs.getInt("id"));
-        advisor.setFirstName(rs.getString("first_name"));
-        advisor.setLastName(rs.getString("last_name"));
-        advisor.setEmail(rs.getString("email"));
-        advisor.setSpeciality(rs.getString("speciality"));
-        advisor.setWorkloadScore(rs.getDouble("workload_score"));
-        return advisor;
-    }
-
-    private int extractGeneratedId(PreparedStatement pstmt, String entityName) throws SQLException {
-        try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-            if (generatedKeys.next()) {
-                return generatedKeys.getInt(1);
-            }
-        }
-
-        throw new SQLException("Could not retrieve generated key for " + entityName);
-    }
 }

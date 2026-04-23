@@ -14,9 +14,9 @@ public class Customer {
     private String bookingDate;
     private boolean returning;
     private Integer assignedAdvisorId;
-    private float clvScore;
-    private String notes = "";
-    private String preferences = "";
+    private float clvScore; // umbennenen zu cv score
+    private String notes = ""; //als extra Klasse/objekt
+    private String preferences = ""; //als extra Klasse / Objekt
     private String applyToNextBooking = ""; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
     private boolean marketingPurpose;
     private boolean newsletterSubscription;

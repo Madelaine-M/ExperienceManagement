@@ -17,7 +17,7 @@ public class CustomerDetailView {
     private String bookingDate;
     private boolean returning;
     private CustomerType customerType;
-    private float clvScore;
+    private float clvScore; // umbennen zu cv score
     private String notes;
     private String preferences;
     private String applyToNextBooking;
