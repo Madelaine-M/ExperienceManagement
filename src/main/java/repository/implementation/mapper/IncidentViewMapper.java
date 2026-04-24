@@ -38,7 +38,10 @@ public class IncidentViewMapper {
         detail.setCustomerLastName(rs.getString("last_name"));
         detail.setReturning(rs.getBoolean("is_returning"));
         detail.setCurrentFlightDate(rs.getString("flight_date"));
-        detail.setCurrentFlightId(rs.getInt("flight_id"));
+        int currentFlightId = rs.getInt("flight_id");
+        if (!rs.wasNull()) {
+            detail.setCurrentFlightId(currentFlightId);
+        }
         detail.setCurrentFlightNumber(rs.getString("flight_number"));
         detail.setIncidentDescription(rs.getString("description"));
 
@@ -55,6 +58,21 @@ public class IncidentViewMapper {
         String incidentTypeStr = rs.getString("type");
         if (incidentTypeStr != null) {
             detail.setIncidentType(IncidentType.valueOf(incidentTypeStr));
+        }
+
+        int feedbackId = rs.getInt("feedback_id");
+        if (!rs.wasNull()) {
+            detail.setFeedbackId(feedbackId);
+        }
+
+        int sourceFeedbackItemId = rs.getInt("source_feedback_item_id");
+        if (!rs.wasNull()) {
+            detail.setSourceFeedbackItemId(sourceFeedbackItemId);
+        }
+
+        int delayMinutes = rs.getInt("delay_minutes");
+        if (!rs.wasNull()) {
+            detail.setDelayMinutes(delayMinutes);
         }
 
         return detail;

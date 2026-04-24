@@ -12,14 +12,14 @@ public class Feedback {
     private double totalScore;
     private int customerSatScore; // weiß nciht ob das nciht rauas kann
     private int referralScore; //noch in DB und getter setter
-    private int flightId;
+    private Integer flightId;
 
     public Feedback() {
         this.items = new ArrayList<>();
     }
 
     public Feedback(int id, int customerId, LocalDateTime createdAt, List<FeedbackItem> items, double totalScore,
-                    int customerSatScore, int referralScore, int flightId) {
+                    int customerSatScore, int referralScore, Integer flightId) {
         this.id = id;
         this.customerId = customerId;
         this.createdAt = createdAt;
@@ -83,6 +83,14 @@ public class Feedback {
         this.customerSatScore = customerSatScore;
     }
 
+    public int getReferralScore() {
+        return referralScore;
+    }
+
+    public void setReferralScore(int referralScore) {
+        this.referralScore = referralScore;
+    }
+
     public double getTotalScore() {
         return totalScore;
     }
@@ -91,11 +99,11 @@ public class Feedback {
         this.totalScore = totalScore;
     }
 
-    public int getFlightId() {
+    public Integer getFlightId() {
         return flightId;
     }
 
-    public void setFlightId(int flightId) {
+    public void setFlightId(Integer flightId) {
         this.flightId = flightId;
     }
 }

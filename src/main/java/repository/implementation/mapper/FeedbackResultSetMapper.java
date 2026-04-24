@@ -20,7 +20,11 @@ public class FeedbackResultSetMapper {
 
         feedback.setTotalScore(rs.getDouble("total_score"));
         feedback.setCustomerSatScore(rs.getInt("customer_sat_score"));
-        feedback.setFlightId(rs.getInt("flight_id"));
+        feedback.setReferralScore(rs.getInt("referral_score"));
+        int flightId = rs.getInt("flight_id");
+        if (!rs.wasNull()) {
+            feedback.setFlightId(flightId);
+        }
 
         return feedback;
     }

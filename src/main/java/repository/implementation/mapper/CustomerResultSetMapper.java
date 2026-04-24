@@ -23,11 +23,12 @@ public class CustomerResultSetMapper {
             customer.setStatus(CustomerStatus.valueOf(statusStr));
         }
 
-        customer.setBookingDate(rs.getString("booking_date"));
         customer.setReturning(rs.getBoolean("is_returning"));
-        customer.setAssignedAdvisorId(rs.getInt("assigned_advisor_id"));
-        customer.setClvScore(rs.getFloat("clv_score"));
-        customer.setNotes(rs.getString("notes"));
+        int assignedAdvisorId = rs.getInt("assigned_advisor_id");
+        if (!rs.wasNull()) {
+            customer.setAssignedAdvisorId(assignedAdvisorId);
+        }
+        customer.setCvScore(rs.getFloat("cv_score"));
         customer.setPreferences(rs.getString("preferences"));
         customer.setApplyToNextBooking(rs.getString("apply_to_next_booking"));
         customer.setMarketingPurpose(rs.getBoolean("marketing_purpose"));

@@ -17,8 +17,8 @@ public class CustomerDetailView {
     private String bookingDate;
     private boolean returning;
     private CustomerType customerType;
-    private float clvScore; // umbennen zu cv score
-    private String notes;
+    private float cvScore;
+    private List<CustomerNote> notes = new ArrayList<>();
     private String preferences;
     private String applyToNextBooking;
     private PaymentMethod paymentMethod;
@@ -37,7 +37,7 @@ public class CustomerDetailView {
 
     public CustomerDetailView(int customerId, String customerFirstName, String customerLastName, String email,
                               CustomerStatus status, String bookingDate, boolean returning,
-                              CustomerType customerType, float clvScore, String notes, String preferences,
+                              CustomerType customerType, float cvScore, List<CustomerNote> notes, String preferences,
                               String applyToNextBooking, PaymentMethod paymentMethod, boolean publicPerson,
                               boolean hasOpenIncident, Integer openIncidentId, Double highestPriorityScore,
                               String incidentDescription, Packages bookingPackage, Flight currentFlight,
@@ -50,8 +50,8 @@ public class CustomerDetailView {
         this.bookingDate = bookingDate;
         this.returning = returning;
         this.customerType = customerType;
-        this.clvScore = clvScore;
-        this.notes = notes;
+        this.cvScore = cvScore;
+        this.notes = notes != null ? new ArrayList<>(notes) : new ArrayList<>();
         this.preferences = preferences;
         this.applyToNextBooking = applyToNextBooking;
         this.paymentMethod = paymentMethod;
@@ -130,20 +130,20 @@ public class CustomerDetailView {
         this.customerType = customerType;
     }
 
-    public float getClvScore() {
-        return clvScore;
+    public float getCvScore() {
+        return cvScore;
     }
 
-    public void setClvScore(float clvScore) {
-        this.clvScore = clvScore;
+    public void setCvScore(float cvScore) {
+        this.cvScore = cvScore;
     }
 
-    public String getNotes() {
+    public List<CustomerNote> getNotes() {
         return notes;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public void setNotes(List<CustomerNote> notes) {
+        this.notes = notes != null ? new ArrayList<>(notes) : new ArrayList<>();
     }
 
     public String getPreferences() {
@@ -176,10 +176,6 @@ public class CustomerDetailView {
 
     public void setPublicPerson(boolean publicPerson) {
         this.publicPerson = publicPerson;
-    }
-
-    public boolean isHasOpenIncident() {
-        return hasOpenIncident;
     }
 
     public boolean hasOpenIncident() {

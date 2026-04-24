@@ -25,7 +25,7 @@ public class DatabaseNPSScores implements NPSScores {
 
     @Override
     public int countByScoreRange(int min, int max) {
-        String sql = "SELECT COUNT(*) AS feedback_count FROM feedbacks WHERE total_score BETWEEN ? AND ?;";
+        String sql = "SELECT COUNT(*) AS feedback_count FROM feedbacks WHERE referral_score BETWEEN ? AND ?;";
 
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

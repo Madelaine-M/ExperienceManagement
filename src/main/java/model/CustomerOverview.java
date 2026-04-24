@@ -11,7 +11,7 @@ public class CustomerOverview {
     private CustomerStatus status;
     private CustomerType customerType;
     private Packages bookingPackage;
-    private float clvScore; //umbennen zu cv score
+    private float cvScore;
     private boolean returning;
     private boolean hasOpenIncident;
     private Integer openIncidentId;
@@ -22,7 +22,7 @@ public class CustomerOverview {
     }
 
     public CustomerOverview(int customerId, String customerFirstName, String customerLastName, CustomerStatus status,
-                            CustomerType customerType, Packages bookingPackage, float clvScore, boolean returning,
+                            CustomerType customerType, Packages bookingPackage, float cvScore, boolean returning,
                             boolean hasOpenIncident, Integer openIncidentId, Double highestPriorityScore,
                             String incidentDescription) {
         this.customerId = customerId;
@@ -31,7 +31,7 @@ public class CustomerOverview {
         this.status = status;
         this.customerType = customerType;
         this.bookingPackage = bookingPackage;
-        this.clvScore = clvScore;
+        this.cvScore = cvScore;
         this.returning = returning;
         this.hasOpenIncident = hasOpenIncident;
         this.openIncidentId = openIncidentId;
@@ -87,12 +87,12 @@ public class CustomerOverview {
         this.bookingPackage = bookingPackage;
     }
 
-    public float getClvScore() {
-        return clvScore;
+    public float getCvScore() {
+        return cvScore;
     }
 
-    public void setClvScore(float clvScore) {
-        this.clvScore = clvScore;
+    public void setCvScore(float cvScore) {
+        this.cvScore = cvScore;
     }
 
     public boolean isReturning() {
@@ -101,10 +101,6 @@ public class CustomerOverview {
 
     public void setReturning(boolean returning) {
         this.returning = returning;
-    }
-
-    public boolean isHasOpenIncident() {
-        return hasOpenIncident;
     }
 
     public boolean hasOpenIncident() {

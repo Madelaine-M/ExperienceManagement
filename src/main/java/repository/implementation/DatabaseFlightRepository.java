@@ -37,8 +37,8 @@ public class DatabaseFlightRepository implements FlightRepository {
     @Override
     public void save(Flight flight) {
         String sql = """
-            INSERT INTO flights (customer_id, flight_number, flight_date, booking_package, status, is_current)
-            VALUES (?, ?, ?, ?, ?, ?);
+            INSERT INTO flights (customer_id, flight_number, booking_date, flight_date, booking_package, status, is_current)
+            VALUES (?, ?, ?, ?, ?, ?, ?);
             """;
 
         String clearCurrentSql = "UPDATE flights SET is_current = 0 WHERE customer_id = ?;";
@@ -56,10 +56,11 @@ public class DatabaseFlightRepository implements FlightRepository {
 
                 pstmt.setInt(1, flight.getCustomerId());
                 pstmt.setString(2, flight.getFlightNumber());
-                pstmt.setString(3, flight.getFlightDate());
-                pstmt.setString(4, flight.getBookingPackage() != null ? flight.getBookingPackage().name() : null);
-                pstmt.setString(5, flight.getStatus());
-                pstmt.setBoolean(6, flight.isCurrent());
+                pstmt.setString(3, flight.getBookingDate());
+                pstmt.setString(4, flight.getFlightDate());
+                pstmt.setString(5, flight.getBookingPackage() != null ? flight.getBookingPackage().name() : null);
+                pstmt.setString(6, flight.getStatus());
+                pstmt.setBoolean(7, flight.isCurrent());
                 pstmt.executeUpdate();
 
                 flight.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "flight"));

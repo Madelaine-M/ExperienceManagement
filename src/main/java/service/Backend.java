@@ -4,6 +4,7 @@ import database.initialization.DatabaseInitializer;
 import repository.implementation.DatabaseActionRepository;
 import repository.implementation.DatabaseAdvisorRepository;
 import repository.implementation.DatabaseCustomerRepository;
+import repository.implementation.DatabaseCustomerNoteRepository;
 import repository.implementation.DatabaseCustomerView;
 import repository.implementation.DatabaseFeedbackAnalytics;
 import repository.implementation.DatabaseFeedbackLookup;
@@ -17,6 +18,8 @@ import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
 import repository.interfaces.AdvisorRepository;
 import repository.interfaces.CustomerLookup;
+import repository.interfaces.CustomerNoteLookup;
+import repository.interfaces.CustomerNoteUpdate;
 import repository.interfaces.CustomerSearch;
 import repository.interfaces.CustomerUpdate;
 import repository.interfaces.CustomerView;
@@ -36,6 +39,8 @@ public class Backend {
     private final ActionUpdate actionUpdate;
     private final AdvisorRepository advisorRepository;
     private final CustomerLookup customerLookup;
+    private final CustomerNoteLookup customerNoteLookup;
+    private final CustomerNoteUpdate customerNoteUpdate;
     private final CustomerSearch customerSearch;
     private final CustomerUpdate customerUpdate;
     private final CustomerView customerView;
@@ -52,6 +57,7 @@ public class Backend {
     public Backend() {
         DatabaseInitializer.initialize();
         DatabaseCustomerRepository customerRepository = new DatabaseCustomerRepository();
+        DatabaseCustomerNoteRepository customerNoteRepository = new DatabaseCustomerNoteRepository();
         DatabaseCustomerView customerViewRepository = new DatabaseCustomerView();
         DatabaseFeedbackLookup feedbackLookupRepository = new DatabaseFeedbackLookup();
         DatabaseFeedbackUpdate feedbackUpdateRepository = new DatabaseFeedbackUpdate();
@@ -66,6 +72,8 @@ public class Backend {
         this.actionUpdate = actionRepository;
         this.advisorRepository = new DatabaseAdvisorRepository();
         this.customerLookup = customerRepository;
+        this.customerNoteLookup = customerNoteRepository;
+        this.customerNoteUpdate = customerNoteRepository;
         this.customerSearch = customerRepository;
         this.customerUpdate = customerRepository;
         this.customerView = customerViewRepository;
@@ -102,6 +110,14 @@ public class Backend {
 
     public CustomerSearch getCustomerSearch() {
         return customerSearch;
+    }
+
+    public CustomerNoteLookup getCustomerNoteLookup() {
+        return customerNoteLookup;
+    }
+
+    public CustomerNoteUpdate getCustomerNoteUpdate() {
+        return customerNoteUpdate;
     }
 
     public CustomerUpdate getCustomerUpdate() {

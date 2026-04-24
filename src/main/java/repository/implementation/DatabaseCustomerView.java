@@ -3,11 +3,13 @@ package repository.implementation;
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
 import model.CustomerDetailView;
+import model.CustomerNote;
 import model.CustomerOverview;
 import model.Flight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import repository.implementation.mapper.CustomerViewMapper;
+import repository.implementation.support.CustomerNoteLoader;
 import repository.implementation.support.FlightViewLoader;
 import repository.implementation.support.OpenIncidentSummary;
 import repository.implementation.support.OpenIncidentSummaryLoader;
@@ -26,6 +28,7 @@ public class DatabaseCustomerView implements CustomerView {
     private final CustomerViewMapper customerViewMapper;
     private final OpenIncidentSummaryLoader openIncidentSummaryLoader;
     private final FlightViewLoader flightViewLoader;
+    private final CustomerNoteLoader customerNoteLoader;
     private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
     private final ConnectionProvider connectionProvider;
 
@@ -35,6 +38,7 @@ public class DatabaseCustomerView implements CustomerView {
                 new CustomerViewMapper(),
                 new OpenIncidentSummaryLoader(),
                 new FlightViewLoader(),
+                new CustomerNoteLoader(),
                 new PreviousFlightsSummaryFormatter()
         );
     }
@@ -43,11 +47,13 @@ public class DatabaseCustomerView implements CustomerView {
                                 CustomerViewMapper customerViewMapper,
                                 OpenIncidentSummaryLoader openIncidentSummaryLoader,
                                 FlightViewLoader flightViewLoader,
+                                CustomerNoteLoader customerNoteLoader,
                                 PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter) {
         this.connectionProvider = connectionProvider;
         this.customerViewMapper = customerViewMapper;
         this.openIncidentSummaryLoader = openIncidentSummaryLoader;
         this.flightViewLoader = flightViewLoader;
+        this.customerNoteLoader = customerNoteLoader;
         this.previousFlightsSummaryFormatter = previousFlightsSummaryFormatter;
     }
 
@@ -60,7 +66,7 @@ public class DatabaseCustomerView implements CustomerView {
                    c.last_name,
                    c.status,
                    c.customer_type,
-                   c.clv_score,
+                   c.cv_score,
                    c.is_returning,
                    f.booking_package
             FROM customers c
@@ -97,11 +103,9 @@ public class DatabaseCustomerView implements CustomerView {
                    last_name,
                    email,
                    status,
-                   booking_date,
                    is_returning,
                    customer_type,
-                   clv_score,
-                   notes,
+                   cv_score,
                    preferences,
                    apply_to_next_booking,
                    payment_method,
@@ -119,9 +123,12 @@ public class DatabaseCustomerView implements CustomerView {
                 if (rs.next()) {
                     CustomerDetailView detail = customerViewMapper.mapDetail(rs);
                     applyOpenIncidentSummary(conn, detail);
+                    List<CustomerNote> notes = customerNoteLoader.loadByCustomerId(conn, customerId);
+                    detail.setNotes(notes);
                     Flight currentFlight = flightViewLoader.loadCurrentFlight(conn, customerId);
                     detail.setCurrentFlight(currentFlight);
                     if (currentFlight != null) {
+                        detail.setBookingDate(currentFlight.getBookingDate());
                         detail.setBookingPackage(currentFlight.getBookingPackage());
                     }
 

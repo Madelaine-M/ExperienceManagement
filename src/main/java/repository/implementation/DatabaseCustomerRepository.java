@@ -35,11 +35,11 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
     @Override
     public void save(Customer customer) {
         String sql = """
-            INSERT INTO customers (first_name, last_name, email, birth_date, status, 
-                                 booking_date, is_returning, assigned_advisor_id, clv_score, notes,
-                                 preferences, apply_to_next_booking, marketing_purpose, newsletter_subscription,
+            INSERT INTO customers (first_name, last_name, email, birth_date, status,
+                                 is_returning, assigned_advisor_id, cv_score, preferences,
+                                 apply_to_next_booking, marketing_purpose, newsletter_subscription,
                                  referral_code, payment_method, public_person, customer_type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = connectionProvider.getConnection();
@@ -50,23 +50,21 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             pstmt.setString(3, customer.getEmail());
             pstmt.setString(4, customer.getBirthDate());
             pstmt.setString(5, customer.getStatus() != null ? customer.getStatus().name() : null);
-            pstmt.setString(6, customer.getBookingDate());
-            pstmt.setBoolean(7, customer.isReturning());
+            pstmt.setBoolean(6, customer.isReturning());
             if (customer.getAssignedAdvisorId() != null) {
-                pstmt.setInt(8, customer.getAssignedAdvisorId());
+                pstmt.setInt(7, customer.getAssignedAdvisorId());
             } else {
-                pstmt.setNull(8, Types.INTEGER);
+                pstmt.setNull(7, Types.INTEGER);
             }
-            pstmt.setFloat(9, customer.getClvScore());
-            pstmt.setString(10, customer.getNotes());
-            pstmt.setString(11, customer.getPreferences());
-            pstmt.setString(12, customer.getApplyToNextBooking());
-            pstmt.setBoolean(13, customer.isMarketingPurpose());
-            pstmt.setBoolean(14, customer.isNewsletterSubscription());
-            pstmt.setBoolean(15, customer.isReferralCode());
-            pstmt.setString(16, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
-            pstmt.setBoolean(17, customer.isPublicPerson());
-            pstmt.setString(18, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
+            pstmt.setFloat(8, customer.getCvScore());
+            pstmt.setString(9, customer.getPreferences());
+            pstmt.setString(10, customer.getApplyToNextBooking());
+            pstmt.setBoolean(11, customer.isMarketingPurpose());
+            pstmt.setBoolean(12, customer.isNewsletterSubscription());
+            pstmt.setBoolean(13, customer.isReferralCode());
+            pstmt.setString(14, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
+            pstmt.setBoolean(15, customer.isPublicPerson());
+            pstmt.setString(16, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
 
             pstmt.executeUpdate();
             customer.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "customer"));
@@ -82,7 +80,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
         String sql = """
             UPDATE customers
             SET first_name = ?, last_name = ?, email = ?, birth_date = ?, status = ?,
-                booking_date = ?, is_returning = ?, assigned_advisor_id = ?, clv_score = ?, notes = ?,
+                is_returning = ?, assigned_advisor_id = ?, cv_score = ?,
                 preferences = ?, apply_to_next_booking = ?, marketing_purpose = ?, newsletter_subscription = ?,
                 referral_code = ?, payment_method = ?, public_person = ?, customer_type = ?
             WHERE id = ?;
@@ -96,24 +94,22 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             pstmt.setString(3, customer.getEmail());
             pstmt.setString(4, customer.getBirthDate());
             pstmt.setString(5, customer.getStatus() != null ? customer.getStatus().name() : null);
-            pstmt.setString(6, customer.getBookingDate());
-            pstmt.setBoolean(7, customer.isReturning());
+            pstmt.setBoolean(6, customer.isReturning());
             if (customer.getAssignedAdvisorId() != null) {
-                pstmt.setInt(8, customer.getAssignedAdvisorId());
+                pstmt.setInt(7, customer.getAssignedAdvisorId());
             } else {
-                pstmt.setNull(8, Types.INTEGER);
+                pstmt.setNull(7, Types.INTEGER);
             }
-            pstmt.setFloat(9, customer.getClvScore());
-            pstmt.setString(10, customer.getNotes());
-            pstmt.setString(11, customer.getPreferences());
-            pstmt.setString(12, customer.getApplyToNextBooking());
-            pstmt.setBoolean(13, customer.isMarketingPurpose());
-            pstmt.setBoolean(14, customer.isNewsletterSubscription());
-            pstmt.setBoolean(15, customer.isReferralCode());
-            pstmt.setString(16, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
-            pstmt.setBoolean(17, customer.isPublicPerson());
-            pstmt.setString(18, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
-            pstmt.setInt(19, customer.getId());
+            pstmt.setFloat(8, customer.getCvScore());
+            pstmt.setString(9, customer.getPreferences());
+            pstmt.setString(10, customer.getApplyToNextBooking());
+            pstmt.setBoolean(11, customer.isMarketingPurpose());
+            pstmt.setBoolean(12, customer.isNewsletterSubscription());
+            pstmt.setBoolean(13, customer.isReferralCode());
+            pstmt.setString(14, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
+            pstmt.setBoolean(15, customer.isPublicPerson());
+            pstmt.setString(16, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
+            pstmt.setInt(17, customer.getId());
 
             pstmt.executeUpdate();
         } catch (SQLException e) {

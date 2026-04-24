@@ -22,11 +22,9 @@ public class DatabaseInitializer {
                 email TEXT UNIQUE,
                 birth_date TEXT,
                 status TEXT,
-                booking_date TEXT,
                 is_returning INTEGER DEFAULT 0,
                 assigned_advisor_id INTEGER,
-                clv_score REAL DEFAULT 0.0,
-                notes TEXT,
+                cv_score REAL DEFAULT 0.0,
                 preferences TEXT,
                 apply_to_next_booking TEXT,
                 marketing_purpose INTEGER DEFAULT 0,
@@ -45,6 +43,7 @@ public class DatabaseInitializer {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER,
                 type TEXT,
+                feedback_id INTEGER,
                 feedback_type TEXT,
                 description TEXT,
                 priority_score REAL DEFAULT 0.0,
@@ -53,11 +52,14 @@ public class DatabaseInitializer {
                 status TEXT,
                 assigned_advisor_id INTEGER,
                 source_feedback_item_id INTEGER,
+                delay_minutes INTEGER,
                 flight_id INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
                     ON DELETE CASCADE,
+                FOREIGN KEY (feedback_id) REFERENCES feedbacks(id)
+                    ON DELETE SET NULL,
                 FOREIGN KEY (flight_id) REFERENCES flights(id)
                     ON DELETE SET NULL,
                 FOREIGN KEY (assigned_advisor_id) REFERENCES advisors(id)
@@ -73,6 +75,7 @@ public class DatabaseInitializer {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 total_score REAL DEFAULT 0.0,
                 customer_sat_score INTEGER DEFAULT 0,
+                referral_score INTEGER DEFAULT 0,
                 flight_id INTEGER DEFAULT 0,
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
@@ -125,12 +128,28 @@ public class DatabaseInitializer {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER NOT NULL,
                 flight_number TEXT,
+                booking_date TEXT,
                 flight_date TEXT,
                 booking_package TEXT,
                 status TEXT,
                 is_current INTEGER DEFAULT 0,
 
                 FOREIGN KEY (customer_id) REFERENCES customers(id)
+                    ON DELETE CASCADE
+            );
+            """;
+        String createCustomerNotes = """
+            CREATE TABLE IF NOT EXISTS customer_notes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_id INTEGER NOT NULL,
+                advisor_id INTEGER NOT NULL,
+                note_text TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                FOREIGN KEY (customer_id) REFERENCES customers(id)
+                    ON DELETE CASCADE,
+                FOREIGN KEY (advisor_id) REFERENCES advisors(id)
                     ON DELETE CASCADE
             );
             """;
@@ -143,11 +162,13 @@ public class DatabaseInitializer {
             executeSql(conn, createFeedbackItems);
             executeSql(conn, createIncidents);
             executeSql(conn, createActionItems);
+            executeSql(conn, createCustomerNotes);
             ensureCustomerColumnsExist(conn);
             ensureFlightColumnsExist(conn);
             ensureFeedbackColumnsExist(conn);
             ensureIncidentColumnsExist(conn);
             ensureActionItemColumnsExist(conn);
+            ensureCustomerNoteColumnsExist(conn);
 
             logger.info("Database was correctly initialized");
 
@@ -161,6 +182,13 @@ public class DatabaseInitializer {
             executeSql(conn, """
                 ALTER TABLE incidents
                 ADD COLUMN feedback_type TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "incidents", "feedback_id")) {
+            executeSql(conn, """
+                ALTER TABLE incidents
+                ADD COLUMN feedback_id INTEGER;
                 """);
         }
 
@@ -191,6 +219,13 @@ public class DatabaseInitializer {
                 ADD COLUMN flight_id INTEGER DEFAULT 0;
                 """);
         }
+
+        if (!columnExists(conn, "incidents", "delay_minutes")) {
+            executeSql(conn, """
+                ALTER TABLE incidents
+                ADD COLUMN delay_minutes INTEGER;
+                """);
+        }
     }
 
     private static void ensureFlightColumnsExist(Connection conn) throws SQLException {
@@ -198,6 +233,13 @@ public class DatabaseInitializer {
             executeSql(conn, """
                 ALTER TABLE flights
                 ADD COLUMN flight_number TEXT;
+                """);
+        }
+
+        if (!columnExists(conn, "flights", "booking_date")) {
+            executeSql(conn, """
+                ALTER TABLE flights
+                ADD COLUMN booking_date TEXT;
                 """);
         }
 
@@ -238,10 +280,10 @@ public class DatabaseInitializer {
                 """);
         }
 
-        if (!columnExists(conn, "customers", "notes")) {
+        if (!columnExists(conn, "customers", "cv_score")) {
             executeSql(conn, """
                 ALTER TABLE customers
-                ADD COLUMN notes TEXT;
+                ADD COLUMN cv_score REAL DEFAULT 0.0;
                 """);
         }
 
@@ -303,6 +345,15 @@ public class DatabaseInitializer {
 
     }
 
+    private static void ensureCustomerNoteColumnsExist(Connection conn) throws SQLException {
+        if (!columnExists(conn, "customer_notes", "updated_at")) {
+            executeSql(conn, """
+                ALTER TABLE customer_notes
+                ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+                """);
+        }
+    }
+
     private static void ensureFeedbackColumnsExist(Connection conn) throws SQLException {
         if (!columnExists(conn, "feedbacks", "total_score")) {
             executeSql(conn, """
@@ -315,6 +366,13 @@ public class DatabaseInitializer {
             executeSql(conn, """
                 ALTER TABLE feedbacks
                 ADD COLUMN customer_sat_score INTEGER DEFAULT 0;
+                """);
+        }
+
+        if (!columnExists(conn, "feedbacks", "referral_score")) {
+            executeSql(conn, """
+                ALTER TABLE feedbacks
+                ADD COLUMN referral_score INTEGER DEFAULT 0;
                 """);
         }
 

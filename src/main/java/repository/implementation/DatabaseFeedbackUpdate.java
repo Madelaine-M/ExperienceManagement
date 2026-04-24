@@ -38,8 +38,8 @@ public class DatabaseFeedbackUpdate implements FeedbackUpdate {
     @Override
     public void save(Feedback feedback) {
         String feedbackSql = """
-            INSERT INTO feedbacks (customer_id, created_at, total_score, customer_sat_score, flight_id)
-            VALUES (?, ?, ?, ?, ?);
+            INSERT INTO feedbacks (customer_id, created_at, total_score, customer_sat_score, referral_score, flight_id)
+            VALUES (?, ?, ?, ?, ?, ?);
             """;
         String itemSql = """
             INSERT INTO feedback_items (feedback_id, category, score, comment)
@@ -61,11 +61,12 @@ public class DatabaseFeedbackUpdate implements FeedbackUpdate {
                 setCreatedAt(feedbackStmt, 2, feedback.getCreatedAt());
                 feedbackStmt.setDouble(3, feedback.getTotalScore() != 0.0 ? feedback.getTotalScore() : feedback.getOverallScore());
                 feedbackStmt.setInt(4, feedback.getCustomerSatScore());
+                feedbackStmt.setInt(5, feedback.getReferralScore());
                 if (resolvedFlightId != null) {
-                    feedbackStmt.setInt(5, resolvedFlightId);
+                    feedbackStmt.setInt(6, resolvedFlightId);
                     feedback.setFlightId(resolvedFlightId);
                 } else {
-                    feedbackStmt.setNull(5, Types.INTEGER);
+                    feedbackStmt.setNull(6, Types.INTEGER);
                 }
                 feedbackStmt.executeUpdate();
 

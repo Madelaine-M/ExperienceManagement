@@ -13,6 +13,7 @@ public class FlightResultSetMapper {
         flight.setId(rs.getInt("id"));
         flight.setCustomerId(rs.getInt("customer_id"));
         flight.setFlightNumber(rs.getString("flight_number"));
+        flight.setBookingDate(rs.getString("booking_date"));
         flight.setFlightDate(rs.getString("flight_date"));
         flight.setStatus(rs.getString("status"));
         flight.setCurrent(rs.getBoolean("is_current"));

@@ -8,6 +8,7 @@ public enum CustomerStatus {
     ADVISOR_ASSIGNED,
     MEDICAL_CHECK,
     ONBOARDING,
+    HOTEL,
     SHUTTLE,
     PRE_FLIGHT,
     FLIGHT,

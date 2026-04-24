@@ -89,6 +89,9 @@ public class DatabaseIncidentView implements IncidentView {
             SELECT i.id,
                    i.customer_id,
                    i.type,
+                   i.feedback_id,
+                   i.source_feedback_item_id,
+                   i.delay_minutes,
                    i.description,
                    c.first_name,
                    c.last_name,
@@ -112,11 +115,9 @@ public class DatabaseIncidentView implements IncidentView {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     IncidentDetailView detail = incidentViewMapper.mapDetail(rs);
-                    List<Flight> previousFlights = flightViewLoader.loadPreviousFlights(
-                            conn,
-                            detail.getCustomerId(),
-                            detail.getCurrentFlightId()
-                    );
+                    List<Flight> previousFlights = detail.getCurrentFlightId() != null
+                            ? flightViewLoader.loadPreviousFlights(conn, detail.getCustomerId(), detail.getCurrentFlightId())
+                            : flightViewLoader.loadPreviousFlights(conn, detail.getCustomerId());
                     detail.setPreviousFlightsList(previousFlights);
                     detail.setPreviousFlights(previousFlightsSummaryFormatter.format(previousFlights));
                     return detail;

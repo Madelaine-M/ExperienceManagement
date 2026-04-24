@@ -7,8 +7,8 @@ import java.sql.SQLException;
 
 public class FlightIdResolver {
 
-    public Integer resolveFlightId(Connection conn, int requestedFlightId, int customerId) throws SQLException {
-        if (requestedFlightId > 0 && flightExists(conn, requestedFlightId)) {
+    public Integer resolveFlightId(Connection conn, Integer requestedFlightId, int customerId) throws SQLException {
+        if (requestedFlightId != null && requestedFlightId > 0 && flightExists(conn, requestedFlightId)) {
             return requestedFlightId;
         }
 

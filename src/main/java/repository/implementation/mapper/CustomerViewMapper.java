@@ -17,7 +17,7 @@ public class CustomerViewMapper {
         overview.setCustomerId(rs.getInt("id"));
         overview.setCustomerFirstName(rs.getString("first_name"));
         overview.setCustomerLastName(rs.getString("last_name"));
-        overview.setClvScore(rs.getFloat("clv_score"));
+        overview.setCvScore(rs.getFloat("cv_score"));
         overview.setReturning(rs.getBoolean("is_returning"));
 
         String statusStr = rs.getString("status");
@@ -44,10 +44,8 @@ public class CustomerViewMapper {
         detail.setCustomerFirstName(rs.getString("first_name"));
         detail.setCustomerLastName(rs.getString("last_name"));
         detail.setEmail(rs.getString("email"));
-        detail.setBookingDate(rs.getString("booking_date"));
         detail.setReturning(rs.getBoolean("is_returning"));
-        detail.setClvScore(rs.getFloat("clv_score"));
-        detail.setNotes(rs.getString("notes"));
+        detail.setCvScore(rs.getFloat("cv_score"));
         detail.setPreferences(rs.getString("preferences"));
         detail.setApplyToNextBooking(rs.getString("apply_to_next_booking"));
         detail.setPublicPerson(rs.getBoolean("public_person"));

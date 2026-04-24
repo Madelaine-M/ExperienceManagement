@@ -2,6 +2,8 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
+import model.DelayIncident;
+import model.FeedbackIncident;
 import model.Incident;
 import model.enums.IncidentStatus;
 import org.slf4j.Logger;
@@ -44,8 +46,10 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
     @Override
     public void save(Incident incident) {
         String sql = """
-            INSERT INTO incidents (customer_id, type, feedback_type, description, priority_score, score_impact, revenue_risk, status, assigned_advisor_id, source_feedback_item_id, flight_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO incidents (customer_id, type, feedback_id, feedback_type, description, priority_score,
+                                   score_impact, revenue_risk, status, assigned_advisor_id,
+                                   source_feedback_item_id, delay_minutes, flight_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = connectionProvider.getConnection();
@@ -58,27 +62,24 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
 
             pstmt.setInt(1, incident.getCustomerId());
             pstmt.setString(2, incident.getType() != null ? incident.getType().name() : null);
-            pstmt.setString(3, incident.getFeedbackType() != null ? incident.getFeedbackType().name() : null);
-            pstmt.setString(4, incident.getDescription());
-            pstmt.setDouble(5, incident.getPriorityScore());
-            pstmt.setDouble(6, incident.getScoreImpact());
-            pstmt.setInt(7, incident.getRevenueRisk());
-            pstmt.setString(8, incident.getStatus() != null ? incident.getStatus().name() : null);
+            bindFeedbackFields(pstmt, incident);
+            pstmt.setString(5, incident.getDescription());
+            pstmt.setDouble(6, incident.getPriorityScore());
+            pstmt.setDouble(7, incident.getScoreImpact());
+            pstmt.setInt(8, incident.getRevenueRisk());
+            pstmt.setString(9, incident.getStatus() != null ? incident.getStatus().name() : null);
             if (incident.getAssignedAdvisorId() != null) {
-                pstmt.setInt(9, incident.getAssignedAdvisorId());
-            } else {
-                pstmt.setNull(9, Types.INTEGER);
-            }
-            if (incident.getSourceFeedbackItemId() != null) {
-                pstmt.setInt(10, incident.getSourceFeedbackItemId());
+                pstmt.setInt(10, incident.getAssignedAdvisorId());
             } else {
                 pstmt.setNull(10, Types.INTEGER);
             }
+            bindSourceFeedbackItemId(pstmt, incident);
+            bindDelayFields(pstmt, incident);
             if (resolvedFlightId != null) {
-                pstmt.setInt(11, resolvedFlightId);
+                pstmt.setInt(13, resolvedFlightId);
                 incident.setFlightId(resolvedFlightId);
             } else {
-                pstmt.setNull(11, Types.INTEGER);
+                pstmt.setNull(13, Types.INTEGER);
             }
 
             pstmt.executeUpdate();
@@ -174,7 +175,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
     }
 
     @Override
-    public List<Incident> findByAdvisorId(Long advisorId) {
+    public List<Incident> findByAdvisorId(Integer advisorId) {
         List<Incident> incidents = new ArrayList<>();
         String sql = "SELECT * FROM incidents WHERE assigned_advisor_id = ?;";
 
@@ -182,7 +183,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             if (advisorId != null) {
-                pstmt.setLong(1, advisorId);
+                pstmt.setInt(1, advisorId);
             } else {
                 pstmt.setNull(1, Types.INTEGER);
             }
@@ -223,6 +224,43 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
         }
 
         return incidents;
+    }
+
+    private void bindFeedbackFields(PreparedStatement pstmt, Incident incident) throws SQLException {
+        if (incident instanceof FeedbackIncident feedbackIncident) {
+            if (feedbackIncident.getFeedbackId() != null) {
+                pstmt.setInt(3, feedbackIncident.getFeedbackId());
+            } else {
+                pstmt.setNull(3, Types.INTEGER);
+            }
+
+            pstmt.setString(
+                    4,
+                    feedbackIncident.getFeedbackType() != null ? feedbackIncident.getFeedbackType().name() : null
+            );
+            return;
+        }
+
+        pstmt.setNull(3, Types.INTEGER);
+        pstmt.setNull(4, Types.VARCHAR);
+    }
+
+    private void bindSourceFeedbackItemId(PreparedStatement pstmt, Incident incident) throws SQLException {
+        if (incident instanceof FeedbackIncident feedbackIncident && feedbackIncident.getSourceFeedbackItemId() != null) {
+            pstmt.setInt(11, feedbackIncident.getSourceFeedbackItemId());
+            return;
+        }
+
+        pstmt.setNull(11, Types.INTEGER);
+    }
+
+    private void bindDelayFields(PreparedStatement pstmt, Incident incident) throws SQLException {
+        if (incident instanceof DelayIncident delayIncident && delayIncident.getDelayMinutes() != null) {
+            pstmt.setInt(12, delayIncident.getDelayMinutes());
+            return;
+        }
+
+        pstmt.setNull(12, Types.INTEGER);
     }
 
 }
