@@ -85,11 +85,11 @@ public class DataSeeder {
                 customerOne.getId(),
                 customerOnePreviousFlight.getId(),
                 LocalDateTime.now().minusMonths(3),
-                9,
-                10,
+                4,
+                3,
                 List.of(
                         feedbackItem(FeedbackCategory.FLIGHT, 9, "Smooth boarding and attentive crew."),
-                        feedbackItem(FeedbackCategory.SERVICE, 10, "Advisor follow-up was excellent.")
+                        feedbackItem(FeedbackCategory.FOOD, 3, "In-flight meal quality was disappointing.")
                 ),
                 feedbackUpdate
         );
@@ -111,8 +111,8 @@ public class DataSeeder {
                 customerOneCurrentFlight.getId(),
                 IncidentType.FEEDBACK,
                 feedbackOne.getId(),
-                FeedbackCategory.SERVICE,
-                "VIP passenger requested proactive concierge updates before departure.",
+                FeedbackCategory.FOOD,
+                "VIP passenger reported disappointing in-flight meal quality.",
                 8.7,
                 1.4,
                 12000,
@@ -139,9 +139,9 @@ public class DataSeeder {
 
         createAction(
                 firstIncident.getId(),
-                "Schedule a same-day concierge call before boarding.",
-                "Offer lounge access as part of the recovery plan.",
-                "Send a tailored travel brief 24h before departure.",
+                "Offer a personalized meal replacement or special dining arrangement before departure.",
+                "Provide a goodwill onboard dining credit as part of the recovery plan.",
+                "Flag the customer's meal preferences for the next flight and confirm them in advance.",
                 8,
                 0.9,
                 0.15,
