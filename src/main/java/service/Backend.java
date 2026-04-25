@@ -4,17 +4,25 @@ import database.initialization.DatabaseInitializer;
 import repository.implementation.DatabaseActionRepository;
 import repository.implementation.DatabaseAdvisorRepository;
 import repository.implementation.DatabaseCustomerRepository;
-import repository.implementation.DatabaseFeedbackRepository;
+import repository.implementation.DatabaseCustomerNoteRepository;
+import repository.implementation.DatabaseCustomerView;
+import repository.implementation.DatabaseFeedbackAnalytics;
+import repository.implementation.DatabaseFeedbackLookup;
+import repository.implementation.DatabaseFeedbackUpdate;
 import repository.implementation.DatabaseFlightRepository;
 import repository.implementation.DatabaseIncidentRepository;
 import repository.implementation.DatabaseIncidentView;
+import repository.implementation.DatabaseNPSScores;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
 import repository.interfaces.AdvisorRepository;
 import repository.interfaces.CustomerLookup;
+import repository.interfaces.CustomerNoteLookup;
+import repository.interfaces.CustomerNoteUpdate;
 import repository.interfaces.CustomerSearch;
 import repository.interfaces.CustomerUpdate;
+import repository.interfaces.CustomerView;
 import repository.interfaces.FeedbackAnalytics;
 import repository.interfaces.FeedbackLookup;
 import repository.interfaces.FeedbackUpdate;
@@ -31,8 +39,11 @@ public class Backend {
     private final ActionUpdate actionUpdate;
     private final AdvisorRepository advisorRepository;
     private final CustomerLookup customerLookup;
+    private final CustomerNoteLookup customerNoteLookup;
+    private final CustomerNoteUpdate customerNoteUpdate;
     private final CustomerSearch customerSearch;
     private final CustomerUpdate customerUpdate;
+    private final CustomerView customerView;
     private final FeedbackAnalytics feedbackAnalytics;
     private final FeedbackLookup feedbackLookup;
     private final FeedbackUpdate feedbackUpdate;
@@ -46,7 +57,12 @@ public class Backend {
     public Backend() {
         DatabaseInitializer.initialize();
         DatabaseCustomerRepository customerRepository = new DatabaseCustomerRepository();
-        DatabaseFeedbackRepository feedbackRepository = new DatabaseFeedbackRepository();
+        DatabaseCustomerNoteRepository customerNoteRepository = new DatabaseCustomerNoteRepository();
+        DatabaseCustomerView customerViewRepository = new DatabaseCustomerView();
+        DatabaseFeedbackLookup feedbackLookupRepository = new DatabaseFeedbackLookup();
+        DatabaseFeedbackUpdate feedbackUpdateRepository = new DatabaseFeedbackUpdate();
+        DatabaseFeedbackAnalytics feedbackAnalyticsRepository = new DatabaseFeedbackAnalytics();
+        DatabaseNPSScores npsScoresRepository = new DatabaseNPSScores();
         DatabaseFlightRepository flightRepository = new DatabaseFlightRepository();
         DatabaseIncidentRepository incidentRepository = new DatabaseIncidentRepository();
         DatabaseIncidentView incidentViewRepository = new DatabaseIncidentView();
@@ -56,12 +72,15 @@ public class Backend {
         this.actionUpdate = actionRepository;
         this.advisorRepository = new DatabaseAdvisorRepository();
         this.customerLookup = customerRepository;
+        this.customerNoteLookup = customerNoteRepository;
+        this.customerNoteUpdate = customerNoteRepository;
         this.customerSearch = customerRepository;
         this.customerUpdate = customerRepository;
-        this.feedbackAnalytics = feedbackRepository;
-        this.feedbackLookup = feedbackRepository;
-        this.feedbackUpdate = feedbackRepository;
-        this.npsScores = feedbackRepository;
+        this.customerView = customerViewRepository;
+        this.feedbackAnalytics = feedbackAnalyticsRepository;
+        this.feedbackLookup = feedbackLookupRepository;
+        this.feedbackUpdate = feedbackUpdateRepository;
+        this.npsScores = npsScoresRepository;
         this.flightRepository = flightRepository;
         this.incidentLookup = incidentRepository;
         this.incidentManagement = incidentRepository;
@@ -93,8 +112,20 @@ public class Backend {
         return customerSearch;
     }
 
+    public CustomerNoteLookup getCustomerNoteLookup() {
+        return customerNoteLookup;
+    }
+
+    public CustomerNoteUpdate getCustomerNoteUpdate() {
+        return customerNoteUpdate;
+    }
+
     public CustomerUpdate getCustomerUpdate() {
         return customerUpdate;
+    }
+
+    public CustomerView getCustomerView() {
+        return customerView;
     }
 
     public IncidentLookup getIncidentLookup() {

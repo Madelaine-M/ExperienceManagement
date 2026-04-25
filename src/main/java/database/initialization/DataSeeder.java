@@ -3,7 +3,10 @@ package database.initialization;
 import model.ActionItem;
 import model.Advisor;
 import model.Customer;
+import model.CustomerNote;
+import model.DelayIncident;
 import model.Feedback;
+import model.FeedbackIncident;
 import model.FeedbackItem;
 import model.Flight;
 import model.Incident;
@@ -19,6 +22,7 @@ import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionUpdate;
 import repository.interfaces.AdvisorRepository;
 import repository.interfaces.CustomerLookup;
+import repository.interfaces.CustomerNoteUpdate;
 import repository.interfaces.CustomerUpdate;
 import repository.interfaces.FeedbackUpdate;
 import repository.interfaces.FlightRepository;
@@ -34,6 +38,7 @@ public class DataSeeder {
             AdvisorRepository advisorRepo,
             CustomerLookup customerLookup,
             CustomerUpdate customerUpdate,
+            CustomerNoteUpdate customerNoteUpdate,
             FlightRepository flightRepository,
             FeedbackUpdate feedbackUpdate,
             IncidentLookup incidentLookup,
@@ -50,35 +55,50 @@ public class DataSeeder {
 
         Customer customerOne = createCustomer(
                 "Max", "Mustermann", "max@test.de", "1989-04-17",
-                "2026-05-20", true, advisorOne.getId(), 84.0f, "Window seat preferred",
+                true, advisorOne.getId(), 84.0f,
                 "Quiet cabin", CustomerType.SCIENTIST, PaymentMethod.IMMEDIATE, customerUpdate
         );
         Customer customerTwo = createCustomer(
                 "Erika", "Musterfrau", "erika@web.de", "1993-09-02",
-                "2026-06-11", false, advisorTwo.getId(), 58.0f, "Vegetarian meals",
+                false, advisorTwo.getId(), 58.0f,
                 "Aisle seat", CustomerType.NORMAL, PaymentMethod.MONTHS, customerUpdate
         );
 
-        Flight customerOnePreviousFlight = createFlight(customerOne.getId(), "EM1001", "2025-11-03", Packages.GOLD, "COMPLETED", false, flightRepository);
-        Flight customerOneCurrentFlight = createFlight(customerOne.getId(), "EM2001", "2026-05-22", Packages.VIP, "BOOKED", true, flightRepository);
-        Flight customerTwoCurrentFlight = createFlight(customerTwo.getId(), "EM2104", "2026-06-14", Packages.STANDARD, "BOOKED", true, flightRepository);
+        createCustomerNote(
+                customerOne.getId(),
+                advisorOne.getId(),
+                "Customer prefers proactive status updates before departure.",
+                customerNoteUpdate
+        );
+        createCustomerNote(
+                customerTwo.getId(),
+                advisorTwo.getId(),
+                "Customer is sensitive to transfer disruptions and wants early communication.",
+                customerNoteUpdate
+        );
 
-        createFeedback(
+        Flight customerOnePreviousFlight = createFlight(customerOne.getId(), "EM1001", "2025-10-10", "2025-11-03", Packages.GOLD, "COMPLETED", false, flightRepository);
+        Flight customerOneCurrentFlight = createFlight(customerOne.getId(), "EM2001", "2026-05-20", "2026-05-22", Packages.VIP, "BOOKED", true, flightRepository);
+        Flight customerTwoCurrentFlight = createFlight(customerTwo.getId(), "EM2104", "2026-06-11", "2026-06-14", Packages.STANDARD, "BOOKED", true, flightRepository);
+
+        Feedback feedbackOne = createFeedback(
                 customerOne.getId(),
                 customerOnePreviousFlight.getId(),
                 LocalDateTime.now().minusMonths(3),
-                9,
+                4,
+                3,
                 List.of(
                         feedbackItem(FeedbackCategory.FLIGHT, 9, "Smooth boarding and attentive crew."),
-                        feedbackItem(FeedbackCategory.SERVICE, 10, "Advisor follow-up was excellent.")
+                        feedbackItem(FeedbackCategory.FOOD, 3, "In-flight meal quality was disappointing.")
                 ),
                 feedbackUpdate
         );
-        createFeedback(
+        Feedback feedbackTwo = createFeedback(
                 customerTwo.getId(),
                 customerTwoCurrentFlight.getId(),
                 LocalDateTime.now().minusDays(2),
                 5,
+                4,
                 List.of(
                         feedbackItem(FeedbackCategory.FLIGHT, 4, "Delay communication was weak."),
                         feedbackItem(FeedbackCategory.ORGANIZATION, 6, "Transfer details arrived too late.")
@@ -90,34 +110,38 @@ public class DataSeeder {
                 customerOne.getId(),
                 customerOneCurrentFlight.getId(),
                 IncidentType.FEEDBACK,
-                FeedbackCategory.SERVICE,
-                "VIP passenger requested proactive concierge updates before departure.",
+                feedbackOne.getId(),
+                FeedbackCategory.FOOD,
+                "VIP passenger reported disappointing in-flight meal quality.",
                 8.7,
                 1.4,
                 12000,
                 IncidentStatus.OPEN,
                 advisorOne.getId(),
+                null,
                 incidentUpdate
         );
         Incident secondIncident = createIncident(
                 customerTwo.getId(),
                 customerTwoCurrentFlight.getId(),
                 IncidentType.DELAY,
-                FeedbackCategory.FLIGHT,
+                null,
+                null,
                 "Customer reported missed assistance during a schedule change.",
                 9.4,
                 2.1,
                 18500,
                 IncidentStatus.OPEN,
                 advisorTwo.getId(),
+                95,
                 incidentUpdate
         );
 
         createAction(
                 firstIncident.getId(),
-                "Schedule a same-day concierge call before boarding.",
-                "Offer lounge access as part of the recovery plan.",
-                "Send a tailored travel brief 24h before departure.",
+                "Offer a personalized meal replacement or special dining arrangement before departure.",
+                "Provide a goodwill onboard dining credit as part of the recovery plan.",
+                "Flag the customer's meal preferences for the next flight and confirm them in advance.",
                 8,
                 0.9,
                 0.15,
@@ -145,8 +169,8 @@ public class DataSeeder {
     }
 
     private static Customer createCustomer(String firstName, String lastName, String email, String birthDate,
-                                           String bookingDate, boolean returning, Integer advisorId, float clvScore,
-                                           String notes, String preferences, CustomerType customerType,
+                                           boolean returning, Integer advisorId, float cvScore,
+                                           String preferences, CustomerType customerType,
                                            PaymentMethod paymentMethod, CustomerUpdate customerUpdate) {
         Customer customer = new Customer(
                 0,
@@ -155,11 +179,9 @@ public class DataSeeder {
                 email,
                 birthDate,
                 CustomerStatus.BOOKED,
-                bookingDate,
                 returning,
                 advisorId,
-                clvScore,
-                notes,
+                cvScore,
                 preferences,
                 "Priority follow-up",
                 false,
@@ -173,17 +195,26 @@ public class DataSeeder {
         return customer;
     }
 
-    private static Flight createFlight(int customerId, String flightNumber, String flightDate, Packages bookingPackage,
-                                       String status, boolean current, FlightRepository flightRepository) {
-        Flight flight = new Flight(0, customerId, flightNumber, flightDate, bookingPackage, status, current);
+    private static CustomerNote createCustomerNote(int customerId, int advisorId, String noteText,
+                                                   CustomerNoteUpdate customerNoteUpdate) {
+        LocalDateTime now = LocalDateTime.now();
+        CustomerNote customerNote = new CustomerNote(0, customerId, advisorId, noteText, now, now);
+        customerNoteUpdate.save(customerNote);
+        return customerNote;
+    }
+
+    private static Flight createFlight(int customerId, String flightNumber, String bookingDate, String flightDate,
+                                       Packages bookingPackage, String status, boolean current,
+                                       FlightRepository flightRepository) {
+        Flight flight = new Flight(0, customerId, flightNumber, bookingDate, flightDate, bookingPackage, status, current);
         flightRepository.save(flight);
         return flight;
     }
 
     private static Feedback createFeedback(int customerId, int flightId, LocalDateTime createdAt,
-                                           int customerSatScore, List<FeedbackItem> items,
+                                           int customerSatScore, int referralScore, List<FeedbackItem> items,
                                            FeedbackUpdate feedbackUpdate) {
-        Feedback feedback = new Feedback(0, customerId, createdAt, items, 0.0, customerSatScore, 0, flightId);
+        Feedback feedback = new Feedback(0, customerId, createdAt, items, 0.0, customerSatScore, referralScore, flightId);
         feedback.setTotalScore(feedback.getOverallScore());
         feedbackUpdate.save(feedback);
         return feedback;
@@ -193,26 +224,47 @@ public class DataSeeder {
         return new FeedbackItem(0, 0, category, score, comment);
     }
 
-    private static Incident createIncident(int customerId, int flightId, IncidentType type,
+    private static Incident createIncident(int customerId, int flightId, IncidentType type, Integer feedbackId,
                                            FeedbackCategory feedbackCategory, String description,
                                            double priorityScore, double scoreImpact, int revenueRisk,
-                                           IncidentStatus status, Integer advisorId, IncidentUpdate incidentUpdate) {
-        Incident incident = new Incident(
-                0,
-                customerId,
-                type,
-                feedbackCategory,
-                description,
-                priorityScore,
-                scoreImpact,
-                revenueRisk,
-                status,
-                advisorId,
-                null,
-                null,
-                flightId,
-                null
-        );
+                                           IncidentStatus status, Integer advisorId, Integer delayMinutes,
+                                           IncidentUpdate incidentUpdate) {
+        Incident incident;
+        if (type == IncidentType.FEEDBACK) {
+            incident = new FeedbackIncident(
+                    0,
+                    customerId,
+                    description,
+                    priorityScore,
+                    scoreImpact,
+                    revenueRisk,
+                    status,
+                    advisorId,
+                    feedbackId,
+                    feedbackCategory,
+                    null,
+                    null,
+                    flightId,
+                    null
+            );
+        } else if (type == IncidentType.DELAY) {
+            incident = new DelayIncident(
+                    0,
+                    customerId,
+                    description,
+                    priorityScore,
+                    scoreImpact,
+                    revenueRisk,
+                    status,
+                    advisorId,
+                    delayMinutes,
+                    null,
+                    flightId,
+                    null
+            );
+        } else {
+            throw new IllegalArgumentException("Unsupported incident type for seed data: " + type);
+        }
         incidentUpdate.save(incident);
         return incident;
     }

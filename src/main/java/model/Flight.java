@@ -6,6 +6,7 @@ public class Flight {
     private int id;
     private int customerId;
     private String flightNumber;
+    private String bookingDate;
     private String flightDate;
     private Packages bookingPackage;
     private String status;
@@ -14,11 +15,12 @@ public class Flight {
     public Flight() {
     }
 
-    public Flight(int id, int customerId, String flightNumber, String flightDate, Packages bookingPackage,
-                  String status, boolean current) {
+    public Flight(int id, int customerId, String flightNumber, String bookingDate, String flightDate,
+                  Packages bookingPackage, String status, boolean current) {
         this.id = id;
         this.customerId = customerId;
         this.flightNumber = flightNumber;
+        this.bookingDate = bookingDate;
         this.flightDate = flightDate;
         this.bookingPackage = bookingPackage;
         this.status = status;
@@ -47,6 +49,14 @@ public class Flight {
 
     public void setFlightNumber(String flightNumber) {
         this.flightNumber = flightNumber;
+    }
+
+    public String getBookingDate() {
+        return bookingDate;
+    }
+
+    public void setBookingDate(String bookingDate) {
+        this.bookingDate = bookingDate;
     }
 
     public String getFlightDate() {

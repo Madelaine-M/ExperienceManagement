@@ -1,59 +1,43 @@
 package model;
 
-import model.enums.FeedbackCategory;
 import model.enums.IncidentStatus;
 import model.enums.IncidentType;
+
 import java.time.LocalDateTime;
 
-public class Incident {
+public abstract class Incident {
     private int id;
     private int customerId;
-    private IncidentType type;
-    private FeedbackCategory feedbackType;  // noch in DB ergänzen
     private String description;
     private double priorityScore = 0;
     private double scoreImpact = 0;
-    private int revenueRisk = 0; //noch in DB einfügen
+    private int revenueRisk = 0;
     private IncidentStatus status = IncidentStatus.OPEN;
     private Integer assignedAdvisorId;
-    private Integer sourceFeedbackItemId;
     private LocalDateTime createdAt;
-    private int flightId;
+    private Integer flightId;
     private ActionItem suggestedAction;
 
-    public Incident() {}
-
-    public Incident(int id, int customerId, IncidentType type, FeedbackCategory feedbackType, String description,
-                    Integer sourceFeedbackItemId, LocalDateTime createdAt, int flightId) {
-        this.id = id;
-        this.customerId = customerId;
-        this.type = type;
-        this.feedbackType = feedbackType;
-        this.description = description;
-        this.sourceFeedbackItemId = sourceFeedbackItemId;
-        this.createdAt = createdAt;
-        this.flightId = flightId;
+    protected Incident() {
     }
 
-    public Incident(int id, int customerId, IncidentType type, FeedbackCategory feedbackType, String description,
-                    double priorityScore, double scoreImpact, int revenueRisk, IncidentStatus status,
-                    Integer assignedAdvisorId, Integer sourceFeedbackItemId, LocalDateTime createdAt, int flightId,
-                    ActionItem suggestedAction) {
+    protected Incident(int id, int customerId, String description, double priorityScore, double scoreImpact,
+                       int revenueRisk, IncidentStatus status, Integer assignedAdvisorId, LocalDateTime createdAt,
+                       Integer flightId, ActionItem suggestedAction) {
         this.id = id;
         this.customerId = customerId;
-        this.type = type;
-        this.feedbackType = feedbackType;
         this.description = description;
         this.priorityScore = priorityScore;
         this.scoreImpact = scoreImpact;
         this.revenueRisk = revenueRisk;
         this.status = status;
         this.assignedAdvisorId = assignedAdvisorId;
-        this.sourceFeedbackItemId = sourceFeedbackItemId;
         this.createdAt = createdAt;
         this.flightId = flightId;
         this.suggestedAction = suggestedAction;
     }
+
+    public abstract IncidentType getType();
 
     public int getId() {
         return id;
@@ -69,22 +53,6 @@ public class Incident {
 
     public void setCustomerId(int customerId) {
         this.customerId = customerId;
-    }
-
-    public IncidentType getType() {
-        return type;
-    }
-
-    public void setType(IncidentType type) {
-        this.type = type;
-    }
-
-    public FeedbackCategory getFeedbackType() {
-        return feedbackType;
-    }
-
-    public void setFeedbackType(FeedbackCategory feedbackType) {
-        this.feedbackType = feedbackType;
     }
 
     public String getDescription() {
@@ -127,14 +95,6 @@ public class Incident {
         this.assignedAdvisorId = assignedAdvisorId;
     }
 
-    public Integer getSourceFeedbackItemId() {
-        return sourceFeedbackItemId;
-    }
-
-    public void setSourceFeedbackItemId(Integer sourceFeedbackItemId) {
-        this.sourceFeedbackItemId = sourceFeedbackItemId;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -151,11 +111,11 @@ public class Incident {
         this.revenueRisk = revenueRisk;
     }
 
-    public int getFlightId() {
+    public Integer getFlightId() {
         return flightId;
     }
 
-    public void setFlightId(int flightId) {
+    public void setFlightId(Integer flightId) {
         this.flightId = flightId;
     }
 

@@ -11,7 +11,7 @@ public interface IncidentManagement {
 
     List<Incident> findUnassigned();
 
-    List<Incident> findByAdvisorId(Long advisorId);
+    List<Incident> findByAdvisorId(Integer advisorId);
 
     List<Incident> findPendingActionItems();
 

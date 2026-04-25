@@ -1,0 +1,164 @@
+package repository.implementation;
+
+import database.connection.ConnectionProvider;
+import database.connection.DatabaseConnectionProvider;
+import model.CustomerDetailView;
+import model.CustomerNote;
+import model.CustomerOverview;
+import model.Flight;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import repository.implementation.mapper.CustomerViewMapper;
+import repository.implementation.support.CustomerNoteLoader;
+import repository.implementation.support.FlightViewLoader;
+import repository.implementation.support.OpenIncidentSummary;
+import repository.implementation.support.OpenIncidentSummaryLoader;
+import repository.implementation.support.PreviousFlightsSummaryFormatter;
+import repository.interfaces.CustomerView;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class DatabaseCustomerView implements CustomerView {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseCustomerView.class);
+    private final CustomerViewMapper customerViewMapper;
+    private final OpenIncidentSummaryLoader openIncidentSummaryLoader;
+    private final FlightViewLoader flightViewLoader;
+    private final CustomerNoteLoader customerNoteLoader;
+    private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
+    private final ConnectionProvider connectionProvider;
+
+    public DatabaseCustomerView() {
+        this(
+                new DatabaseConnectionProvider(),
+                new CustomerViewMapper(),
+                new OpenIncidentSummaryLoader(),
+                new FlightViewLoader(),
+                new CustomerNoteLoader(),
+                new PreviousFlightsSummaryFormatter()
+        );
+    }
+
+    public DatabaseCustomerView(ConnectionProvider connectionProvider,
+                                CustomerViewMapper customerViewMapper,
+                                OpenIncidentSummaryLoader openIncidentSummaryLoader,
+                                FlightViewLoader flightViewLoader,
+                                CustomerNoteLoader customerNoteLoader,
+                                PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter) {
+        this.connectionProvider = connectionProvider;
+        this.customerViewMapper = customerViewMapper;
+        this.openIncidentSummaryLoader = openIncidentSummaryLoader;
+        this.flightViewLoader = flightViewLoader;
+        this.customerNoteLoader = customerNoteLoader;
+        this.previousFlightsSummaryFormatter = previousFlightsSummaryFormatter;
+    }
+
+    @Override
+    public List<CustomerOverview> findOverviewsByAdvisorId(int advisorId) {
+        List<CustomerOverview> overviews = new ArrayList<>();
+        String sql = """
+            SELECT c.id,
+                   c.first_name,
+                   c.last_name,
+                   c.status,
+                   c.customer_type,
+                   c.cv_score,
+                   c.is_returning,
+                   f.booking_package
+            FROM customers c
+            LEFT JOIN flights f ON c.id = f.customer_id
+                               AND f.is_current = 1
+            WHERE c.assigned_advisor_id = ?
+            ORDER BY c.last_name ASC, c.first_name ASC, c.id ASC;
+            """;
+
+        try (Connection conn = connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, advisorId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    CustomerOverview overview = customerViewMapper.mapOverview(rs);
+                    applyOpenIncidentSummary(conn, overview);
+                    overviews.add(overview);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while loading customer overviews for advisor {}", advisorId, e);
+        }
+
+        return overviews;
+    }
+
+    @Override
+    public CustomerDetailView findDetailByCustomerId(int customerId) {
+        String sql = """
+            SELECT id,
+                   first_name,
+                   last_name,
+                   email,
+                   status,
+                   is_returning,
+                   customer_type,
+                   cv_score,
+                   preferences,
+                   apply_to_next_booking,
+                   payment_method,
+                   public_person
+            FROM customers
+            WHERE id = ?;
+            """;
+
+        try (Connection conn = connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, customerId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    CustomerDetailView detail = customerViewMapper.mapDetail(rs);
+                    applyOpenIncidentSummary(conn, detail);
+                    List<CustomerNote> notes = customerNoteLoader.loadByCustomerId(conn, customerId);
+                    detail.setNotes(notes);
+                    Flight currentFlight = flightViewLoader.loadCurrentFlight(conn, customerId);
+                    detail.setCurrentFlight(currentFlight);
+                    if (currentFlight != null) {
+                        detail.setBookingDate(currentFlight.getBookingDate());
+                        detail.setBookingPackage(currentFlight.getBookingPackage());
+                    }
+
+                    List<Flight> previousFlights = flightViewLoader.loadPreviousFlights(conn, customerId);
+                    detail.setPreviousFlightsList(previousFlights);
+                    detail.setPreviousFlights(previousFlightsSummaryFormatter.format(previousFlights));
+
+                    return detail;
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error while loading customer detail view for customer {}", customerId, e);
+        }
+
+        return null;
+    }
+
+    private void applyOpenIncidentSummary(Connection conn, CustomerOverview overview) throws SQLException {
+        OpenIncidentSummary summary = openIncidentSummaryLoader.loadForCustomer(conn, overview.getCustomerId());
+        overview.setHasOpenIncident(summary.hasOpenIncident());
+        overview.setOpenIncidentId(summary.openIncidentId());
+        overview.setHighestPriorityScore(summary.highestPriorityScore());
+        overview.setIncidentDescription(summary.incidentDescription());
+    }
+
+    private void applyOpenIncidentSummary(Connection conn, CustomerDetailView detail) throws SQLException {
+        OpenIncidentSummary summary = openIncidentSummaryLoader.loadForCustomer(conn, detail.getCustomerId());
+        detail.setHasOpenIncident(summary.hasOpenIncident());
+        detail.setOpenIncidentId(summary.openIncidentId());
+        detail.setHighestPriorityScore(summary.highestPriorityScore());
+        detail.setIncidentDescription(summary.incidentDescription());
+    }
+}

@@ -11,12 +11,10 @@ public class Customer {
     private String email;
     private String birthDate;
     private CustomerStatus status = CustomerStatus.BOOKED;
-    private String bookingDate;
     private boolean returning;
     private Integer assignedAdvisorId;
-    private float clvScore;
-    private String notes = "";
-    private String preferences = "";
+    private float cvScore;
+    private String preferences = ""; //als extra Klasse / Objekt
     private String applyToNextBooking = ""; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
     private boolean marketingPurpose;
     private boolean newsletterSubscription;
@@ -75,14 +73,6 @@ public class Customer {
         this.birthDate = birthDate;
     }
 
-    public String getBookingDate() {
-        return bookingDate;
-    }
-
-    public void setBookingDate(String bookingDate) {
-        this.bookingDate = bookingDate;
-    }
-
     public boolean isReturning() {
         return returning;
     }
@@ -99,20 +89,12 @@ public class Customer {
         this.assignedAdvisorId = assignedAdvisorId;
     }
 
-    public float getClvScore() {
-        return clvScore;
+    public float getCvScore() {
+        return cvScore;
     }
 
-    public void setClvScore(float clv_score) {
-        this.clvScore= clv_score;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public void setCvScore(float cvScore) {
+        this.cvScore = cvScore;
     }
 
     public String getApplyToNextBooking() {
@@ -182,18 +164,17 @@ public class Customer {
     public Customer() {}
 
     public Customer(int id, String firstName, String lastName, String email, String birthDate,
-                    String bookingDate, CustomerType customerType) {
+                    CustomerType customerType) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.birthDate = birthDate;
-        this.bookingDate = bookingDate;
         this.customerType = customerType;
     }
 
     public Customer(int id, String firstName, String lastName, String email, String birthDate, CustomerStatus status,
-                    String bookingDate, boolean returning, Integer assignedAdvisorId, float clvScore, String notes,
+                    boolean returning, Integer assignedAdvisorId, float cvScore,
                     String preferences, String applyToNextBooking, boolean marketingPurpose,
                     boolean newsletterSubscription, boolean referralCode, PaymentMethod paymentMethod,
                     boolean publicPerson, CustomerType customerType) {
@@ -203,11 +184,9 @@ public class Customer {
         this.email = email;
         this.birthDate = birthDate;
         this.status = status;
-        this.bookingDate = bookingDate;
         this.returning = returning;
         this.assignedAdvisorId = assignedAdvisorId;
-        this.clvScore = clvScore;
-        this.notes = notes;
+        this.cvScore = cvScore;
         this.preferences = preferences;
         this.applyToNextBooking = applyToNextBooking;
         this.marketingPurpose = marketingPurpose;

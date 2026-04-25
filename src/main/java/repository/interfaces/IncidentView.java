@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface IncidentView {
 
-    List<IncidentOverview> findAllPrioritizedOverviews();
+    List<IncidentOverview> findAllPrioritizedOverviews(int advisorId);
 
     IncidentDetailView findDetailByIncidentId(int incidentId);
 

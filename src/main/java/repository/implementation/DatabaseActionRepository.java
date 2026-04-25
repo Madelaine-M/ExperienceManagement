@@ -1,11 +1,12 @@
 package repository.implementation;
 
-import database.connection.DatabaseManager;
+import database.connection.ConnectionProvider;
+import database.connection.DatabaseConnectionProvider;
 import model.ActionItem;
-import model.enums.ActionStatus;
-import model.enums.PriorityLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.implementation.mapper.ActionItemResultSetMapper;
+import repository.implementation.support.GeneratedKeyExtractor;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
@@ -20,6 +21,20 @@ import java.util.List;
 
 public class DatabaseActionRepository implements ActionLookup, ActionUpdate, ActionManagement {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseActionRepository.class);
+    private final ConnectionProvider connectionProvider;
+    private final ActionItemResultSetMapper actionItemMapper;
+    private final GeneratedKeyExtractor generatedKeyExtractor;
+
+    public DatabaseActionRepository() {
+        this(new DatabaseConnectionProvider(), new ActionItemResultSetMapper(), new GeneratedKeyExtractor());
+    }
+
+    public DatabaseActionRepository(ConnectionProvider connectionProvider, ActionItemResultSetMapper actionItemMapper,
+                                    GeneratedKeyExtractor generatedKeyExtractor) {
+        this.connectionProvider = connectionProvider;
+        this.actionItemMapper = actionItemMapper;
+        this.generatedKeyExtractor = generatedKeyExtractor;
+    }
 
     @Override
     public void save(ActionItem actionItem) {
@@ -28,7 +43,7 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setInt(1, actionItem.getIncidentId());
@@ -42,11 +57,7 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
             pstmt.setDouble(9, actionItem.getExpectedRebooking());
             pstmt.executeUpdate();
 
-            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    actionItem.setId(generatedKeys.getInt(1));
-                }
-            }
+            actionItem.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "action item"));
 
             logger.info("Action item saved for incident {}", actionItem.getIncidentId());
         } catch (SQLException e) {
@@ -58,7 +69,7 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
     public void updateStatus(int id, String status) {
         String sql = "UPDATE action_items SET status = ? WHERE id = ?;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, status);
@@ -73,14 +84,14 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
     public ActionItem findById(int id) {
         String sql = "SELECT * FROM action_items WHERE id = ?;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, id);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToActionItem(rs);
+                    return actionItemMapper.map(rs);
                 }
             }
         } catch (SQLException e) {
@@ -95,14 +106,14 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
         List<ActionItem> actionItems = new ArrayList<>();
         String sql = "SELECT * FROM action_items WHERE incident_id = ? ORDER BY priority DESC, id ASC;";
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, incidentId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    actionItems.add(mapResultSetToActionItem(rs));
+                    actionItems.add(actionItemMapper.map(rs));
                 }
             }
         } catch (SQLException e) {
@@ -112,26 +123,6 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
         return actionItems;
     }
     
-    private ActionItem mapResultSetToActionItem(ResultSet rs) throws SQLException {
-        ActionItem actionItem = new ActionItem();
-        actionItem.setId(rs.getInt("id"));
-        actionItem.setIncidentId(rs.getInt("incident_id"));
-        actionItem.setDescription(rs.getString("description"));
-        actionItem.setSugegstion1(rs.getString("suggestion_1"));
-        actionItem.setSuggestion2(rs.getString("suggestion_2"));
-
-        String status = rs.getString("status");
-        if (status != null) {
-            actionItem.setStatus(ActionStatus.valueOf(status));
-        }
-
-        actionItem.setPriority(rs.getInt("priority"));
-        actionItem.setScoreImpact(rs.getDouble("score_impact"));
-        actionItem.setExpectedRec(rs.getDouble("expected_rec"));
-        actionItem.setExpectedRebooking(rs.getDouble("expected_rebooking"));
-        return actionItem;
-    }
-
     @Override
     public List<ActionItem> findPriorityActionsForAdvisor(int advisorId) {
         List<ActionItem> actions = new ArrayList<>();
@@ -145,14 +136,14 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
         ORDER BY ai.priority DESC;
         """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, advisorId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    actions.add(mapResultSetToActionItem(rs));
+                    actions.add(actionItemMapper.map(rs));
                 }
             }
         } catch (SQLException e) {

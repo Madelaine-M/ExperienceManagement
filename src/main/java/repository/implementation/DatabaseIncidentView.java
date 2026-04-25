@@ -1,14 +1,15 @@
 package repository.implementation;
 
-import database.connection.DatabaseManager;
+import database.connection.ConnectionProvider;
+import database.connection.DatabaseConnectionProvider;
 import model.Flight;
 import model.IncidentDetailView;
 import model.IncidentOverview;
-import model.enums.CustomerType;
-import model.enums.IncidentType;
-import model.enums.Packages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.implementation.mapper.IncidentViewMapper;
+import repository.implementation.support.FlightViewLoader;
+import repository.implementation.support.PreviousFlightsSummaryFormatter;
 import repository.interfaces.IncidentView;
 
 import java.sql.Connection;
@@ -20,9 +21,32 @@ import java.util.List;
 
 public class DatabaseIncidentView implements IncidentView {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseIncidentView.class);
+    private final IncidentViewMapper incidentViewMapper;
+    private final FlightViewLoader flightViewLoader;
+    private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
+    private final ConnectionProvider connectionProvider;
+
+    public DatabaseIncidentView() {
+        this(
+                new DatabaseConnectionProvider(),
+                new IncidentViewMapper(),
+                new FlightViewLoader(),
+                new PreviousFlightsSummaryFormatter()
+        );
+    }
+
+    public DatabaseIncidentView(ConnectionProvider connectionProvider,
+                                IncidentViewMapper incidentViewMapper,
+                                FlightViewLoader flightViewLoader,
+                                PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter) {
+        this.connectionProvider = connectionProvider;
+        this.incidentViewMapper = incidentViewMapper;
+        this.flightViewLoader = flightViewLoader;
+        this.previousFlightsSummaryFormatter = previousFlightsSummaryFormatter;
+    }
 
     @Override
-    public List<IncidentOverview> findAllPrioritizedOverviews() {
+    public List<IncidentOverview> findAllPrioritizedOverviews(int advisorId) {
         List<IncidentOverview> overviews = new ArrayList<>();
         String sql = """
             SELECT i.id,
@@ -38,40 +62,25 @@ public class DatabaseIncidentView implements IncidentView {
             JOIN customers c ON i.customer_id = c.id
             LEFT JOIN flights f ON i.flight_id = f.id
             WHERE i.status = 'OPEN'
+              AND i.assigned_advisor_id = ?
             ORDER BY i.priority_score DESC, i.created_at ASC;
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+        try (Connection conn = connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            while (rs.next()) {
-                overviews.add(mapResultSetToOverview(rs));
+            pstmt.setInt(1, advisorId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    overviews.add(incidentViewMapper.mapOverview(rs));
+                }
             }
         } catch (SQLException e) {
-            logger.error("Error while loading prioritized incident overviews", e);
+            logger.error("Error while loading prioritized incident overviews for advisor {}", advisorId, e);
         }
 
         return overviews;
-    }
-
-    private IncidentOverview mapResultSetToOverview(ResultSet rs) throws SQLException {
-        IncidentOverview overview = new IncidentOverview();
-        overview.setIncidentId(rs.getInt("id"));
-        overview.setCustomerId(rs.getInt("customer_id"));
-        overview.setCustomerFirstName(rs.getString("first_name"));
-        overview.setCustomerLastName(rs.getString("last_name"));
-        overview.setDescription(rs.getString("description"));
-        overview.setPriorityScore(rs.getDouble("priority_score"));
-        overview.setRevenueRisk(rs.getInt("revenue_risk"));
-        overview.setScoreImpact(rs.getDouble("score_impact"));
-
-        String packageStr = rs.getString("booking_package");
-        if (packageStr != null) {
-            overview.setBookingPackage(Packages.valueOf(packageStr));
-        }
-
-        return overview;
     }
 
     @Override
@@ -80,6 +89,9 @@ public class DatabaseIncidentView implements IncidentView {
             SELECT i.id,
                    i.customer_id,
                    i.type,
+                   i.feedback_id,
+                   i.source_feedback_item_id,
+                   i.delay_minutes,
                    i.description,
                    c.first_name,
                    c.last_name,
@@ -95,14 +107,20 @@ public class DatabaseIncidentView implements IncidentView {
             WHERE i.id = ?;
             """;
 
-        try (Connection conn = DatabaseManager.getConnection();
+        try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, incidentId);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToDetail(conn, rs);
+                    IncidentDetailView detail = incidentViewMapper.mapDetail(rs);
+                    List<Flight> previousFlights = detail.getCurrentFlightId() != null
+                            ? flightViewLoader.loadPreviousFlights(conn, detail.getCustomerId(), detail.getCurrentFlightId())
+                            : flightViewLoader.loadPreviousFlights(conn, detail.getCustomerId());
+                    detail.setPreviousFlightsList(previousFlights);
+                    detail.setPreviousFlights(previousFlightsSummaryFormatter.format(previousFlights));
+                    return detail;
                 }
             }
         } catch (SQLException e) {
@@ -110,89 +128,5 @@ public class DatabaseIncidentView implements IncidentView {
         }
 
         return null;
-    }
-
-    private IncidentDetailView mapResultSetToDetail(Connection conn, ResultSet rs) throws SQLException {
-        IncidentDetailView detail = new IncidentDetailView();
-        detail.setIncidentId(rs.getInt("id"));
-        detail.setCustomerId(rs.getInt("customer_id"));
-        detail.setCustomerFirstName(rs.getString("first_name"));
-        detail.setCustomerLastName(rs.getString("last_name"));
-        detail.setReturning(rs.getBoolean("is_returning"));
-        detail.setCurrentFlightDate(rs.getString("flight_date"));
-        detail.setCurrentFlightId(rs.getInt("flight_id"));
-        detail.setCurrentFlightNumber(rs.getString("flight_number"));
-        detail.setIncidentDescription(rs.getString("description"));
-
-        String bookingPackageStr = rs.getString("booking_package");
-        if (bookingPackageStr != null) {
-            detail.setBookingPackage(Packages.valueOf(bookingPackageStr));
-        }
-
-        String customerTypeStr = rs.getString("customer_type");
-        if (customerTypeStr != null) {
-            detail.setCustomerType(CustomerType.valueOf(customerTypeStr));
-        }
-
-        String incidentTypeStr = rs.getString("type");
-        if (incidentTypeStr != null) {
-            detail.setIncidentType(IncidentType.valueOf(incidentTypeStr));
-        }
-
-        List<Flight> previousFlights = loadPreviousFlights(conn, detail.getCustomerId(), detail.getCurrentFlightId());
-        detail.setPreviousFlightsList(previousFlights);
-        detail.setPreviousFlights(buildPreviousFlightsSummary(previousFlights));
-
-        return detail;
-    }
-
-    private List<Flight> loadPreviousFlights(Connection conn, int customerId, int currentFlightId) throws SQLException {
-        List<Flight> previousFlights = new ArrayList<>();
-        String sql = """
-            SELECT *
-            FROM flights
-            WHERE customer_id = ?
-              AND is_current = 0
-              AND id <> ?
-            ORDER BY flight_date DESC, id DESC;
-            """;
-
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, customerId);
-            pstmt.setInt(2, currentFlightId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    previousFlights.add(mapResultSetToFlight(rs));
-                }
-            }
-        }
-
-        return previousFlights;
-    }
-
-    private Flight mapResultSetToFlight(ResultSet rs) throws SQLException {
-        Flight flight = new Flight();
-        flight.setId(rs.getInt("id"));
-        flight.setCustomerId(rs.getInt("customer_id"));
-        flight.setFlightNumber(rs.getString("flight_number"));
-        flight.setFlightDate(rs.getString("flight_date"));
-        flight.setStatus(rs.getString("status"));
-        flight.setCurrent(rs.getBoolean("is_current"));
-
-        String bookingPackage = rs.getString("booking_package");
-        if (bookingPackage != null) {
-            flight.setBookingPackage(Packages.valueOf(bookingPackage));
-        }
-
-        return flight;
-    }
-
-    private String buildPreviousFlightsSummary(List<Flight> previousFlights) {
-        if (previousFlights.isEmpty()) {
-            return "No previous flight data";
-        }
-
-        return previousFlights.size() + " previous flight(s)";
     }
 }
