@@ -6,9 +6,9 @@ public interface ExpectedImpactCalcService {
 
     int calculateDefaultScoreImpact(IncidentType type);
 
-    int calculateRevenueImpact(); //Klasse für Packages muss eingeführt werden
+    int calculateRevenueImpact(int impact); //Klasse für Packages muss eingeführt werden
 
-    int calculateRecImpact();
+    int calculateRecImpact(int impact);
 
-    int calculateRebImpact();
+    int calculateRebImpact(int impact);
 }

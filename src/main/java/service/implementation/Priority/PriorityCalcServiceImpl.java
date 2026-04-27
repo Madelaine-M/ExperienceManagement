@@ -18,7 +18,7 @@ public class PriorityCalcServiceImpl implements PriorityCalcService {
         return (getBaseSeverity(incident.getType())*
                 getCVPart(incident.getCustomerId())+
                 (expectedImpactCalcService.calculateDefaultScoreImpact(incident.getType())*10)+
-                (expectedImpactCalcService.calculateRevenueImpact()/2000)
+                (expectedImpactCalcService.calculateRevenueImpact(10)/2000)
         );
     }
 

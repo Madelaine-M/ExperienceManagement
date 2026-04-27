@@ -10,17 +10,17 @@ public class ExpectedImpactCalcServiceImpl implements ExpectedImpactCalcService 
     }
 
     @Override
-    public int calculateRevenueImpact() {
-        return 0;
+    public int calculateRevenueImpact(int impact) {
+        return impact;
     }
 
     @Override
-    public int calculateRecImpact() {
-        return 0;
+    public int calculateRecImpact(int impact) {
+        return impact;
     }
 
     @Override
-    public int calculateRebImpact() {
-        return 0;
+    public int calculateRebImpact(int impact) {
+        return impact;
     }
 }
