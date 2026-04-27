@@ -65,8 +65,8 @@ public class IncidentServiceImpl implements IncidentService {
     }
 
     @Override
-    public List<IncidentOverview> findAllPrioritizedOverviews() {
-        return incidentView.findAllPrioritizedOverviews();
+    public List<IncidentOverview> findAllPrioritizedOverviews(int incidentId) {
+        return incidentView.findAllPrioritizedOverviews(incidentId);
     }
 
     @Override

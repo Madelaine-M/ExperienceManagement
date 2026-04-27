@@ -25,7 +25,7 @@ public interface IncidentService {
 
     void updateStatus(int id, IncidentStatus status);
 
-    List<IncidentOverview> findAllPrioritizedOverviews();
+    List<IncidentOverview> findAllPrioritizedOverviews(int incidentId);
 
     IncidentDetailView findDetailByIncidentId(int incidentId);
 
