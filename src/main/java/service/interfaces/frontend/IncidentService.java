@@ -1,4 +1,4 @@
-package service.interfaces;
+package service.interfaces.frontend;
 
 import model.Incident;
 import model.IncidentDetailView;
@@ -19,7 +19,7 @@ public interface IncidentService {
 
     List<Incident> findUnassigned();
 
-    List<Incident> findByAdvisorId(Long advisorId);
+    List<Incident> findByAdvisorId(int advisorId);
 
     List<Incident> findPendingActionItems();
 

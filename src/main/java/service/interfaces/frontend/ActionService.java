@@ -1,8 +1,6 @@
-package service.interfaces;
+package service.interfaces.frontend;
 
 import model.ActionItem;
-import model.enums.ActionStatus;
-import model.enums.PriorityLevel;
 
 import java.util.List;
 

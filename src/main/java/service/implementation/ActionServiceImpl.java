@@ -1,14 +1,11 @@
 package service.implementation;
 
 import model.ActionItem;
-import model.Incident;
-import model.enums.ActionStatus;
-import model.enums.PriorityLevel;
 import org.jetbrains.annotations.NotNull;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
-import service.interfaces.ActionService;
+import service.interfaces.frontend.ActionService;
 
 import java.util.List;
 

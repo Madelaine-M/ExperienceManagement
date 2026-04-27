@@ -1,7 +1,8 @@
-package service.interfaces;
+package service.interfaces.frontend;
 
 import model.Customer;
-import org.jetbrains.annotations.NotNull;
+import model.CustomerDetailView;
+import model.CustomerOverview;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public interface CustomerService {
 
     void update(Customer customer);
 
-    boolean CheckIncident (Customer customer);
-    //Brauche Klassen von Madelaine die Non Incident fall abbildet und den die mini Overview
+    List<CustomerOverview> findOverviewsByAdvisorId(int advisorId);
+
+    CustomerDetailView findDetailByCustomerId(int customerId);
 }

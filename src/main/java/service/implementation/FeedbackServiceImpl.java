@@ -5,7 +5,7 @@ import model.FeedbackItem;
 import repository.interfaces.FeedbackAnalytics;
 import repository.interfaces.FeedbackLookup;
 import repository.interfaces.FeedbackUpdate;
-import service.interfaces.FeedbackService;
+import service.interfaces.frontend.FeedbackService;
 
 import java.util.List;
 

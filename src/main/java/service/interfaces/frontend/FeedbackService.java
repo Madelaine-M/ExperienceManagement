@@ -1,4 +1,4 @@
-package service.interfaces;
+package service.interfaces.frontend;
 
 import model.Feedback;
 import model.FeedbackItem;

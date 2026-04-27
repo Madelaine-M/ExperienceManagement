@@ -8,7 +8,7 @@ import repository.interfaces.IncidentLookup;
 import repository.interfaces.IncidentManagement;
 import repository.interfaces.IncidentUpdate;
 import repository.interfaces.IncidentView;
-import service.interfaces.IncidentService;
+import service.interfaces.frontend.IncidentService;
 
 import java.util.List;
 
@@ -50,7 +50,7 @@ public class IncidentServiceImpl implements IncidentService {
     }
 
     @Override
-    public List<Incident> findByAdvisorId(Long advisorId) {
+    public List<Incident> findByAdvisorId(int advisorId) {
         return incidentManagement.findByAdvisorId(advisorId);
     }
 
@@ -73,6 +73,5 @@ public class IncidentServiceImpl implements IncidentService {
     public IncidentDetailView findDetailByIncidentId(int incidentId) {
         return incidentView.findDetailByIncidentId(incidentId);
     }
-
 
 }

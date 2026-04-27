@@ -1,22 +1,23 @@
-package service.calculation;
+package service.implementation.Priority;
 
 import model.Incident;
 import model.enums.IncidentType;
 import org.jetbrains.annotations.NotNull;
-import service.interfaces.CustomerService;
+import service.interfaces.frontend.CustomerService;
+import service.interfaces.internal.ExpectedImpactCalcService;
 
-public class PriorityCalculator {
+public class PriorityCalcServiceImpl {
     private Incident  incident;
     private CustomerService customerService;
-    private ExpectedImpactCalculatorService expectedImpactCalculatorService;
-    public PriorityCalculator(Incident incident) {
+    private ExpectedImpactCalcService expectedImpactCalcService;
+    public PriorityCalcServiceImpl(Incident incident) {
         this.incident = incident;
     }
     public double calculate(@NotNull Incident incident) {
         return (getBaseSeverity(incident.getType())*
                 getCVPart(incident.getCustomerId())+
-                (expectedImpactCalculatorService.calculateDefaultScoreImpact(incident.getType())*10)+
-                (expectedImpactCalculatorService.calculateRevenueImpact()/2000)
+                (expectedImpactCalcService.calculateDefaultScoreImpact(incident.getType())*10)+
+                (expectedImpactCalcService.calculateRevenueImpact()/2000)
         );
     }
 
@@ -31,7 +32,7 @@ public class PriorityCalculator {
 
     private double getCVPart(int customerId){
 
-        return (1+ (customerService.findById(customerId)).getClvScore()/100);
+        return (1+ (customerService.findById(customerId)).getCvScore()/100);
     }
 
 

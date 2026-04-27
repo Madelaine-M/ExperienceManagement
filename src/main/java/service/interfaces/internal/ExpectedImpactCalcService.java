@@ -1,9 +1,8 @@
-package service.calculation;
+package service.interfaces.internal;
 
 import model.enums.IncidentType;
-import model.enums.Packages;
 
-public interface ExpectedImpactCalculatorService {
+public interface ExpectedImpactCalcService {
 
     double calculateDefaultScoreImpact(IncidentType type);
 
