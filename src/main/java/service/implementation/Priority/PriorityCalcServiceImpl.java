@@ -5,8 +5,9 @@ import model.enums.IncidentType;
 import org.jetbrains.annotations.NotNull;
 import service.interfaces.frontend.CustomerService;
 import service.interfaces.internal.ExpectedImpactCalcService;
+import service.interfaces.internal.PriorityCalcService;
 
-public class PriorityCalcServiceImpl {
+public class PriorityCalcServiceImpl implements PriorityCalcService {
     private Incident  incident;
     private CustomerService customerService;
     private ExpectedImpactCalcService expectedImpactCalcService;

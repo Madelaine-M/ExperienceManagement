@@ -5,22 +5,22 @@ import service.interfaces.internal.ExpectedImpactCalcService;
 
 public class ExpectedImpactCalcServiceImpl implements ExpectedImpactCalcService {
     @Override
-    public double calculateDefaultScoreImpact(IncidentType type) {
+    public int calculateDefaultScoreImpact(IncidentType type) {
         return 0;
     }
 
     @Override
-    public double calculateRevenueImpact() {
+    public int calculateRevenueImpact() {
         return 0;
     }
 
     @Override
-    public double calculateRecImpact() {
+    public int calculateRecImpact() {
         return 0;
     }
 
     @Override
-    public double calculateRebImpact() {
+    public int calculateRebImpact() {
         return 0;
     }
 }
