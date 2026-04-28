@@ -1,7 +1,6 @@
 package service.implementation;
 
 import model.ActionItem;
-import org.jetbrains.annotations.NotNull;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
@@ -45,14 +44,14 @@ public class ActionServiceImpl implements ActionService {
     }
 
     @Override
-    public String getSystemRec(@org.jetbrains.annotations.NotNull ActionItem actionItem) { //Logging?
+    public String getSystemRec(ActionItem actionItem) { //Logging?
         return ("Rec1: "+actionItem.getSugegstion1() +
                 "OR"
                 + "Rec2: "+actionItem.getSuggestion2());
     }
 
     @Override
-    public String getImpact(@NotNull ActionItem actionItem) { //Logging?
+    public String getImpact(ActionItem actionItem) { //Logging?
         return "Recommendation: " + actionItem.getExpectedRec() +
                 "Book again: " + actionItem.getExpectedRebooking();
     }

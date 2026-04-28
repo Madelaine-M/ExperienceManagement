@@ -2,6 +2,7 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
+import model.CustomerCvProfile;
 import model.Flight;
 import model.IncidentDetailView;
 import model.IncidentOverview;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import repository.implementation.mapper.IncidentViewMapper;
 import repository.implementation.support.FlightViewLoader;
 import repository.implementation.support.PreviousFlightsSummaryFormatter;
+import repository.interfaces.CustomerCvProfileLookup;
 import repository.interfaces.IncidentView;
 
 import java.sql.Connection;
@@ -24,6 +26,7 @@ public class DatabaseIncidentView implements IncidentView {
     private final IncidentViewMapper incidentViewMapper;
     private final FlightViewLoader flightViewLoader;
     private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
+    private final CustomerCvProfileLookup customerCvProfileLookup;
     private final ConnectionProvider connectionProvider;
 
     public DatabaseIncidentView() {
@@ -31,18 +34,21 @@ public class DatabaseIncidentView implements IncidentView {
                 new DatabaseConnectionProvider(),
                 new IncidentViewMapper(),
                 new FlightViewLoader(),
-                new PreviousFlightsSummaryFormatter()
+                new PreviousFlightsSummaryFormatter(),
+                new DatabaseCustomerCvProfileRepository()
         );
     }
 
     public DatabaseIncidentView(ConnectionProvider connectionProvider,
                                 IncidentViewMapper incidentViewMapper,
                                 FlightViewLoader flightViewLoader,
-                                PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter) {
+                                PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter,
+                                CustomerCvProfileLookup customerCvProfileLookup) {
         this.connectionProvider = connectionProvider;
         this.incidentViewMapper = incidentViewMapper;
         this.flightViewLoader = flightViewLoader;
         this.previousFlightsSummaryFormatter = previousFlightsSummaryFormatter;
+        this.customerCvProfileLookup = customerCvProfileLookup;
     }
 
     @Override
@@ -95,8 +101,7 @@ public class DatabaseIncidentView implements IncidentView {
                    i.description,
                    c.first_name,
                    c.last_name,
-                    c.is_returning,
-                   c.customer_type,
+                   c.is_returning,
                    f.id AS flight_id,
                    f.flight_number,
                    f.flight_date,
@@ -115,6 +120,7 @@ public class DatabaseIncidentView implements IncidentView {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     IncidentDetailView detail = incidentViewMapper.mapDetail(rs);
+                    applyCvProfile(detail);
                     List<Flight> previousFlights = detail.getCurrentFlightId() != null
                             ? flightViewLoader.loadPreviousFlights(conn, detail.getCustomerId(), detail.getCurrentFlightId())
                             : flightViewLoader.loadPreviousFlights(conn, detail.getCustomerId());
@@ -128,5 +134,10 @@ public class DatabaseIncidentView implements IncidentView {
         }
 
         return null;
+    }
+
+    private void applyCvProfile(IncidentDetailView detail) {
+        CustomerCvProfile profile = customerCvProfileLookup.findByCustomerId(detail.getCustomerId());
+        detail.setCustomerType(profile.getCustomerType());
     }
 }

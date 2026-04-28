@@ -2,8 +2,6 @@ package repository.implementation.mapper;
 
 import model.Customer;
 import model.enums.CustomerStatus;
-import model.enums.CustomerType;
-import model.enums.PaymentMethod;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,22 +29,6 @@ public class CustomerResultSetMapper {
         customer.setCvScore(rs.getFloat("cv_score"));
         customer.setPreferences(rs.getString("preferences"));
         customer.setApplyToNextBooking(rs.getString("apply_to_next_booking"));
-        customer.setMarketingPurpose(rs.getBoolean("marketing_purpose"));
-        customer.setNewsletterSubscription(rs.getBoolean("newsletter_subscription"));
-        customer.setReferralCode(rs.getBoolean("referral_code"));
-
-        String paymentMethodStr = rs.getString("payment_method");
-        if (paymentMethodStr != null) {
-            customer.setPaymentMethod(PaymentMethod.valueOf(paymentMethodStr));
-        }
-
-        customer.setPublicPerson(rs.getBoolean("public_person"));
-
-        String customerTypeStr = rs.getString("customer_type");
-        if (customerTypeStr != null) {
-            customer.setCustomerType(CustomerType.valueOf(customerTypeStr));
-        }
-
         return customer;
     }
 }

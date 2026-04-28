@@ -27,6 +27,14 @@ public class DatabaseInitializer {
                 cv_score REAL DEFAULT 0.0,
                 preferences TEXT,
                 apply_to_next_booking TEXT,
+
+                FOREIGN KEY (assigned_advisor_id) REFERENCES advisors(id)
+                    ON DELETE SET NULL
+            );
+            """;
+        String createCustomerCvProfiles = """
+            CREATE TABLE IF NOT EXISTS customer_cv_profiles (
+                customer_id INTEGER PRIMARY KEY,
                 marketing_purpose INTEGER DEFAULT 0,
                 newsletter_subscription INTEGER DEFAULT 0,
                 referral_code INTEGER DEFAULT 0,
@@ -34,8 +42,8 @@ public class DatabaseInitializer {
                 public_person INTEGER DEFAULT 0,
                 customer_type TEXT,
 
-                FOREIGN KEY (assigned_advisor_id) REFERENCES advisors(id)
-                    ON DELETE SET NULL
+                FOREIGN KEY (customer_id) REFERENCES customers(id)
+                    ON DELETE CASCADE
             );
             """;
         String createIncidents = """
@@ -157,6 +165,7 @@ public class DatabaseInitializer {
 
             executeSql(conn, createAdvisors);
             executeSql(conn, createCustomers);
+            executeSql(conn, createCustomerCvProfiles);
             executeSql(conn, createFlights);
             executeSql(conn, createFeedbacks);
             executeSql(conn, createFeedbackItems);
@@ -164,6 +173,7 @@ public class DatabaseInitializer {
             executeSql(conn, createActionItems);
             executeSql(conn, createCustomerNotes);
             ensureCustomerColumnsExist(conn);
+            backfillCustomerCvProfiles(conn);
             ensureFlightColumnsExist(conn);
             ensureFeedbackColumnsExist(conn);
             ensureIncidentColumnsExist(conn);
@@ -301,48 +311,37 @@ public class DatabaseInitializer {
                 """);
         }
 
-        if (!columnExists(conn, "customers", "marketing_purpose")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN marketing_purpose INTEGER DEFAULT 0;
-                """);
+    }
+
+    private static void backfillCustomerCvProfiles(Connection conn) throws SQLException {
+        if (!columnExists(conn, "customers", "marketing_purpose")
+                || !columnExists(conn, "customers", "newsletter_subscription")
+                || !columnExists(conn, "customers", "referral_code")
+                || !columnExists(conn, "customers", "payment_method")
+                || !columnExists(conn, "customers", "public_person")
+                || !columnExists(conn, "customers", "customer_type")) {
+            return;
         }
 
-        if (!columnExists(conn, "customers", "newsletter_subscription")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN newsletter_subscription INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "customers", "referral_code")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN referral_code INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "customers", "payment_method")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN payment_method TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "customers", "public_person")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN public_person INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "customers", "customer_type")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN customer_type TEXT;
-                """);
-        }
-
+        executeSql(conn, """
+            INSERT INTO customer_cv_profiles (
+                customer_id, marketing_purpose, newsletter_subscription, referral_code,
+                payment_method, public_person, customer_type
+            )
+            SELECT c.id,
+                   c.marketing_purpose,
+                   c.newsletter_subscription,
+                   c.referral_code,
+                   c.payment_method,
+                   c.public_person,
+                   c.customer_type
+            FROM customers c
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM customer_cv_profiles p
+                WHERE p.customer_id = c.id
+            );
+            """);
     }
 
     private static void ensureCustomerNoteColumnsExist(Connection conn) throws SQLException {

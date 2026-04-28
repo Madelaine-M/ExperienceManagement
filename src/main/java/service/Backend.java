@@ -3,6 +3,7 @@ package service;
 import database.initialization.DatabaseInitializer;
 import repository.implementation.DatabaseActionRepository;
 import repository.implementation.DatabaseAdvisorRepository;
+import repository.implementation.DatabaseCustomerCvProfileRepository;
 import repository.implementation.DatabaseCustomerRepository;
 import repository.implementation.DatabaseCustomerNoteRepository;
 import repository.implementation.DatabaseCustomerView;
@@ -17,6 +18,8 @@ import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
 import repository.interfaces.AdvisorRepository;
+import repository.interfaces.CustomerCvProfileLookup;
+import repository.interfaces.CustomerCvProfileUpdate;
 import repository.interfaces.CustomerLookup;
 import repository.interfaces.CustomerNoteLookup;
 import repository.interfaces.CustomerNoteUpdate;
@@ -38,6 +41,8 @@ public class Backend {
     private final ActionManagement actionManagement;
     private final ActionUpdate actionUpdate;
     private final AdvisorRepository advisorRepository;
+    private final CustomerCvProfileLookup customerCvProfileLookup;
+    private final CustomerCvProfileUpdate customerCvProfileUpdate;
     private final CustomerLookup customerLookup;
     private final CustomerNoteLookup customerNoteLookup;
     private final CustomerNoteUpdate customerNoteUpdate;
@@ -56,6 +61,7 @@ public class Backend {
 
     public Backend() {
         DatabaseInitializer.initialize();
+        DatabaseCustomerCvProfileRepository customerCvProfileRepository = new DatabaseCustomerCvProfileRepository();
         DatabaseCustomerRepository customerRepository = new DatabaseCustomerRepository();
         DatabaseCustomerNoteRepository customerNoteRepository = new DatabaseCustomerNoteRepository();
         DatabaseCustomerView customerViewRepository = new DatabaseCustomerView();
@@ -71,6 +77,8 @@ public class Backend {
         this.actionManagement = actionRepository;
         this.actionUpdate = actionRepository;
         this.advisorRepository = new DatabaseAdvisorRepository();
+        this.customerCvProfileLookup = customerCvProfileRepository;
+        this.customerCvProfileUpdate = customerCvProfileRepository;
         this.customerLookup = customerRepository;
         this.customerNoteLookup = customerNoteRepository;
         this.customerNoteUpdate = customerNoteRepository;
@@ -106,6 +114,14 @@ public class Backend {
 
     public CustomerLookup getCustomerLookup() {
         return customerLookup;
+    }
+
+    public CustomerCvProfileLookup getCustomerCvProfileLookup() {
+        return customerCvProfileLookup;
+    }
+
+    public CustomerCvProfileUpdate getCustomerCvProfileUpdate() {
+        return customerCvProfileUpdate;
     }
 
     public CustomerSearch getCustomerSearch() {

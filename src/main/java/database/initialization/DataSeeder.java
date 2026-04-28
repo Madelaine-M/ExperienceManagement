@@ -3,6 +3,7 @@ package database.initialization;
 import model.ActionItem;
 import model.Advisor;
 import model.Customer;
+import model.CustomerCvProfile;
 import model.CustomerNote;
 import model.DelayIncident;
 import model.Feedback;
@@ -21,6 +22,7 @@ import model.enums.PaymentMethod;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionUpdate;
 import repository.interfaces.AdvisorRepository;
+import repository.interfaces.CustomerCvProfileUpdate;
 import repository.interfaces.CustomerLookup;
 import repository.interfaces.CustomerNoteUpdate;
 import repository.interfaces.CustomerUpdate;
@@ -38,6 +40,7 @@ public class DataSeeder {
             AdvisorRepository advisorRepo,
             CustomerLookup customerLookup,
             CustomerUpdate customerUpdate,
+            CustomerCvProfileUpdate customerCvProfileUpdate,
             CustomerNoteUpdate customerNoteUpdate,
             FlightRepository flightRepository,
             FeedbackUpdate feedbackUpdate,
@@ -56,13 +59,17 @@ public class DataSeeder {
         Customer customerOne = createCustomer(
                 "Max", "Mustermann", "max@test.de", "1989-04-17",
                 true, advisorOne.getId(), 84.0f,
-                "Quiet cabin", CustomerType.SCIENTIST, PaymentMethod.IMMEDIATE, customerUpdate
+                "Quiet cabin", customerUpdate
         );
         Customer customerTwo = createCustomer(
                 "Erika", "Musterfrau", "erika@web.de", "1993-09-02",
                 false, advisorTwo.getId(), 58.0f,
-                "Aisle seat", CustomerType.NORMAL, PaymentMethod.MONTHS, customerUpdate
+                "Aisle seat", customerUpdate
         );
+        createCustomerCvProfile(customerOne.getId(), false, true, false, PaymentMethod.IMMEDIATE, false,
+                CustomerType.SCIENTIST, customerCvProfileUpdate);
+        createCustomerCvProfile(customerTwo.getId(), false, true, false, PaymentMethod.MONTHS, false,
+                CustomerType.NORMAL, customerCvProfileUpdate);
 
         createCustomerNote(
                 customerOne.getId(),
@@ -170,8 +177,7 @@ public class DataSeeder {
 
     private static Customer createCustomer(String firstName, String lastName, String email, String birthDate,
                                            boolean returning, Integer advisorId, float cvScore,
-                                           String preferences, CustomerType customerType,
-                                           PaymentMethod paymentMethod, CustomerUpdate customerUpdate) {
+                                           String preferences, CustomerUpdate customerUpdate) {
         Customer customer = new Customer(
                 0,
                 firstName,
@@ -183,16 +189,28 @@ public class DataSeeder {
                 advisorId,
                 cvScore,
                 preferences,
-                "Priority follow-up",
-                false,
-                true,
-                false,
-                paymentMethod,
-                false,
-                customerType
+                "Priority follow-up"
         );
         customerUpdate.save(customer);
         return customer;
+    }
+
+    private static CustomerCvProfile createCustomerCvProfile(int customerId, boolean marketingPurpose,
+                                                             boolean newsletterSubscription, boolean referralCode,
+                                                             PaymentMethod paymentMethod, boolean publicPerson,
+                                                             CustomerType customerType,
+                                                             CustomerCvProfileUpdate customerCvProfileUpdate) {
+        CustomerCvProfile profile = new CustomerCvProfile(
+                customerId,
+                marketingPurpose,
+                newsletterSubscription,
+                referralCode,
+                paymentMethod,
+                publicPerson,
+                customerType
+        );
+        customerCvProfileUpdate.save(profile);
+        return profile;
     }
 
     private static CustomerNote createCustomerNote(int customerId, int advisorId, String noteText,

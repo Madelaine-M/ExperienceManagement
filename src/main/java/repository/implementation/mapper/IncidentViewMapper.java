@@ -2,7 +2,6 @@ package repository.implementation.mapper;
 
 import model.IncidentDetailView;
 import model.IncidentOverview;
-import model.enums.CustomerType;
 import model.enums.IncidentType;
 import model.enums.Packages;
 
@@ -48,11 +47,6 @@ public class IncidentViewMapper {
         String bookingPackageStr = rs.getString("booking_package");
         if (bookingPackageStr != null) {
             detail.setBookingPackage(Packages.valueOf(bookingPackageStr));
-        }
-
-        String customerTypeStr = rs.getString("customer_type");
-        if (customerTypeStr != null) {
-            detail.setCustomerType(CustomerType.valueOf(customerTypeStr));
         }
 
         String incidentTypeStr = rs.getString("type");

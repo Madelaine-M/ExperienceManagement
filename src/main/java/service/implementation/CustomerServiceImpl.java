@@ -4,7 +4,6 @@ import model.Customer;
 import model.CustomerDetailView;
 import model.CustomerOverview;
 import model.Incident;
-import org.jetbrains.annotations.NotNull;
 import repository.interfaces.CustomerLookup;
 
 import repository.interfaces.CustomerSearch;
@@ -71,7 +70,7 @@ public class CustomerServiceImpl implements CustomerService {
         return customerView.findDetailByCustomerId(customerId);
     }
 
-    public boolean CheckIncident (@NotNull Customer customer){//logging
+    public boolean CheckIncident (Customer customer){//logging
         List<Incident> incidents = incidentService.findByAdvisorId(customer.getAssignedAdvisorId());
         for(Incident incident : incidents){
             if (incident.getCustomerId() == customer.getId()){

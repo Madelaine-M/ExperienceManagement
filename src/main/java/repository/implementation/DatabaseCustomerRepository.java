@@ -36,10 +36,8 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
     public void save(Customer customer) {
         String sql = """
             INSERT INTO customers (first_name, last_name, email, birth_date, status,
-                                 is_returning, assigned_advisor_id, cv_score, preferences,
-                                 apply_to_next_booking, marketing_purpose, newsletter_subscription,
-                                 referral_code, payment_method, public_person, customer_type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                 is_returning, assigned_advisor_id, cv_score, preferences, apply_to_next_booking)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = connectionProvider.getConnection();
@@ -59,12 +57,6 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             pstmt.setFloat(8, customer.getCvScore());
             pstmt.setString(9, customer.getPreferences());
             pstmt.setString(10, customer.getApplyToNextBooking());
-            pstmt.setBoolean(11, customer.isMarketingPurpose());
-            pstmt.setBoolean(12, customer.isNewsletterSubscription());
-            pstmt.setBoolean(13, customer.isReferralCode());
-            pstmt.setString(14, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
-            pstmt.setBoolean(15, customer.isPublicPerson());
-            pstmt.setString(16, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
 
             pstmt.executeUpdate();
             customer.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "customer"));
@@ -81,8 +73,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             UPDATE customers
             SET first_name = ?, last_name = ?, email = ?, birth_date = ?, status = ?,
                 is_returning = ?, assigned_advisor_id = ?, cv_score = ?,
-                preferences = ?, apply_to_next_booking = ?, marketing_purpose = ?, newsletter_subscription = ?,
-                referral_code = ?, payment_method = ?, public_person = ?, customer_type = ?
+                preferences = ?, apply_to_next_booking = ?
             WHERE id = ?;
             """;
 
@@ -103,13 +94,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             pstmt.setFloat(8, customer.getCvScore());
             pstmt.setString(9, customer.getPreferences());
             pstmt.setString(10, customer.getApplyToNextBooking());
-            pstmt.setBoolean(11, customer.isMarketingPurpose());
-            pstmt.setBoolean(12, customer.isNewsletterSubscription());
-            pstmt.setBoolean(13, customer.isReferralCode());
-            pstmt.setString(14, customer.getPaymentMethod() != null ? customer.getPaymentMethod().name() : null);
-            pstmt.setBoolean(15, customer.isPublicPerson());
-            pstmt.setString(16, customer.getCustomerType() != null ? customer.getCustomerType().name() : null);
-            pstmt.setInt(17, customer.getId());
+            pstmt.setInt(11, customer.getId());
 
             pstmt.executeUpdate();
         } catch (SQLException e) {

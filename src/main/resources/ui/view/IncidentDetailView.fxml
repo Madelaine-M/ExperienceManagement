@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ui.controller.IncidentDetailController"
+      fx:id="root"
+      spacing="22"
+      styleClass="detail-column">
+    <padding>
+        <Insets top="28" right="28" bottom="28" left="28"/>
+    </padding>
+    <VBox fx:id="contentBox" spacing="22"/>
+</VBox>

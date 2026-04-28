@@ -2,7 +2,6 @@ package service.implementation.Priority;
 
 import model.Incident;
 import model.enums.IncidentType;
-import org.jetbrains.annotations.NotNull;
 import service.interfaces.frontend.CustomerService;
 import service.interfaces.internal.ExpectedImpactCalcService;
 
@@ -13,7 +12,7 @@ public class PriorityCalcServiceImpl {
     public PriorityCalcServiceImpl(Incident incident) {
         this.incident = incident;
     }
-    public double calculate(@NotNull Incident incident) {
+    public double calculate(Incident incident) {
         return (getBaseSeverity(incident.getType())*
                 getCVPart(incident.getCustomerId())+
                 (expectedImpactCalcService.calculateDefaultScoreImpact(incident.getType())*10)+

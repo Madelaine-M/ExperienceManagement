@@ -1,9 +1,6 @@
 package model;
 
 import model.enums.CustomerStatus;
-import model.enums.CustomerType;
-import model.enums.PaymentMethod;
-
 public class Customer {
 
     private String firstName;
@@ -16,12 +13,6 @@ public class Customer {
     private float cvScore;
     private String preferences = ""; //als extra Klasse / Objekt
     private String applyToNextBooking = ""; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
-    private boolean marketingPurpose;
-    private boolean newsletterSubscription;
-    private boolean referralCode;
-    private PaymentMethod paymentMethod = PaymentMethod.IMMEDIATE;
-    private boolean publicPerson;
-    private CustomerType customerType;
 
     private int id;
 
@@ -113,71 +104,11 @@ public class Customer {
         this.preferences = preferences;
     }
 
-    public boolean isMarketingPurpose() {
-        return marketingPurpose;
-    }
-
-    public void setMarketingPurpose(boolean marketingPurpose) {
-        this.marketingPurpose = marketingPurpose;
-    }
-
-    public boolean isNewsletterSubscription() {
-        return newsletterSubscription;
-    }
-
-    public void setNewsletterSubscription(boolean newsletterSubscription) {
-        this.newsletterSubscription = newsletterSubscription;
-    }
-
-    public boolean isReferralCode() {
-        return referralCode;
-    }
-
-    public void setReferralCode(boolean referralCode) {
-        this.referralCode = referralCode;
-    }
-
-    public PaymentMethod getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(PaymentMethod paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
-    public boolean isPublicPerson() {
-        return publicPerson;
-    }
-
-    public void setPublicPerson(boolean publicPerson) {
-        this.publicPerson = publicPerson;
-    }
-
-    public CustomerType getCustomerType() {
-        return customerType;
-    }
-
-    public void setCustomerType(CustomerType customerType) {
-        this.customerType = customerType;
-    }
-
     public Customer() {}
-
-    public Customer(int id, String firstName, String lastName, String email, String birthDate,
-                    CustomerType customerType) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.birthDate = birthDate;
-        this.customerType = customerType;
-    }
 
     public Customer(int id, String firstName, String lastName, String email, String birthDate, CustomerStatus status,
                     boolean returning, Integer assignedAdvisorId, float cvScore,
-                    String preferences, String applyToNextBooking, boolean marketingPurpose,
-                    boolean newsletterSubscription, boolean referralCode, PaymentMethod paymentMethod,
-                    boolean publicPerson, CustomerType customerType) {
+                    String preferences, String applyToNextBooking) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -189,12 +120,6 @@ public class Customer {
         this.cvScore = cvScore;
         this.preferences = preferences;
         this.applyToNextBooking = applyToNextBooking;
-        this.marketingPurpose = marketingPurpose;
-        this.newsletterSubscription = newsletterSubscription;
-        this.referralCode = referralCode;
-        this.paymentMethod = paymentMethod;
-        this.publicPerson = publicPerson;
-        this.customerType = customerType;
     }
 
 }

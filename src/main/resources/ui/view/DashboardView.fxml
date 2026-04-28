@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ui.controller.DashboardController"
+            styleClass="dashboard-root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="18" fillHeight="false" styleClass="top-bar">
+            <padding>
+                <Insets top="18" right="24" bottom="18" left="24"/>
+            </padding>
+
+            <VBox spacing="4" alignment="CENTER_LEFT">
+                <Label text="Advisor Dashboard" styleClass="eyebrow-label"/>
+                <Label text="Space Flight Experience Management" styleClass="app-title"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <VBox spacing="4" alignment="CENTER_RIGHT" styleClass="nps-panel">
+                <Label text="Company NPS" styleClass="nps-label"/>
+                <Label fx:id="npsValueLabel" text="0" styleClass="nps-value"/>
+            </VBox>
+
+            <HBox spacing="10" alignment="CENTER" maxHeight="50.0" styleClass="toggle-shell">
+                <ToggleButton fx:id="incidentsToggle" text="Incidents" onAction="#showIncidentsMode"
+                              styleClass="mode-toggle" prefWidth="140.0"/>
+                <ToggleButton fx:id="customersToggle" text="All Clients" onAction="#showCustomersMode"
+                              styleClass="mode-toggle" prefWidth="140.0"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <center>
+        <SplitPane dividerPositions="0.27, 0.64" styleClass="content-split">
+            <VBox spacing="18" styleClass="list-column" minWidth="300.0" prefWidth="340.0">
+                <padding>
+                    <Insets top="28" right="22" bottom="28" left="22"/>
+                </padding>
+                <VBox spacing="6">
+                    <Label text="Queue" styleClass="eyebrow-label"/>
+                    <Label fx:id="listTitleLabel" text="Active Incidents (Priority Order)" styleClass="column-title"/>
+                </VBox>
+                <ListView fx:id="leftListView" VBox.vgrow="ALWAYS" styleClass="dashboard-list"/>
+            </VBox>
+
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="column-scroll">
+                <content>
+                    <VBox fx:id="detailPane" spacing="22" styleClass="detail-column">
+                        <padding>
+                            <Insets top="28" right="28" bottom="28" left="28"/>
+                        </padding>
+                    </VBox>
+                </content>
+            </ScrollPane>
+
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="column-scroll">
+                <content>
+                    <VBox fx:id="actionPane" spacing="22" styleClass="action-column">
+                        <padding>
+                            <Insets top="28" right="24" bottom="28" left="24"/>
+                        </padding>
+                    </VBox>
+                </content>
+            </ScrollPane>
+        </SplitPane>
+    </center>
+</BorderPane>

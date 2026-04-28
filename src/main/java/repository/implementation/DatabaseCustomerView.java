@@ -2,6 +2,7 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
+import model.CustomerCvProfile;
 import model.CustomerDetailView;
 import model.CustomerNote;
 import model.CustomerOverview;
@@ -14,6 +15,7 @@ import repository.implementation.support.FlightViewLoader;
 import repository.implementation.support.OpenIncidentSummary;
 import repository.implementation.support.OpenIncidentSummaryLoader;
 import repository.implementation.support.PreviousFlightsSummaryFormatter;
+import repository.interfaces.CustomerCvProfileLookup;
 import repository.interfaces.CustomerView;
 
 import java.sql.Connection;
@@ -30,6 +32,7 @@ public class DatabaseCustomerView implements CustomerView {
     private final FlightViewLoader flightViewLoader;
     private final CustomerNoteLoader customerNoteLoader;
     private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
+    private final CustomerCvProfileLookup customerCvProfileLookup;
     private final ConnectionProvider connectionProvider;
 
     public DatabaseCustomerView() {
@@ -39,7 +42,8 @@ public class DatabaseCustomerView implements CustomerView {
                 new OpenIncidentSummaryLoader(),
                 new FlightViewLoader(),
                 new CustomerNoteLoader(),
-                new PreviousFlightsSummaryFormatter()
+                new PreviousFlightsSummaryFormatter(),
+                new DatabaseCustomerCvProfileRepository()
         );
     }
 
@@ -48,13 +52,15 @@ public class DatabaseCustomerView implements CustomerView {
                                 OpenIncidentSummaryLoader openIncidentSummaryLoader,
                                 FlightViewLoader flightViewLoader,
                                 CustomerNoteLoader customerNoteLoader,
-                                PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter) {
+                                PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter,
+                                CustomerCvProfileLookup customerCvProfileLookup) {
         this.connectionProvider = connectionProvider;
         this.customerViewMapper = customerViewMapper;
         this.openIncidentSummaryLoader = openIncidentSummaryLoader;
         this.flightViewLoader = flightViewLoader;
         this.customerNoteLoader = customerNoteLoader;
         this.previousFlightsSummaryFormatter = previousFlightsSummaryFormatter;
+        this.customerCvProfileLookup = customerCvProfileLookup;
     }
 
     @Override
@@ -65,7 +71,6 @@ public class DatabaseCustomerView implements CustomerView {
                    c.first_name,
                    c.last_name,
                    c.status,
-                   c.customer_type,
                    c.cv_score,
                    c.is_returning,
                    f.booking_package
@@ -84,6 +89,7 @@ public class DatabaseCustomerView implements CustomerView {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     CustomerOverview overview = customerViewMapper.mapOverview(rs);
+                    applyCvProfile(overview);
                     applyOpenIncidentSummary(conn, overview);
                     overviews.add(overview);
                 }
@@ -104,12 +110,9 @@ public class DatabaseCustomerView implements CustomerView {
                    email,
                    status,
                    is_returning,
-                   customer_type,
                    cv_score,
                    preferences,
-                   apply_to_next_booking,
-                   payment_method,
-                   public_person
+                   apply_to_next_booking
             FROM customers
             WHERE id = ?;
             """;
@@ -122,6 +125,7 @@ public class DatabaseCustomerView implements CustomerView {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     CustomerDetailView detail = customerViewMapper.mapDetail(rs);
+                    applyCvProfile(detail);
                     applyOpenIncidentSummary(conn, detail);
                     List<CustomerNote> notes = customerNoteLoader.loadByCustomerId(conn, customerId);
                     detail.setNotes(notes);
@@ -160,5 +164,17 @@ public class DatabaseCustomerView implements CustomerView {
         detail.setOpenIncidentId(summary.openIncidentId());
         detail.setHighestPriorityScore(summary.highestPriorityScore());
         detail.setIncidentDescription(summary.incidentDescription());
+    }
+
+    private void applyCvProfile(CustomerOverview overview) {
+        CustomerCvProfile profile = customerCvProfileLookup.findByCustomerId(overview.getCustomerId());
+        overview.setCustomerType(profile.getCustomerType());
+    }
+
+    private void applyCvProfile(CustomerDetailView detail) {
+        CustomerCvProfile profile = customerCvProfileLookup.findByCustomerId(detail.getCustomerId());
+        detail.setCustomerType(profile.getCustomerType());
+        detail.setPaymentMethod(profile.getPaymentMethod());
+        detail.setPublicPerson(profile.isPublicPerson());
     }
 }

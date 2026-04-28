@@ -1,6 +1,7 @@
 package service.implementation.cv;
 
 import model.Customer;
+import model.CustomerCvProfile;
 import model.Flight;
 
 import java.util.Optional;
@@ -12,11 +13,13 @@ import model.enums.PaymentMethod;
 // AI
 public class CVCustomer {
     private final Customer customer;
+    private final CustomerCvProfile cvProfile;
     private final Flight currentFlight;
     private final Optional<Flight> lastFlight;
 
-    public CVCustomer(Customer customer, Flight currentFlight, Flight lastFlight) {
+    public CVCustomer(Customer customer, CustomerCvProfile cvProfile, Flight currentFlight, Flight lastFlight) {
         this.customer = customer;
+        this.cvProfile = cvProfile;
         this.currentFlight = currentFlight;
         this.lastFlight = Optional.ofNullable(lastFlight);
     }
@@ -41,31 +44,33 @@ public class CVCustomer {
 
     // Aus MarketingConsentRule
     public boolean hasMarketingConsent() {
-        return customer.isMarketingPurpose();
+        return cvProfile != null && cvProfile.isMarketingPurpose();
     }
 
     // Aus NewsletterRule
     public boolean hasNewsletterSubscription() {
-        return customer.isNewsletterSubscription();
+        return cvProfile != null && cvProfile.isNewsletterSubscription();
     }
 
     // Aus BookingConnectionRule
     public boolean isBookingConnectedToOtherPerson() {
-        return customer.isReferralCode();
+        return cvProfile != null && cvProfile.isReferralCode();
     }
 
     // Aus PaymentMethodRule
     public PaymentMethod getPaymentMethod() {
-        return customer.getPaymentMethod();
+        return cvProfile != null && cvProfile.getPaymentMethod() != null
+                ? cvProfile.getPaymentMethod()
+                : PaymentMethod.IMMEDIATE;
     }
 
     // Aus PublicFigureRule
     public boolean isPublicFigure() {
-        return customer.isPublicPerson();
+        return cvProfile != null && cvProfile.isPublicPerson();
     }
 
     // Aus TravelingAsScientistRule
     public CustomerType isTravelingAsScientist() {
-        return customer.getCustomerType();
+        return cvProfile != null ? cvProfile.getCustomerType() : null;
     }
 }
