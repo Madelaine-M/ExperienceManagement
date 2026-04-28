@@ -4,8 +4,9 @@ import model.Incident;
 import model.enums.IncidentType;
 import service.interfaces.frontend.CustomerService;
 import service.interfaces.internal.ExpectedImpactCalcService;
+import service.interfaces.internal.PriorityCalcService;
 
-public class PriorityCalcServiceImpl {
+public class PriorityCalcServiceImpl implements PriorityCalcService {
     private Incident  incident;
     private CustomerService customerService;
     private ExpectedImpactCalcService expectedImpactCalcService;
@@ -16,7 +17,7 @@ public class PriorityCalcServiceImpl {
         return (getBaseSeverity(incident.getType())*
                 getCVPart(incident.getCustomerId())+
                 (expectedImpactCalcService.calculateDefaultScoreImpact(incident.getType())*10)+
-                (expectedImpactCalcService.calculateRevenueImpact()/2000)
+                (expectedImpactCalcService.calculateRevenueImpact(10)/2000)
         );
     }
 

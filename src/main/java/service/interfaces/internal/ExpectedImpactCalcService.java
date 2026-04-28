@@ -4,11 +4,11 @@ import model.enums.IncidentType;
 
 public interface ExpectedImpactCalcService {
 
-    double calculateDefaultScoreImpact(IncidentType type);
+    int calculateDefaultScoreImpact(IncidentType type);
 
-    double calculateRevenueImpact(); //Klasse für Packages muss eingeführt werden
+    int calculateRevenueImpact(int impact); //Klasse für Packages muss eingeführt werden
 
-    double calculateRecImpact();
+    int calculateRecImpact(int impact);
 
-    double calculateRebImpact();
+    int calculateRebImpact(int impact);
 }
