@@ -49,15 +49,28 @@
     -fx-padding: 10 14 10 14;
 }
 
+.advisor-panel {
+    -fx-background-color: rgba(32, 45, 71, 0.9);
+    -fx-background-radius: 18;
+    -fx-padding: 10 14 10 14;
+}
+
 .nps-label {
     -fx-text-fill: #94a3b8;
     -fx-font-size: 13px;
 }
 
 .nps-value {
-    -fx-text-fill: #00e676;
     -fx-font-size: 34px;
     -fx-font-weight: 900;
+}
+
+.nps-positive {
+    -fx-text-fill: #00e676;
+}
+
+.nps-negative {
+    -fx-text-fill: #ff6b6b;
 }
 
 .toggle-shell {
@@ -312,6 +325,74 @@
     -fx-font-weight: 900;
 }
 
+.mail-dialog-root {
+    -fx-background-color: linear-gradient(to bottom, #111b34 0%, #0d1528 100%);
+}
+
+.mail-input,
+.mail-text-area {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 14;
+    -fx-border-color: #31486f;
+    -fx-border-radius: 14;
+    -fx-control-inner-background: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: #f8fafc;
+    -fx-prompt-text-fill: #8ea0bc;
+    -fx-highlight-fill: #2764ff;
+    -fx-highlight-text-fill: #f8fafc;
+}
+
+.mail-input {
+    -fx-padding: 10 12 10 12;
+}
+
+.mail-input,
+.mail-input:focused,
+.mail-text-area,
+.mail-text-area:focused {
+    -fx-background-insets: 0;
+}
+
+.mail-input {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+
+.mail-input:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+    -fx-border-color: #5ea0ff;
+}
+
+.mail-input .content {
+    -fx-background-color: transparent;
+}
+
+.mail-text-area .content {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-background-radius: 14;
+}
+
+.mail-text-area:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+    -fx-border-color: #5ea0ff;
+}
+
+.mail-input .text,
+.mail-text-area .text,
+.mail-text-area .content .text,
+.mail-input .content .text {
+    -fx-fill: #f8fafc;
+}
+
+.mail-text-area {
+    -fx-padding: 8;
+}
+
+.mail-error {
+    -fx-text-fill: #ff8b8b;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+}
+
 .inner-card,
 .recommendation-option,
 .empty-card {
@@ -425,4 +506,52 @@
     -fx-background-radius: 16;
     -fx-padding: 12 14 12 14;
     -fx-alignment: center-left;
+}
+
+.simulation-grid {
+    -fx-background-color: rgba(35, 49, 73, 0.72);
+    -fx-background-radius: 20;
+    -fx-padding: 18;
+}
+
+.simulation-input,
+.simulation-combo {
+    -fx-background-color: rgba(15, 23, 42, 0.96);
+    -fx-background-radius: 14;
+    -fx-text-fill: #f8fafc;
+    -fx-padding: 10 12 10 12;
+    -fx-font-size: 14px;
+}
+
+.simulation-combo .list-cell {
+    -fx-text-fill: #f8fafc;
+}
+
+.simulation-combo .arrow-button {
+    -fx-background-color: rgba(59, 130, 246, 0.35);
+    -fx-background-radius: 12;
+}
+
+.simulation-combo .combo-box-popup .list-view {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #334155;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.simulation-combo .combo-box-popup .list-cell {
+    -fx-background-color: #f8fafc;
+    -fx-text-fill: #0f172a;
+}
+
+.simulation-combo .combo-box-popup .list-cell:hover,
+.simulation-combo .combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #0f172a;
+}
+
+.simulation-combo .combo-box-popup .list-cell:selected,
+.simulation-combo .combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: #ffffff;
 }

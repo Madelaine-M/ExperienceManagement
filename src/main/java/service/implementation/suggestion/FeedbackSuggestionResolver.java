@@ -1,8 +1,8 @@
 package service.implementation.suggestion;
 
 
-import model.FeedbackIncident;
-import model.Incident;
+import model.domain.FeedbackIncident;
+import model.domain.Incident;
 import model.enums.FeedbackCategory;
 import model.enums.IncidentType;
 import model.enums.Packages;

@@ -1,6 +1,6 @@
 package repository.interfaces;
 
-import model.Customer;
+import model.domain.Customer;
 
 import java.util.List;
 

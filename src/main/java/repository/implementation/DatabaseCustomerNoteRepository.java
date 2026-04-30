@@ -2,9 +2,10 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.CustomerNote;
+import model.domain.CustomerNote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.CustomerNoteResultSetMapper;
 import repository.implementation.support.CustomerNoteLoader;
 import repository.implementation.support.GeneratedKeyExtractor;
@@ -66,6 +67,7 @@ public class DatabaseCustomerNoteRepository implements CustomerNoteLookup, Custo
             customerNote.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "customer note"));
         } catch (SQLException e) {
             logger.error("Error while saving customer note for customer {}", customerNote.getCustomerId(), e);
+            throw new RepositoryException("Failed to save customer note for customer " + customerNote.getCustomerId(), e);
         }
     }
 
@@ -87,6 +89,7 @@ public class DatabaseCustomerNoteRepository implements CustomerNoteLookup, Custo
             pstmt.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error while updating customer note {}", customerNote.getId(), e);
+            throw new RepositoryException("Failed to update customer note " + customerNote.getId(), e);
         }
     }
 
@@ -106,6 +109,7 @@ public class DatabaseCustomerNoteRepository implements CustomerNoteLookup, Custo
             }
         } catch (SQLException e) {
             logger.error("Error while finding customer note {}", id, e);
+            throw new RepositoryException("Failed to find customer note " + id, e);
         }
 
         return null;
@@ -117,7 +121,7 @@ public class DatabaseCustomerNoteRepository implements CustomerNoteLookup, Custo
             return customerNoteLoader.loadByCustomerId(conn, customerId);
         } catch (SQLException e) {
             logger.error("Error while loading notes for customer {}", customerId, e);
-            return new ArrayList<>();
+            throw new RepositoryException("Failed to load customer notes for customer " + customerId, e);
         }
     }
 }

@@ -1,11 +1,11 @@
 package repository.interfaces;
 
-import model.ActionItem;
+import model.domain.ActionItem;
 
 import java.util.List;
 
 public interface ActionManagement {
 
-    List<ActionItem> findPriorityActionsForAdvisor(int advisorId);
+    List<ActionItem> findSuggestedActionsByAdvisorId(int advisorId);
 
 }

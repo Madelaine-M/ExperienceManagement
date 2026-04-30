@@ -1,6 +1,6 @@
 package repository.interfaces;
 
-import model.Advisor;
+import model.domain.Advisor;
 
 import java.util.List;
 

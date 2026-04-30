@@ -1,6 +1,6 @@
 package repository.implementation.mapper;
 
-import model.Customer;
+import model.domain.Customer;
 import model.enums.CustomerStatus;
 
 import java.sql.ResultSet;
@@ -26,7 +26,6 @@ public class CustomerResultSetMapper {
         if (!rs.wasNull()) {
             customer.setAssignedAdvisorId(assignedAdvisorId);
         }
-        customer.setCvScore(rs.getFloat("cv_score"));
         customer.setPreferences(rs.getString("preferences"));
         customer.setApplyToNextBooking(rs.getString("apply_to_next_booking"));
         return customer;

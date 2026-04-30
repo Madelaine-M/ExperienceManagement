@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ui.controller.SimulationController"
+            styleClass="dashboard-root">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="18" styleClass="top-bar">
+            <padding>
+                <Insets top="18" right="24" bottom="18" left="24"/>
+            </padding>
+            <VBox spacing="4">
+                <Label text="Simulation Control" styleClass="eyebrow-label"/>
+                <Label text="Space Flight Experience Management" styleClass="app-title"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <HBox spacing="10">
+                <Button text="Start" onAction="#startSimulation" styleClass="primary-button"/>
+                <Button text="Stop" onAction="#stopSimulation" styleClass="secondary-button"/>
+                <Button text="Clear Simulation Data" onAction="#clearSimulationData" styleClass="secondary-button"/>
+                <Button text="Open Dashboard" onAction="#openDashboard" styleClass="secondary-button"/>
+            </HBox>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="22" styleClass="detail-column">
+            <padding>
+                <Insets top="28" right="28" bottom="28" left="28"/>
+            </padding>
+            <HBox spacing="22">
+                <VBox spacing="18" styleClass="hero-card" HBox.hgrow="ALWAYS">
+                    <Label text="Simulation Setup" styleClass="detail-title-accent"/>
+                    <GridPane hgap="16" vgap="14" styleClass="simulation-grid">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="42"/>
+                            <ColumnConstraints percentWidth="58"/>
+                        </columnConstraints>
+                        <Label text="Advisor" styleClass="metric-key" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <ComboBox fx:id="advisorComboBox" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="simulation-combo"/>
+
+                        <Label text="Customer creation interval (s)" styleClass="metric-key" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="customerIntervalField" text="10" GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="simulation-input"/>
+
+                        <Label text="Journey advancement interval (s)" styleClass="metric-key" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <TextField fx:id="journeyIntervalField" text="15" GridPane.rowIndex="2" GridPane.columnIndex="1" styleClass="simulation-input"/>
+
+                        <Label text="Pre-flight delay probability" styleClass="metric-key" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <TextField fx:id="delayProbabilityField" text="0.25" GridPane.rowIndex="3" GridPane.columnIndex="1" styleClass="simulation-input"/>
+
+                        <Label text="Minimum delay minutes" styleClass="metric-key" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <TextField fx:id="minDelayField" text="30" GridPane.rowIndex="4" GridPane.columnIndex="1" styleClass="simulation-input"/>
+
+                        <Label text="Maximum delay minutes" styleClass="metric-key" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                        <TextField fx:id="maxDelayField" text="120" GridPane.rowIndex="5" GridPane.columnIndex="1" styleClass="simulation-input"/>
+
+                        <Label text="Low-score feedback probability" styleClass="metric-key" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                        <TextField fx:id="feedbackProbabilityField" text="0.30" GridPane.rowIndex="6" GridPane.columnIndex="1" styleClass="simulation-input"/>
+
+                        <Label text="Low-score threshold" styleClass="metric-key" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                        <TextField fx:id="lowScoreThresholdField" text="3" GridPane.rowIndex="7" GridPane.columnIndex="1" styleClass="simulation-input"/>
+                    </GridPane>
+                </VBox>
+
+                <VBox spacing="18" styleClass="detail-card" minWidth="420" prefWidth="420">
+                    <Label text="Simulation State" styleClass="detail-title-accent"/>
+                    <VBox spacing="12">
+                        <HBox spacing="10"><Label text="Status:" styleClass="metric-key"/><Label fx:id="statusValueLabel" text="STOPPED" styleClass="metric-value-accent"/></HBox>
+                        <HBox spacing="10"><Label text="Started:" styleClass="metric-key"/><Label fx:id="startedAtValueLabel" text="n/a" styleClass="metric-value"/></HBox>
+                        <HBox spacing="10"><Label text="Stopped:" styleClass="metric-key"/><Label fx:id="stoppedAtValueLabel" text="n/a" styleClass="metric-value"/></HBox>
+                        <HBox spacing="10"><Label text="Last update:" styleClass="metric-key"/><Label fx:id="updatedAtValueLabel" text="n/a" styleClass="metric-value"/></HBox>
+                    </VBox>
+                    <Label text="Simulation Metrics" styleClass="card-title"/>
+                    <VBox spacing="10">
+                        <HBox spacing="10"><Label text="Created customers:" styleClass="metric-key"/><Label fx:id="customersMetricLabel" text="0" styleClass="metric-value"/></HBox>
+                        <HBox spacing="10"><Label text="Advanced journeys:" styleClass="metric-key"/><Label fx:id="journeysMetricLabel" text="0" styleClass="metric-value"/></HBox>
+                        <HBox spacing="10"><Label text="Delay incidents:" styleClass="metric-key"/><Label fx:id="delayMetricLabel" text="0" styleClass="metric-value"/></HBox>
+                        <HBox spacing="10"><Label text="Generated feedbacks:" styleClass="metric-key"/><Label fx:id="feedbackMetricLabel" text="0" styleClass="metric-value"/></HBox>
+                        <HBox spacing="10"><Label text="Feedback incidents:" styleClass="metric-key"/><Label fx:id="feedbackIncidentMetricLabel" text="0" styleClass="metric-value"/></HBox>
+                    </VBox>
+                    <Label fx:id="messageLabel" text="Configure a simulation run or open the dashboard." styleClass="journey-save-status" wrapText="true"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

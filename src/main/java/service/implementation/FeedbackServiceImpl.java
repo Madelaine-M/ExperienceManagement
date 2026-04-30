@@ -1,7 +1,7 @@
 package service.implementation;
 
-import model.Feedback;
-import model.FeedbackItem;
+import model.domain.Feedback;
+import model.domain.FeedbackItem;
 import repository.interfaces.FeedbackAnalytics;
 import repository.interfaces.FeedbackLookup;
 import repository.interfaces.FeedbackUpdate;

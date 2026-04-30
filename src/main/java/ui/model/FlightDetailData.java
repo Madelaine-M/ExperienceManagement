@@ -1,7 +1,7 @@
 package ui.model;
 
-import model.Feedback;
-import model.Flight;
+import model.domain.Feedback;
+import model.domain.Flight;
 
 import java.util.ArrayList;
 import java.util.List;

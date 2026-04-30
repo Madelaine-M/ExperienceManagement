@@ -1,11 +1,11 @@
 package ui.model;
 
-import model.CustomerDetailView;
-import model.CustomerNote;
-import model.Feedback;
-import model.FeedbackItem;
-import model.Flight;
-import model.IncidentDetailView;
+import model.view.CustomerDetailView;
+import model.domain.CustomerNote;
+import model.domain.Feedback;
+import model.domain.FeedbackItem;
+import model.domain.Flight;
+import model.view.IncidentDetailView;
 
 import java.util.ArrayList;
 import java.util.List;

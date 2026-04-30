@@ -1,6 +1,6 @@
 package service.interfaces.frontend;
 
-import model.CustomerNote;
+import model.domain.CustomerNote;
 
 import java.util.List;
 

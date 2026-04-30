@@ -2,9 +2,10 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.CustomerCvProfile;
+import model.domain.CustomerCvProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.CustomerCvProfileResultSetMapper;
 import repository.interfaces.CustomerCvProfileLookup;
 import repository.interfaces.CustomerCvProfileUpdate;
@@ -45,6 +46,7 @@ public class DatabaseCustomerCvProfileRepository implements CustomerCvProfileLoo
             }
         } catch (SQLException e) {
             logger.error("Error while loading CV profile for customer {}", customerId, e);
+            throw new RepositoryException("Failed to load CV profile for customer " + customerId, e);
         }
 
         CustomerCvProfile profile = new CustomerCvProfile();
@@ -69,6 +71,7 @@ public class DatabaseCustomerCvProfileRepository implements CustomerCvProfileLoo
             pstmt.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error while saving CV profile for customer {}", profile.getCustomerId(), e);
+            throw new RepositoryException("Failed to save CV profile for customer " + profile.getCustomerId(), e);
         }
     }
 
@@ -98,6 +101,7 @@ public class DatabaseCustomerCvProfileRepository implements CustomerCvProfileLoo
             pstmt.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error while updating CV profile for customer {}", profile.getCustomerId(), e);
+            throw new RepositoryException("Failed to update CV profile for customer " + profile.getCustomerId(), e);
         }
     }
 

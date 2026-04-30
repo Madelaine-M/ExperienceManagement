@@ -6,18 +6,22 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import model.CustomerDetailView;
-import model.CustomerNote;
-import model.CustomerOverview;
-import model.Flight;
+import model.view.CustomerDetailView;
+import model.domain.CustomerNote;
+import model.view.CustomerOverview;
+import model.domain.Flight;
+import model.workflow.RecoveryActionSummary;
 import ui.navigation.JourneyDetailNavigator;
 import ui.view.DashboardFormatters;
 import ui.view.render.DashboardNodeFactory;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
 public class CustomerDetailController {
+    private static final DateTimeFormatter RECOVERY_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
     @FXML
     private VBox root;
     @FXML
@@ -60,7 +64,15 @@ public class CustomerDetailController {
                                 + "Next booking note: " + DashboardFormatters.defaultText(detail.getApplyToNextBooking(), "No follow-up note.") + "\n"
                                 + "Payment method: " + DashboardFormatters.formatValue(detail.getPaymentMethod()) + "\n"
                                 + "Public person: " + DashboardFormatters.yesNo(detail.isPublicPerson())
-                ),
+                )
+        );
+
+        Node recoveryActionCard = createRecoveryActionCard(detail.getLatestRecoveryAction());
+        if (recoveryActionCard != null) {
+            section.getChildren().add(recoveryActionCard);
+        }
+
+        section.getChildren().addAll(
                 nodeFactory.createInfoCard("Advisor Notes", formatNotes(detail.getNotes())),
                 createCustomerIncidentCard(detail),
                 createPreviousFlightsCard(detail.getPreviousFlightsList(), detail.getPreviousFlights())
@@ -106,6 +118,25 @@ public class CustomerDetailController {
         return builder.toString();
     }
 
+    private Node createRecoveryActionCard(RecoveryActionSummary recoveryAction) {
+        if (recoveryAction == null) {
+            return null;
+        }
+
+        VBox card = nodeFactory.createCard("detail-card");
+        card.getChildren().addAll(
+                nodeFactory.createSectionLabel("Latest Recovery Action"),
+                nodeFactory.createMetricLine("Status", "Recovery mail sent"),
+                nodeFactory.createMetricLine("Resolved by", "Recommendation option " + recoveryAction.getOptionNumber()),
+                nodeFactory.createMetricLine("Advisor", DashboardFormatters.defaultText(recoveryAction.getAdvisorName(), "Advisor #" + recoveryAction.getAdvisorId())),
+                nodeFactory.createMetricLine("Sent at", formatRecoveryTimestamp(recoveryAction)),
+                nodeFactory.createMetricLine("Recommendation", DashboardFormatters.defaultText(recoveryAction.getSelectedRecommendation(), "n/a")),
+                nodeFactory.createMetricLine("Subject", DashboardFormatters.defaultText(recoveryAction.getSubject(), "n/a")),
+                nodeFactory.createInfoCard("Mail Preview", DashboardFormatters.defaultText(recoveryAction.getMailBody(), "No mail body recorded."))
+        );
+        return card;
+    }
+
     private String buildInitials(String firstName, String lastName) {
         String first = DashboardFormatters.defaultText(firstName, " ").trim();
         String last = DashboardFormatters.defaultText(lastName, " ").trim();
@@ -149,5 +180,12 @@ public class CustomerDetailController {
         row.getChildren().addAll(label, nodeFactory.createActionButton("View Details", "secondary-button",
                 () -> journeyDetailNavigator.openFlightDetail(flight.getId())));
         return row;
+    }
+
+    private String formatRecoveryTimestamp(RecoveryActionSummary recoveryAction) {
+        if (recoveryAction.getSentAt() == null) {
+            return "n/a";
+        }
+        return RECOVERY_TIMESTAMP_FORMATTER.format(recoveryAction.getSentAt());
     }
 }

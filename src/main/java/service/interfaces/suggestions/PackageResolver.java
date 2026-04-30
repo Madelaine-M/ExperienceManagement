@@ -1,7 +1,7 @@
 package service.interfaces.suggestions;
 
 
-import model.Incident;
+import model.domain.Incident;
 import model.enums.Packages;
 
 public interface PackageResolver {

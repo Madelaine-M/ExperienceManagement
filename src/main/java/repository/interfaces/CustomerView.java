@@ -1,7 +1,7 @@
 package repository.interfaces;
 
-import model.CustomerDetailView;
-import model.CustomerOverview;
+import model.view.CustomerDetailView;
+import model.view.CustomerOverview;
 
 import java.util.List;
 

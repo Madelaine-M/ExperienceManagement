@@ -2,9 +2,10 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.Flight;
+import model.domain.Flight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.FlightResultSetMapper;
 import repository.implementation.support.GeneratedKeyExtractor;
 import repository.interfaces.FlightRepository;
@@ -74,6 +75,7 @@ public class DatabaseFlightRepository implements FlightRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while saving flight", e);
+            throw new RepositoryException("Failed to save flight for customer " + flight.getCustomerId(), e);
         }
     }
 
@@ -90,6 +92,7 @@ public class DatabaseFlightRepository implements FlightRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while finding flight {}", id, e);
+            throw new RepositoryException("Failed to find flight " + id, e);
         }
         return null;
     }
@@ -113,6 +116,7 @@ public class DatabaseFlightRepository implements FlightRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while finding current flight for customer {}", customerId, e);
+            throw new RepositoryException("Failed to find current flight for customer " + customerId, e);
         }
         return null;
     }
@@ -136,6 +140,7 @@ public class DatabaseFlightRepository implements FlightRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while finding latest previous flight for customer {}", customerId, e);
+            throw new RepositoryException("Failed to find latest previous flight for customer " + customerId, e);
         }
         return null;
     }
@@ -159,6 +164,7 @@ public class DatabaseFlightRepository implements FlightRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while loading flights for customer {}", customerId, e);
+            throw new RepositoryException("Failed to load flights for customer " + customerId, e);
         }
         return flights;
     }
@@ -182,6 +188,7 @@ public class DatabaseFlightRepository implements FlightRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while loading previous flights for customer {}", customerId, e);
+            throw new RepositoryException("Failed to load previous flights for customer " + customerId, e);
         }
         return flights;
     }

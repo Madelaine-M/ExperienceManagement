@@ -1,6 +1,6 @@
 package repository.interfaces;
 
-import model.ActionItem;
+import model.domain.ActionItem;
 
 public interface ActionUpdate {
 

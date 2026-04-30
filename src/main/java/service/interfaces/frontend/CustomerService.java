@@ -1,8 +1,8 @@
 package service.interfaces.frontend;
 
-import model.Customer;
-import model.CustomerDetailView;
-import model.CustomerOverview;
+import model.domain.Customer;
+import model.view.CustomerDetailView;
+import model.view.CustomerOverview;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public interface CustomerService {
 
     //Customer findById(int id); Dopplung im Repo
 
-    List<Customer> findByAdvisor(int advisorId);
+    List<Customer> findByAdvisorId(int advisorId);
 
     List<Customer> findByStatus(String status);
 

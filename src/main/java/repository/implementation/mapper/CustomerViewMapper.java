@@ -1,7 +1,7 @@
 package repository.implementation.mapper;
 
-import model.CustomerDetailView;
-import model.CustomerOverview;
+import model.view.CustomerDetailView;
+import model.view.CustomerOverview;
 import model.enums.CustomerStatus;
 import model.enums.Packages;
 
@@ -15,7 +15,6 @@ public class CustomerViewMapper {
         overview.setCustomerId(rs.getInt("id"));
         overview.setCustomerFirstName(rs.getString("first_name"));
         overview.setCustomerLastName(rs.getString("last_name"));
-        overview.setCvScore(rs.getFloat("cv_score"));
         overview.setReturning(rs.getBoolean("is_returning"));
 
         String statusStr = rs.getString("status");
@@ -38,7 +37,6 @@ public class CustomerViewMapper {
         detail.setCustomerLastName(rs.getString("last_name"));
         detail.setEmail(rs.getString("email"));
         detail.setReturning(rs.getBoolean("is_returning"));
-        detail.setCvScore(rs.getFloat("cv_score"));
         detail.setPreferences(rs.getString("preferences"));
         detail.setApplyToNextBooking(rs.getString("apply_to_next_booking"));
 

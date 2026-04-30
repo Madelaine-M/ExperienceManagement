@@ -2,10 +2,11 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.Feedback;
-import model.FeedbackItem;
+import model.domain.Feedback;
+import model.domain.FeedbackItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.support.FlightIdResolver;
 import repository.implementation.support.GeneratedKeyExtractor;
 import repository.interfaces.FeedbackUpdate;
@@ -95,6 +96,7 @@ public class DatabaseFeedbackUpdate implements FeedbackUpdate {
             }
         } catch (SQLException e) {
             logger.error("Error while saving feedback", e);
+            throw new RepositoryException("Failed to save feedback for customer " + feedback.getCustomerId(), e);
         }
     }
 

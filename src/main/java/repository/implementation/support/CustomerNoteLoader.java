@@ -1,6 +1,6 @@
 package repository.implementation.support;
 
-import model.CustomerNote;
+import model.domain.CustomerNote;
 import repository.implementation.mapper.CustomerNoteResultSetMapper;
 
 import java.sql.Connection;

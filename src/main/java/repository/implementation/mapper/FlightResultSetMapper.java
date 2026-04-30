@@ -1,6 +1,6 @@
 package repository.implementation.mapper;
 
-import model.Flight;
+import model.domain.Flight;
 import model.enums.Packages;
 
 import java.sql.ResultSet;

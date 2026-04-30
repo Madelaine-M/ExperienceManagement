@@ -6,7 +6,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import model.IncidentOverview;
+import model.view.IncidentOverview;
 import ui.view.DashboardFormatters;
 
 public class IncidentOverviewCell extends ListCell<Object> {

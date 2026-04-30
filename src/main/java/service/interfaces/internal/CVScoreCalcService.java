@@ -1,6 +1,6 @@
 package service.interfaces.internal;
 
-import model.Customer;
+import model.domain.Customer;
 import service.implementation.cv.CVCustomer;
 
 public interface CVScoreCalcService {

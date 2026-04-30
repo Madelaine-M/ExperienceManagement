@@ -1,6 +1,6 @@
 package repository.interfaces;
 
-import model.CustomerNote;
+import model.domain.CustomerNote;
 
 public interface CustomerNoteUpdate {
 

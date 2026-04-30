@@ -2,12 +2,13 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.DelayIncident;
-import model.FeedbackIncident;
-import model.Incident;
+import model.domain.DelayIncident;
+import model.domain.FeedbackIncident;
+import model.domain.Incident;
 import model.enums.IncidentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.IncidentResultSetMapper;
 import repository.implementation.support.FlightIdResolver;
 import repository.implementation.support.GeneratedKeyExtractor;
@@ -46,10 +47,10 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
     @Override
     public void save(Incident incident) {
         String sql = """
-            INSERT INTO incidents (customer_id, type, feedback_id, feedback_type, description, priority_score,
+            INSERT INTO incidents (customer_id, type, feedback_id, feedback_type, description,
                                    score_impact, revenue_risk, status, assigned_advisor_id,
                                    source_feedback_item_id, delay_minutes, flight_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = connectionProvider.getConnection();
@@ -64,22 +65,21 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             pstmt.setString(2, incident.getType() != null ? incident.getType().name() : null);
             bindFeedbackFields(pstmt, incident);
             pstmt.setString(5, incident.getDescription());
-            pstmt.setDouble(6, incident.getPriorityScore());
-            pstmt.setDouble(7, incident.getScoreImpact());
-            pstmt.setInt(8, incident.getRevenueRisk());
-            pstmt.setString(9, incident.getStatus() != null ? incident.getStatus().name() : null);
+            pstmt.setDouble(6, incident.getScoreImpact());
+            pstmt.setInt(7, incident.getRevenueRisk());
+            pstmt.setString(8, incident.getStatus() != null ? incident.getStatus().name() : null);
             if (incident.getAssignedAdvisorId() != null) {
-                pstmt.setInt(10, incident.getAssignedAdvisorId());
+                pstmt.setInt(9, incident.getAssignedAdvisorId());
             } else {
-                pstmt.setNull(10, Types.INTEGER);
+                pstmt.setNull(9, Types.INTEGER);
             }
             bindSourceFeedbackItemId(pstmt, incident);
             bindDelayFields(pstmt, incident);
             if (resolvedFlightId != null) {
-                pstmt.setInt(13, resolvedFlightId);
+                pstmt.setInt(12, resolvedFlightId);
                 incident.setFlightId(resolvedFlightId);
             } else {
-                pstmt.setNull(13, Types.INTEGER);
+                pstmt.setNull(12, Types.INTEGER);
             }
 
             pstmt.executeUpdate();
@@ -88,6 +88,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
 
         } catch (SQLException e) {
             logger.error("Error while saving incident", e);
+            throw new RepositoryException("Failed to save incident for customer " + incident.getCustomerId(), e);
         }
     }
 
@@ -103,6 +104,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             pstmt.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error while updating incident status for incident {}", id, e);
+            throw new RepositoryException("Failed to update incident status for incident " + id, e);
         }
     }
 
@@ -122,6 +124,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             }
         } catch (SQLException e) {
             logger.error("Error while loading Incidents for customer " + customerId, e);
+            throw new RepositoryException("Failed to load incidents for customer " + customerId, e);
         }
         return incidents;
     }
@@ -136,8 +139,94 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             if (rs.next()) return incidentMapper.map(rs);
         } catch (SQLException e) {
             logger.error("Error while searching for incidents", e);
+            throw new RepositoryException("Failed to find incident " + id, e);
         }
         return null;
+    }
+
+    @Override
+    public boolean existsByFeedbackId(int feedbackId) {
+        String sql = """
+            SELECT 1
+            FROM incidents
+            WHERE feedback_id = ?
+            LIMIT 1;
+            """;
+
+        try (Connection conn = connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, feedbackId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("Error while checking incidents for feedback {}", feedbackId, e);
+            throw new RepositoryException("Failed to check incidents for feedback " + feedbackId, e);
+        }
+
+    }
+
+    @Override
+    public boolean existsBySourceFeedbackItemId(int sourceFeedbackItemId) {
+        String sql = """
+            SELECT 1
+            FROM incidents
+            WHERE source_feedback_item_id = ?
+            LIMIT 1;
+            """;
+
+        try (Connection conn = connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, sourceFeedbackItemId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("Error while checking incidents for feedback item {}", sourceFeedbackItemId, e);
+            throw new RepositoryException("Failed to check incidents for feedback item " + sourceFeedbackItemId, e);
+        }
+
+    }
+
+    @Override
+    public boolean existsOpenDelayIncidentForCustomerFlight(int customerId, Integer flightId) {
+        String sql = """
+            SELECT 1
+            FROM incidents
+            WHERE customer_id = ?
+              AND type = 'DELAY'
+              AND status = 'OPEN'
+              AND (
+                    (flight_id = ?)
+                    OR (flight_id IS NULL AND ? IS NULL)
+              )
+            LIMIT 1;
+            """;
+
+        try (Connection conn = connectionProvider.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, customerId);
+            if (flightId != null) {
+                pstmt.setInt(2, flightId);
+                pstmt.setInt(3, flightId);
+            } else {
+                pstmt.setNull(2, Types.INTEGER);
+                pstmt.setNull(3, Types.INTEGER);
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            logger.error("Error while checking open delay incidents for customer {} and flight {}", customerId, flightId, e);
+            throw new RepositoryException("Failed to check open delay incidents for customer " + customerId, e);
+        }
+
     }
 
     @Override
@@ -151,6 +240,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             while (rs.next()) incidents.add(incidentMapper.map(rs));
         } catch (SQLException e) {
             logger.error("Error while filtering status", e);
+            throw new RepositoryException("Failed to find incidents by status " + status, e);
         }
         return incidents;
     }
@@ -169,6 +259,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             }
         } catch (SQLException e) {
             logger.error("Error while loading unassigned incidents", e);
+            throw new RepositoryException("Failed to load unassigned incidents", e);
         }
 
         return incidents;
@@ -195,6 +286,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             }
         } catch (SQLException e) {
             logger.error("Error while loading incidents for advisor {}", advisorId, e);
+            throw new RepositoryException("Failed to load incidents for advisor " + advisorId, e);
         }
 
         return incidents;
@@ -221,6 +313,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             }
         } catch (SQLException e) {
             logger.error("Error while loading pending action items", e);
+            throw new RepositoryException("Failed to load pending-action incidents", e);
         }
 
         return incidents;

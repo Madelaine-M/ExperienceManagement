@@ -12,7 +12,5 @@ public interface DashboardPaneHost {
 
     void showEmptyActions(String message);
 
-    boolean isActionSelected(int actionId);
-
-    void selectAction(int actionId);
+    void refreshDashboardData();
 }

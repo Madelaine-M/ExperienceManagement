@@ -1,6 +1,6 @@
 package repository.implementation.mapper;
 
-import model.CustomerCvProfile;
+import model.domain.CustomerCvProfile;
 import model.enums.CustomerType;
 import model.enums.PaymentMethod;
 

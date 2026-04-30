@@ -2,8 +2,8 @@ package service.implementation.suggestion;
 
 
 
-import model.DelayIncident;
-import model.Incident;
+import model.domain.DelayIncident;
+import model.domain.Incident;
 import model.enums.IncidentType;
 import model.enums.Packages;
 import service.interfaces.suggestions.PackageResolver;

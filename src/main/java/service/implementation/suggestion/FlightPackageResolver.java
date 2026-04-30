@@ -1,7 +1,7 @@
 package service.implementation.suggestion;
 
-import model.Flight;
-import model.Incident;
+import model.domain.Flight;
+import model.domain.Incident;
 import model.enums.Packages;
 import repository.interfaces.FlightRepository;
 import service.interfaces.suggestions.PackageResolver;

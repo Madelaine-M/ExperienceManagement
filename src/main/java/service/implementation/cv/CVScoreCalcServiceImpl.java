@@ -1,6 +1,5 @@
 package service.implementation.cv;
 
-import model.Customer;
 import service.interfaces.internal.CVScoreCalcService;
 
 import java.util.List;
@@ -20,9 +19,9 @@ public class CVScoreCalcServiceImpl implements CVScoreCalcService {
         new TravelingAsScientistRule(),
         new NewsletterSubscriptionRule()
     );
-    private static int score = 0;
     @Override
     public int calculate(CVCustomer customer) {
+        int score = 0;
         for (CVScoringRuleService rule : rules){
             score += rule.evaluate(customer);
         }

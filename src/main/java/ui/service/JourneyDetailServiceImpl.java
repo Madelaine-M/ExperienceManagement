@@ -1,10 +1,10 @@
 package ui.service;
 
-import model.CustomerDetailView;
-import model.CustomerNote;
-import model.Feedback;
-import model.FeedbackItem;
-import model.IncidentDetailView;
+import model.view.CustomerDetailView;
+import model.domain.CustomerNote;
+import model.domain.Feedback;
+import model.domain.FeedbackItem;
+import model.view.IncidentDetailView;
 import model.enums.CustomerStatus;
 import service.interfaces.frontend.CustomerNoteService;
 import service.interfaces.frontend.CustomerService;

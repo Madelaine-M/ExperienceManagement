@@ -1,39 +1,36 @@
 package service.implementation.Priority;
 
-import model.Incident;
+import model.domain.Incident;
 import model.enums.IncidentType;
-import service.interfaces.frontend.CustomerService;
+import service.interfaces.internal.CustomerCvScoreService;
 import service.interfaces.internal.ExpectedImpactCalcService;
 import service.interfaces.internal.PriorityCalcService;
 
 public class PriorityCalcServiceImpl implements PriorityCalcService {
-    private Incident  incident;
-    private CustomerService customerService;
-    private ExpectedImpactCalcService expectedImpactCalcService;
-    public PriorityCalcServiceImpl(Incident incident) {
-        this.incident = incident;
+    private final CustomerCvScoreService customerCvScoreService;
+    private final ExpectedImpactCalcService expectedImpactCalcService;
+
+    public PriorityCalcServiceImpl(CustomerCvScoreService customerCvScoreService,
+                                   ExpectedImpactCalcService expectedImpactCalcService) {
+        this.customerCvScoreService = customerCvScoreService;
+        this.expectedImpactCalcService = expectedImpactCalcService;
     }
+
+    @Override
     public double calculate(Incident incident) {
-        return (getBaseSeverity(incident.getType())*
-                getCVPart(incident.getCustomerId())+
-                (expectedImpactCalcService.calculateDefaultScoreImpact(incident.getType())*10)+
-                (expectedImpactCalcService.calculateRevenueImpact(10)/2000)
-        );
+        return calculate(incident.getType(), calculateCustomerCvScore(incident.getCustomerId()));
     }
 
-    private double getBaseSeverity(IncidentType type) { //SOLID Zweifel
-        if (type == IncidentType.DELAY){
-            return 1.3;
+    @Override
+    public float calculateCustomerCvScore(int customerId) {
+        if (customerCvScoreService == null) {
+            return 0.0f;
         }
-        else  {
-            return 1.5;
-        }
+        return customerCvScoreService.calculateForCustomerId(customerId);
     }
 
-    private double getCVPart(int customerId){
-
-        return (1+ (customerService.findById(customerId)).getCvScore()/100);
+    @Override
+    public double calculate(IncidentType incidentType, float customerCvScore) {
+        return PriorityScoreSupport.calculate(incidentType, customerCvScore, expectedImpactCalcService);
     }
-
-
 }

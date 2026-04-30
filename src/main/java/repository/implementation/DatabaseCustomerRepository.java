@@ -2,10 +2,11 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.Customer;
+import model.domain.Customer;
 import repository.interfaces.CustomerLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.CustomerResultSetMapper;
 import repository.implementation.support.GeneratedKeyExtractor;
 import repository.interfaces.CustomerSearch;
@@ -36,8 +37,8 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
     public void save(Customer customer) {
         String sql = """
             INSERT INTO customers (first_name, last_name, email, birth_date, status,
-                                 is_returning, assigned_advisor_id, cv_score, preferences, apply_to_next_booking)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                 is_returning, assigned_advisor_id, preferences, apply_to_next_booking)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = connectionProvider.getConnection();
@@ -54,9 +55,8 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             } else {
                 pstmt.setNull(7, Types.INTEGER);
             }
-            pstmt.setFloat(8, customer.getCvScore());
-            pstmt.setString(9, customer.getPreferences());
-            pstmt.setString(10, customer.getApplyToNextBooking());
+            pstmt.setString(8, customer.getPreferences());
+            pstmt.setString(9, customer.getApplyToNextBooking());
 
             pstmt.executeUpdate();
             customer.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "customer"));
@@ -64,6 +64,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
 
         } catch (SQLException e) {
             logger.error("Error while saving customer ", e);
+            throw new RepositoryException("Failed to save customer " + customer.getEmail(), e);
         }
     }
 
@@ -72,7 +73,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
         String sql = """
             UPDATE customers
             SET first_name = ?, last_name = ?, email = ?, birth_date = ?, status = ?,
-                is_returning = ?, assigned_advisor_id = ?, cv_score = ?,
+                is_returning = ?, assigned_advisor_id = ?,
                 preferences = ?, apply_to_next_booking = ?
             WHERE id = ?;
             """;
@@ -91,14 +92,14 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             } else {
                 pstmt.setNull(7, Types.INTEGER);
             }
-            pstmt.setFloat(8, customer.getCvScore());
-            pstmt.setString(9, customer.getPreferences());
-            pstmt.setString(10, customer.getApplyToNextBooking());
-            pstmt.setInt(11, customer.getId());
+            pstmt.setString(8, customer.getPreferences());
+            pstmt.setString(9, customer.getApplyToNextBooking());
+            pstmt.setInt(10, customer.getId());
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error while updating customer {}", customer.getId(), e);
+            throw new RepositoryException("Failed to update customer " + customer.getId(), e);
         }
     }
 
@@ -116,6 +117,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             }
         } catch (SQLException e) {
             logger.error("Error while finding customer with id " + id, e);
+            throw new RepositoryException("Failed to find customer " + id, e);
         }
         return null;
     }
@@ -134,6 +136,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             }
         } catch (SQLException e) {
             logger.error("Error while getting all customers", e);
+            throw new RepositoryException("Failed to load customers", e);
         }
         return customers;
     }
@@ -155,13 +158,14 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             }
         } catch (SQLException e) {
             logger.error("Error while searching customers by status {}", status, e);
+            throw new RepositoryException("Failed to find customers by status " + status, e);
         }
 
         return customers;
     }
 
     @Override
-    public List<Customer> findByAdvisor(int advisorId) {
+    public List<Customer> findByAdvisorId(int advisorId) {
         List<Customer> customers = new ArrayList<>();
 
         String sql = "SELECT * FROM customers WHERE assigned_advisor_id = ?;";
@@ -182,6 +186,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
 
         } catch (SQLException e) {
             logger.error("Error while searching for customers for Advisor ID " + advisorId, e);
+            throw new RepositoryException("Failed to find customers for advisor " + advisorId, e);
         }
 
         return customers;

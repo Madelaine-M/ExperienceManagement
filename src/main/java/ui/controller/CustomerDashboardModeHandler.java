@@ -1,16 +1,15 @@
 package ui.controller;
 
 import javafx.scene.control.ListCell;
-import model.CustomerDetailView;
-import model.CustomerOverview;
+import model.domain.ActionItem;
+import model.view.CustomerDetailView;
+import model.view.CustomerOverview;
 import ui.navigation.JourneyDetailNavigator;
 import ui.service.DashboardDataService;
 import ui.view.factory.DashboardSubviewFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class CustomerDashboardModeHandler implements DashboardModeHandler {
     private final DashboardDataService dashboardDataService;
@@ -32,7 +31,11 @@ public class CustomerDashboardModeHandler implements DashboardModeHandler {
 
     @Override
     public List<Object> loadItems(int advisorId) {
-        return new ArrayList<>(dashboardDataService.loadCustomerOverviews(advisorId));
+        try {
+            return new ArrayList<>(dashboardDataService.loadCustomerOverviews(advisorId));
+        } catch (RuntimeException exception) {
+            return List.of();
+        }
     }
 
     @Override
@@ -58,7 +61,14 @@ public class CustomerDashboardModeHandler implements DashboardModeHandler {
             return;
         }
 
-        CustomerDetailView detail = dashboardDataService.loadCustomerDetail(overview.getCustomerId());
+        CustomerDetailView detail;
+        try {
+            detail = dashboardDataService.loadCustomerDetail(overview.getCustomerId());
+        } catch (RuntimeException exception) {
+            host.showEmptyDetail("Dashboard Detail", "Customer details could not be loaded right now.");
+            host.showEmptyActions("Recommendations are unavailable because customer data could not be loaded.");
+            return;
+        }
         if (detail == null) {
             host.showEmptyDetail("Dashboard Detail", "Customer details could not be loaded.");
             host.showEmptyActions("No recommendations available because the customer detail is unavailable.");
@@ -72,26 +82,20 @@ public class CustomerDashboardModeHandler implements DashboardModeHandler {
 
         var actionView = subviewFactory.loadActionPanelView();
         if (detail.hasOpenIncident() && detail.getOpenIncidentId() != null) {
-            List<model.ActionItem> actions = dashboardDataService.loadActionItemsForIncident(detail.getOpenIncidentId());
-            actionView.controller().showActions(
-                    actions,
-                    detail.getOpenIncidentId(),
-                    collectSelectedActionIds(host, actions),
-                    host::selectAction
-            );
+            try {
+                List<ActionItem> actions = dashboardDataService.loadActionItemsForIncident(detail.getOpenIncidentId());
+                actionView.controller().showActions(
+                        actions,
+                        detail.getOpenIncidentId(),
+                        dashboardDataService,
+                        host::refreshDashboardData
+                );
+            } catch (RuntimeException exception) {
+                actionView.controller().showEmptyState("Recommendations could not be loaded right now.");
+            }
         } else {
             actionView.controller().showEmptyState("No active incidents for this customer.");
         }
         host.showActions(actionView.root());
-    }
-
-    private Set<Integer> collectSelectedActionIds(DashboardPaneHost host, List<model.ActionItem> actions) {
-        Set<Integer> selected = new HashSet<>();
-        for (model.ActionItem action : actions) {
-            if (host.isActionSelected(action.getId())) {
-                selected.add(action.getId());
-            }
-        }
-        return selected;
     }
 }

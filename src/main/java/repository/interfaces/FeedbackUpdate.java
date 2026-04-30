@@ -1,7 +1,7 @@
 package repository.interfaces;
 
-import model.Feedback;
-import model.FeedbackItem;
+import model.domain.Feedback;
+import model.domain.FeedbackItem;
 
 public interface FeedbackUpdate {
 

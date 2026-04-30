@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ui.controller.RecommendationEmailController"
+      spacing="18"
+      styleClass="mail-dialog-root">
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <Label text="Recovery Mail" styleClass="section-title"/>
+
+    <VBox spacing="10" styleClass="detail-card">
+        <HBox spacing="10">
+            <Label text="Customer:" styleClass="metric-key"/>
+            <Label fx:id="customerValueLabel" styleClass="metric-value"/>
+        </HBox>
+        <HBox spacing="10">
+            <Label text="Advisor:" styleClass="metric-key"/>
+            <Label fx:id="advisorValueLabel" styleClass="metric-value"/>
+        </HBox>
+        <VBox spacing="6">
+            <Label text="Selected recommendation:" styleClass="metric-key"/>
+            <Label fx:id="suggestionValueLabel" styleClass="body-text" wrapText="true"/>
+        </VBox>
+    </VBox>
+
+    <VBox spacing="8">
+        <Label text="Subject" styleClass="metric-key"/>
+        <TextField fx:id="subjectField" styleClass="mail-input"/>
+    </VBox>
+
+    <VBox spacing="8" VBox.vgrow="ALWAYS">
+        <Label text="Mail body" styleClass="metric-key"/>
+        <TextArea fx:id="bodyArea" wrapText="true" prefRowCount="14" styleClass="mail-text-area" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+    <Label fx:id="errorLabel" styleClass="mail-error"/>
+
+    <HBox spacing="12">
+        <Button text="Cancel" onAction="#closeDialog" styleClass="secondary-button"/>
+        <Button text="Send and Close Incident" onAction="#sendEmail" styleClass="primary-button"/>
+    </HBox>
+</VBox>

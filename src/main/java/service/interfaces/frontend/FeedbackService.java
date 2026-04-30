@@ -1,7 +1,7 @@
 package service.interfaces.frontend;
 
-import model.Feedback;
-import model.FeedbackItem;
+import model.domain.Feedback;
+import model.domain.FeedbackItem;
 
 import java.util.List;
 

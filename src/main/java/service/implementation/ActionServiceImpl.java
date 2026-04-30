@@ -1,13 +1,12 @@
 package service.implementation;
 
-import model.ActionItem;
+import model.domain.ActionItem;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
 import service.interfaces.frontend.ActionService;
 
 import java.util.List;
-
 
 public class ActionServiceImpl implements ActionService {
     private final ActionLookup actionLookup;
@@ -19,8 +18,8 @@ public class ActionServiceImpl implements ActionService {
         this.actionUpdate = actionUpdate;
     }
     @Override
-    public List<ActionItem> findPriorityActionsForAdvisor(int advisorId) {
-        return actionManagement.findPriorityActionsForAdvisor(advisorId);
+    public List<ActionItem> findSuggestedActionsByAdvisorId(int advisorId) {
+        return actionManagement.findSuggestedActionsByAdvisorId(advisorId);
     }
 
     @Override
@@ -41,18 +40,5 @@ public class ActionServiceImpl implements ActionService {
     @Override
     public List<ActionItem> findByIncidentId(int incidentId) {
         return actionLookup.findByIncidentId(incidentId);
-    }
-
-    @Override
-    public String getSystemRec(ActionItem actionItem) { //Logging?
-        return ("Rec1: "+actionItem.getSugegstion1() +
-                "OR"
-                + "Rec2: "+actionItem.getSuggestion2());
-    }
-
-    @Override
-    public String getImpact(ActionItem actionItem) { //Logging?
-        return "Recommendation: " + actionItem.getExpectedRec() +
-                "Book again: " + actionItem.getExpectedRebooking();
     }
 }

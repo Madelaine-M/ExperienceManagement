@@ -1,8 +1,8 @@
 package ui.controller;
 
 import javafx.scene.control.ListCell;
-import model.IncidentDetailView;
-import model.IncidentOverview;
+import model.view.IncidentDetailView;
+import model.view.IncidentOverview;
 import ui.navigation.JourneyDetailNavigator;
 import ui.service.DashboardDataService;
 import ui.view.factory.DashboardSubviewFactory;
@@ -30,7 +30,11 @@ public class IncidentDashboardModeHandler implements DashboardModeHandler {
 
     @Override
     public List<Object> loadItems(int advisorId) {
-        return new ArrayList<>(dashboardDataService.loadIncidentOverviews(advisorId));
+        try {
+            return new ArrayList<>(dashboardDataService.loadOpenIncidentOverviews(advisorId));
+        } catch (RuntimeException exception) {
+            return List.of();
+        }
     }
 
     @Override
@@ -56,7 +60,14 @@ public class IncidentDashboardModeHandler implements DashboardModeHandler {
             return;
         }
 
-        IncidentDetailView detail = dashboardDataService.loadIncidentDetail(overview.getIncidentId());
+        IncidentDetailView detail;
+        try {
+            detail = dashboardDataService.loadIncidentDetail(overview.getIncidentId());
+        } catch (RuntimeException exception) {
+            host.showEmptyDetail("Dashboard Detail", "Incident details could not be loaded right now.");
+            host.showEmptyActions("Recommendations are unavailable because incident data could not be loaded.");
+            return;
+        }
         if (detail == null) {
             host.showEmptyDetail("Dashboard Detail", "Incident details could not be loaded.");
             host.showEmptyActions("No recommendations available because the incident detail is unavailable.");
@@ -69,22 +80,14 @@ public class IncidentDashboardModeHandler implements DashboardModeHandler {
         host.showDetail(detailView.root());
 
         var actionView = subviewFactory.loadActionPanelView();
-        actionView.controller().showActions(
-                dashboardDataService.loadActionItemsForIncident(overview.getIncidentId()),
-                overview.getIncidentId(),
-                collectSelectedActionIds(host, dashboardDataService.loadActionItemsForIncident(overview.getIncidentId())),
-                host::selectAction
-        );
-        host.showActions(actionView.root());
-    }
-
-    private java.util.Set<Integer> collectSelectedActionIds(DashboardPaneHost host, List<model.ActionItem> actions) {
-        java.util.Set<Integer> selected = new java.util.HashSet<>();
-        for (model.ActionItem action : actions) {
-            if (host.isActionSelected(action.getId())) {
-                selected.add(action.getId());
-            }
+        try {
+            actionView.controller().showActions(dashboardDataService.loadActionItemsForIncident(overview.getIncidentId()),
+                    overview.getIncidentId(),
+                    dashboardDataService,
+                    host::refreshDashboardData);
+        } catch (RuntimeException exception) {
+            actionView.controller().showEmptyState("Recommendations could not be loaded right now.");
         }
-        return selected;
+        host.showActions(actionView.root());
     }
 }

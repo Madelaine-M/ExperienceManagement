@@ -1,8 +1,8 @@
 package service.interfaces.suggestions;
 
 
-import model.ActionItem;
-import model.Incident;
+import model.domain.ActionItem;
+import model.domain.Incident;
 
 import java.util.List;
 

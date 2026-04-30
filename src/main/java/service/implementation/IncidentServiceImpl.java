@@ -1,15 +1,17 @@
 package service.implementation;
 
-import model.Incident;
-import model.IncidentDetailView;
-import model.IncidentOverview;
+import model.domain.Incident;
+import model.view.IncidentDetailView;
+import model.view.IncidentOverview;
 import model.enums.IncidentStatus;
 import repository.interfaces.IncidentLookup;
 import repository.interfaces.IncidentManagement;
 import repository.interfaces.IncidentUpdate;
 import repository.interfaces.IncidentView;
 import service.interfaces.frontend.IncidentService;
+import service.interfaces.internal.PriorityCalcService;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class IncidentServiceImpl implements IncidentService {
@@ -17,11 +19,18 @@ public class IncidentServiceImpl implements IncidentService {
     private final IncidentView incidentView;
     private final IncidentUpdate incidentUpdate;
     private final IncidentManagement incidentManagement;
-    public IncidentServiceImpl (IncidentLookup incidentLookup, IncidentView incidentView, IncidentManagement incidentManagement, IncidentUpdate incidentUpdate) {
+    private final PriorityCalcService priorityCalcService;
+
+    public IncidentServiceImpl (IncidentLookup incidentLookup,
+                                IncidentView incidentView,
+                                IncidentManagement incidentManagement,
+                                IncidentUpdate incidentUpdate,
+                                PriorityCalcService priorityCalcService) {
         this.incidentView = incidentView;
         this.incidentManagement = incidentManagement;
         this.incidentUpdate = incidentUpdate;
         this.incidentLookup=incidentLookup;
+        this.priorityCalcService = priorityCalcService;
     }
 
     @Override
@@ -65,8 +74,17 @@ public class IncidentServiceImpl implements IncidentService {
     }
 
     @Override
-    public List<IncidentOverview> findAllPrioritizedOverviews(int incidentId) {
-        return incidentView.findAllPrioritizedOverviews(incidentId);
+    public List<IncidentOverview> findOpenOverviewsByAdvisorId(int advisorId) {
+        List<IncidentOverview> overviews = incidentView.findOpenOverviewsByAdvisorId(advisorId);
+        for (IncidentOverview overview : overviews) {
+            overview.setCustomerCvScore(priorityCalcService.calculateCustomerCvScore(overview.getCustomerId()));
+            overview.setPriorityScore(priorityCalcService.calculate(overview.getIncidentType(), overview.getCustomerCvScore()));
+        }
+        overviews.sort(Comparator
+                .comparingDouble(IncidentOverview::getPriorityScore).reversed()
+                .thenComparing(IncidentOverview::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparingInt(IncidentOverview::getIncidentId));
+        return overviews;
     }
 
     @Override

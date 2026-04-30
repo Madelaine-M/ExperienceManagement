@@ -2,9 +2,10 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.Advisor;
+import model.domain.Advisor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.AdvisorResultSetMapper;
 import repository.implementation.support.GeneratedKeyExtractor;
 import repository.interfaces.AdvisorRepository;
@@ -56,6 +57,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
 
         } catch (SQLException e) {
             logger.error("Error while saving advisor", e);
+            throw new RepositoryException("Failed to save advisor " + advisor.getEmail(), e);
         }
     }
 
@@ -75,6 +77,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while finding advisor with id " + id, e);
+            throw new RepositoryException("Failed to find advisor " + id, e);
         }
 
         return null;
@@ -94,6 +97,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while getting all advisors", e);
+            throw new RepositoryException("Failed to load advisors", e);
         }
 
         return advisors;
@@ -113,6 +117,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while deleting advisor", e);
+            throw new RepositoryException("Failed to delete advisor " + id, e);
         }
     }
 
@@ -133,6 +138,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             }
         } catch (SQLException e) {
             logger.error("Error while searching advisors by speciality " + speciality, e);
+            throw new RepositoryException("Failed to find advisors by speciality " + speciality, e);
         }
 
         return advisors;

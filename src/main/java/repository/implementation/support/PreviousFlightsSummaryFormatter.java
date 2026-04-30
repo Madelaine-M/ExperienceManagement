@@ -1,6 +1,6 @@
 package repository.implementation.support;
 
-import model.Flight;
+import model.domain.Flight;
 
 import java.util.List;
 

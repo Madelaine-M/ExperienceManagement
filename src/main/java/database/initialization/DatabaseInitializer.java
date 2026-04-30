@@ -24,7 +24,6 @@ public class DatabaseInitializer {
                 status TEXT,
                 is_returning INTEGER DEFAULT 0,
                 assigned_advisor_id INTEGER,
-                cv_score REAL DEFAULT 0.0,
                 preferences TEXT,
                 apply_to_next_booking TEXT,
 
@@ -54,7 +53,6 @@ public class DatabaseInitializer {
                 feedback_id INTEGER,
                 feedback_type TEXT,
                 description TEXT,
-                priority_score REAL DEFAULT 0.0,
                 score_impact REAL DEFAULT 0.0,
                 revenue_risk INTEGER DEFAULT 0,
                 status TEXT,
@@ -122,7 +120,6 @@ public class DatabaseInitializer {
                 suggestion_1 TEXT,
                 suggestion_2 TEXT,
                 status TEXT NOT NULL,
-                priority INTEGER NOT NULL,
                 score_impact REAL DEFAULT 0.0,
                 expected_rec REAL DEFAULT 0.0,
                 expected_rebooking REAL DEFAULT 0.0,
@@ -287,13 +284,6 @@ public class DatabaseInitializer {
             executeSql(conn, """
                 ALTER TABLE customers
                 ADD COLUMN is_returning INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "customers", "cv_score")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN cv_score REAL DEFAULT 0.0;
                 """);
         }
 

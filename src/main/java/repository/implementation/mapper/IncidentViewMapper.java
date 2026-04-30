@@ -1,7 +1,7 @@
 package repository.implementation.mapper;
 
-import model.IncidentDetailView;
-import model.IncidentOverview;
+import model.view.IncidentDetailView;
+import model.view.IncidentOverview;
 import model.enums.IncidentType;
 import model.enums.Packages;
 
@@ -17,13 +17,21 @@ public class IncidentViewMapper {
         overview.setCustomerFirstName(rs.getString("first_name"));
         overview.setCustomerLastName(rs.getString("last_name"));
         overview.setDescription(rs.getString("description"));
-        overview.setPriorityScore(rs.getDouble("priority_score"));
         overview.setRevenueRisk(rs.getInt("revenue_risk"));
         overview.setScoreImpact(rs.getDouble("score_impact"));
+        java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
+        if (createdAt != null) {
+            overview.setCreatedAt(createdAt.toLocalDateTime());
+        }
 
         String packageStr = rs.getString("booking_package");
         if (packageStr != null) {
             overview.setBookingPackage(Packages.valueOf(packageStr));
+        }
+
+        String incidentTypeStr = rs.getString("type");
+        if (incidentTypeStr != null) {
+            overview.setIncidentType(IncidentType.valueOf(incidentTypeStr));
         }
 
         return overview;

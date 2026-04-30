@@ -1,8 +1,8 @@
 package service.implementation.cv;
 
-import model.Customer;
-import model.CustomerCvProfile;
-import model.Flight;
+import model.domain.Customer;
+import model.domain.CustomerCvProfile;
+import model.domain.Flight;
 
 import java.util.Optional;
 

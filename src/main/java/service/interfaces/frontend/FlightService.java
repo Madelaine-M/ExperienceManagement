@@ -1,6 +1,6 @@
 package service.interfaces.frontend;
 
-import model.Flight;
+import model.domain.Flight;
 
 import java.util.List;
 

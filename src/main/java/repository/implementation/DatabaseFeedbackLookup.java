@@ -2,10 +2,11 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.Feedback;
-import model.FeedbackItem;
+import model.domain.Feedback;
+import model.domain.FeedbackItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.FeedbackResultSetMapper;
 import repository.implementation.support.FeedbackItemLoader;
 import repository.interfaces.FeedbackLookup;
@@ -54,7 +55,7 @@ public class DatabaseFeedbackLookup implements FeedbackLookup {
             }
         } catch (SQLException e) {
             logger.error("Error while finding feedback with id " + id, e);
-            return null;
+            throw new RepositoryException("Failed to find feedback " + id, e);
         }
     }
 
@@ -77,6 +78,7 @@ public class DatabaseFeedbackLookup implements FeedbackLookup {
             }
         } catch (SQLException e) {
             logger.error("Error while loading feedbacks for customer " + customerId, e);
+            throw new RepositoryException("Failed to load feedback for customer " + customerId, e);
         }
 
         return feedbacks;
@@ -101,6 +103,7 @@ public class DatabaseFeedbackLookup implements FeedbackLookup {
             }
         } catch (SQLException e) {
             logger.error("Error while loading feedbacks for flight {}", flightId, e);
+            throw new RepositoryException("Failed to load feedback for flight " + flightId, e);
         }
 
         return feedbacks;
@@ -112,7 +115,7 @@ public class DatabaseFeedbackLookup implements FeedbackLookup {
             return feedbackItemLoader.loadItemsByFeedbackId(conn, id);
         } catch (SQLException e) {
             logger.error("Error while loading feedback items for feedback {}", id, e);
-            return new ArrayList<>();
+            throw new RepositoryException("Failed to load feedback items for feedback " + id, e);
         }
     }
 }

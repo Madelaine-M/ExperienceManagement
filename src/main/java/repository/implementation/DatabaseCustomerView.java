@@ -2,21 +2,29 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.CustomerCvProfile;
-import model.CustomerDetailView;
-import model.CustomerNote;
-import model.CustomerOverview;
-import model.Flight;
+import model.domain.Advisor;
+import model.domain.CustomerCvProfile;
+import model.view.CustomerDetailView;
+import model.domain.CustomerNote;
+import model.view.CustomerOverview;
+import model.domain.Flight;
+import model.workflow.RecoveryActionSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.CustomerViewMapper;
 import repository.implementation.support.CustomerNoteLoader;
 import repository.implementation.support.FlightViewLoader;
 import repository.implementation.support.OpenIncidentSummary;
 import repository.implementation.support.OpenIncidentSummaryLoader;
 import repository.implementation.support.PreviousFlightsSummaryFormatter;
+import repository.interfaces.AdvisorRepository;
 import repository.interfaces.CustomerCvProfileLookup;
 import repository.interfaces.CustomerView;
+import service.implementation.cv.CVScoreCalcServiceImpl;
+import service.implementation.cv.CustomerCvScoreServiceImpl;
+import service.interfaces.internal.CustomerCvScoreService;
+import support.RecoveryActionNoteCodec;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,6 +41,8 @@ public class DatabaseCustomerView implements CustomerView {
     private final CustomerNoteLoader customerNoteLoader;
     private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
     private final CustomerCvProfileLookup customerCvProfileLookup;
+    private final AdvisorRepository advisorRepository;
+    private final CustomerCvScoreService customerCvScoreService;
     private final ConnectionProvider connectionProvider;
 
     public DatabaseCustomerView() {
@@ -43,7 +53,14 @@ public class DatabaseCustomerView implements CustomerView {
                 new FlightViewLoader(),
                 new CustomerNoteLoader(),
                 new PreviousFlightsSummaryFormatter(),
-                new DatabaseCustomerCvProfileRepository()
+                new DatabaseCustomerCvProfileRepository(),
+                new DatabaseAdvisorRepository(),
+                new CustomerCvScoreServiceImpl(
+                        new DatabaseCustomerRepository(),
+                        new DatabaseCustomerCvProfileRepository(),
+                        new DatabaseFlightRepository(),
+                        new CVScoreCalcServiceImpl()
+                )
         );
     }
 
@@ -53,7 +70,9 @@ public class DatabaseCustomerView implements CustomerView {
                                 FlightViewLoader flightViewLoader,
                                 CustomerNoteLoader customerNoteLoader,
                                 PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter,
-                                CustomerCvProfileLookup customerCvProfileLookup) {
+                                CustomerCvProfileLookup customerCvProfileLookup,
+                                AdvisorRepository advisorRepository,
+                                CustomerCvScoreService customerCvScoreService) {
         this.connectionProvider = connectionProvider;
         this.customerViewMapper = customerViewMapper;
         this.openIncidentSummaryLoader = openIncidentSummaryLoader;
@@ -61,6 +80,8 @@ public class DatabaseCustomerView implements CustomerView {
         this.customerNoteLoader = customerNoteLoader;
         this.previousFlightsSummaryFormatter = previousFlightsSummaryFormatter;
         this.customerCvProfileLookup = customerCvProfileLookup;
+        this.advisorRepository = advisorRepository;
+        this.customerCvScoreService = customerCvScoreService;
     }
 
     @Override
@@ -71,7 +92,6 @@ public class DatabaseCustomerView implements CustomerView {
                    c.first_name,
                    c.last_name,
                    c.status,
-                   c.cv_score,
                    c.is_returning,
                    f.booking_package
             FROM customers c
@@ -89,13 +109,16 @@ public class DatabaseCustomerView implements CustomerView {
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     CustomerOverview overview = customerViewMapper.mapOverview(rs);
+                    float cvScore = customerCvScoreService.calculateForCustomerId(overview.getCustomerId());
+                    overview.setCvScore(cvScore);
                     applyCvProfile(overview);
-                    applyOpenIncidentSummary(conn, overview);
+                    applyOpenIncidentSummary(conn, overview, cvScore);
                     overviews.add(overview);
                 }
             }
         } catch (SQLException e) {
             logger.error("Error while loading customer overviews for advisor {}", advisorId, e);
+            throw new RepositoryException("Failed to load customer overviews for advisor " + advisorId, e);
         }
 
         return overviews;
@@ -110,7 +133,6 @@ public class DatabaseCustomerView implements CustomerView {
                    email,
                    status,
                    is_returning,
-                   cv_score,
                    preferences,
                    apply_to_next_booking
             FROM customers
@@ -125,10 +147,14 @@ public class DatabaseCustomerView implements CustomerView {
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     CustomerDetailView detail = customerViewMapper.mapDetail(rs);
+                    float cvScore = customerCvScoreService.calculateForCustomerId(detail.getCustomerId());
+                    detail.setCvScore(cvScore);
                     applyCvProfile(detail);
-                    applyOpenIncidentSummary(conn, detail);
+                    applyOpenIncidentSummary(conn, detail, cvScore);
                     List<CustomerNote> notes = customerNoteLoader.loadByCustomerId(conn, customerId);
                     detail.setNotes(notes);
+                    RecoveryActionSummary latestRecoveryAction = RecoveryActionNoteCodec.findLatestRecoveryAction(notes);
+                    detail.setLatestRecoveryAction(enrichRecoveryAction(latestRecoveryAction));
                     Flight currentFlight = flightViewLoader.loadCurrentFlight(conn, customerId);
                     detail.setCurrentFlight(currentFlight);
                     if (currentFlight != null) {
@@ -145,21 +171,22 @@ public class DatabaseCustomerView implements CustomerView {
             }
         } catch (SQLException e) {
             logger.error("Error while loading customer detail view for customer {}", customerId, e);
+            throw new RepositoryException("Failed to load customer detail for customer " + customerId, e);
         }
 
         return null;
     }
 
-    private void applyOpenIncidentSummary(Connection conn, CustomerOverview overview) throws SQLException {
-        OpenIncidentSummary summary = openIncidentSummaryLoader.loadForCustomer(conn, overview.getCustomerId());
+    private void applyOpenIncidentSummary(Connection conn, CustomerOverview overview, float cvScore) throws SQLException {
+        OpenIncidentSummary summary = openIncidentSummaryLoader.loadForCustomer(conn, overview.getCustomerId(), cvScore);
         overview.setHasOpenIncident(summary.hasOpenIncident());
         overview.setOpenIncidentId(summary.openIncidentId());
         overview.setHighestPriorityScore(summary.highestPriorityScore());
         overview.setIncidentDescription(summary.incidentDescription());
     }
 
-    private void applyOpenIncidentSummary(Connection conn, CustomerDetailView detail) throws SQLException {
-        OpenIncidentSummary summary = openIncidentSummaryLoader.loadForCustomer(conn, detail.getCustomerId());
+    private void applyOpenIncidentSummary(Connection conn, CustomerDetailView detail, float cvScore) throws SQLException {
+        OpenIncidentSummary summary = openIncidentSummaryLoader.loadForCustomer(conn, detail.getCustomerId(), cvScore);
         detail.setHasOpenIncident(summary.hasOpenIncident());
         detail.setOpenIncidentId(summary.openIncidentId());
         detail.setHighestPriorityScore(summary.highestPriorityScore());
@@ -168,13 +195,38 @@ public class DatabaseCustomerView implements CustomerView {
 
     private void applyCvProfile(CustomerOverview overview) {
         CustomerCvProfile profile = customerCvProfileLookup.findByCustomerId(overview.getCustomerId());
-        overview.setCustomerType(profile.getCustomerType());
+        if (profile != null) {
+            overview.setCustomerType(profile.getCustomerType());
+        }
     }
 
     private void applyCvProfile(CustomerDetailView detail) {
         CustomerCvProfile profile = customerCvProfileLookup.findByCustomerId(detail.getCustomerId());
-        detail.setCustomerType(profile.getCustomerType());
-        detail.setPaymentMethod(profile.getPaymentMethod());
-        detail.setPublicPerson(profile.isPublicPerson());
+        if (profile != null) {
+            detail.setCustomerType(profile.getCustomerType());
+            detail.setPaymentMethod(profile.getPaymentMethod());
+            detail.setPublicPerson(profile.isPublicPerson());
+        }
+    }
+
+    private RecoveryActionSummary enrichRecoveryAction(RecoveryActionSummary recoveryAction) {
+        if (recoveryAction == null) {
+            return null;
+        }
+
+        Advisor advisor = advisorRepository.findById(recoveryAction.getAdvisorId());
+        String advisorName = advisor == null
+                ? "Advisor #" + recoveryAction.getAdvisorId()
+                : (advisor.getFirstName() + " " + advisor.getLastName()).trim();
+
+        return new RecoveryActionSummary(
+                recoveryAction.getAdvisorId(),
+                advisorName,
+                recoveryAction.getSentAt(),
+                recoveryAction.getOptionNumber(),
+                recoveryAction.getSelectedRecommendation(),
+                recoveryAction.getSubject(),
+                recoveryAction.getMailBody()
+        );
     }
 }

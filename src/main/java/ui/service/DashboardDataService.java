@@ -1,10 +1,11 @@
 package ui.service;
 
-import model.ActionItem;
-import model.CustomerDetailView;
-import model.CustomerOverview;
-import model.IncidentDetailView;
-import model.IncidentOverview;
+import model.domain.ActionItem;
+import model.view.CustomerDetailView;
+import model.view.CustomerOverview;
+import model.view.IncidentDetailView;
+import model.view.IncidentOverview;
+import model.workflow.RecommendationEmailDraft;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ public interface DashboardDataService {
 
     float getCompanyNps();
 
-    List<IncidentOverview> loadIncidentOverviews(int advisorId);
+    List<IncidentOverview> loadOpenIncidentOverviews(int advisorId);
 
     IncidentDetailView loadIncidentDetail(int incidentId);
 
@@ -21,4 +22,8 @@ public interface DashboardDataService {
     CustomerDetailView loadCustomerDetail(int customerId);
 
     List<ActionItem> loadActionItemsForIncident(int incidentId);
+
+    RecommendationEmailDraft prepareRecommendationDraft(int actionId, int optionNumber);
+
+    void executeRecommendation(int actionId, int optionNumber, String subject, String emailBody);
 }

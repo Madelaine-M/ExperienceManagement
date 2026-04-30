@@ -2,12 +2,13 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.CustomerCvProfile;
-import model.Flight;
-import model.IncidentDetailView;
-import model.IncidentOverview;
+import model.domain.CustomerCvProfile;
+import model.domain.Flight;
+import model.view.IncidentDetailView;
+import model.view.IncidentOverview;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.IncidentViewMapper;
 import repository.implementation.support.FlightViewLoader;
 import repository.implementation.support.PreviousFlightsSummaryFormatter;
@@ -52,24 +53,25 @@ public class DatabaseIncidentView implements IncidentView {
     }
 
     @Override
-    public List<IncidentOverview> findAllPrioritizedOverviews(int advisorId) {
+    public List<IncidentOverview> findOpenOverviewsByAdvisorId(int advisorId) {
         List<IncidentOverview> overviews = new ArrayList<>();
         String sql = """
             SELECT i.id,
                    i.customer_id,
+                   i.type,
                    c.first_name,
                    c.last_name,
                    f.booking_package,
-                   i.priority_score,
                    i.description,
                    i.revenue_risk,
-                   i.score_impact
+                   i.score_impact,
+                   i.created_at
             FROM incidents i
             JOIN customers c ON i.customer_id = c.id
             LEFT JOIN flights f ON i.flight_id = f.id
             WHERE i.status = 'OPEN'
               AND i.assigned_advisor_id = ?
-            ORDER BY i.priority_score DESC, i.created_at ASC;
+            ORDER BY i.created_at ASC, i.id ASC;
             """;
 
         try (Connection conn = connectionProvider.getConnection();
@@ -83,7 +85,8 @@ public class DatabaseIncidentView implements IncidentView {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Error while loading prioritized incident overviews for advisor {}", advisorId, e);
+            logger.error("Error while loading open incident overviews for advisor {}", advisorId, e);
+            throw new RepositoryException("Failed to load incident overviews for advisor " + advisorId, e);
         }
 
         return overviews;
@@ -131,6 +134,7 @@ public class DatabaseIncidentView implements IncidentView {
             }
         } catch (SQLException e) {
             logger.error("Error while loading incident detail view for incident {}", incidentId, e);
+            throw new RepositoryException("Failed to load incident detail for incident " + incidentId, e);
         }
 
         return null;
@@ -138,6 +142,8 @@ public class DatabaseIncidentView implements IncidentView {
 
     private void applyCvProfile(IncidentDetailView detail) {
         CustomerCvProfile profile = customerCvProfileLookup.findByCustomerId(detail.getCustomerId());
-        detail.setCustomerType(profile.getCustomerType());
+        if (profile != null) {
+            detail.setCustomerType(profile.getCustomerType());
+        }
     }
 }

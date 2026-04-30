@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -24,12 +25,18 @@
                 <Label text="Advisor Dashboard" styleClass="eyebrow-label"/>
                 <Label text="Space Flight Experience Management" styleClass="app-title"/>
             </VBox>
+            <VBox spacing="4" alignment="CENTER_LEFT" styleClass="advisor-panel">
+                <Label text="Selected Advisor" styleClass="nps-label"/>
+                <Label fx:id="advisorValueLabel" text="n/a" styleClass="journey-subtitle"/>
+            </VBox>
             <Region HBox.hgrow="ALWAYS"/>
 
             <VBox spacing="4" alignment="CENTER_RIGHT" styleClass="nps-panel">
                 <Label text="Company NPS" styleClass="nps-label"/>
                 <Label fx:id="npsValueLabel" text="0" styleClass="nps-value"/>
             </VBox>
+
+            <Button text="Simulation Setup" onAction="#goBackToSimulation" styleClass="secondary-button"/>
 
             <HBox spacing="10" alignment="CENTER" maxHeight="50.0" styleClass="toggle-shell">
                 <ToggleButton fx:id="incidentsToggle" text="Incidents" onAction="#showIncidentsMode"

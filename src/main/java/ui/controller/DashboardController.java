@@ -1,5 +1,7 @@
 package ui.controller;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -8,21 +10,22 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+import model.domain.Advisor;
+import model.view.CustomerOverview;
+import model.view.IncidentOverview;
 import ui.navigation.JourneyDetailNavigator;
 import ui.service.DashboardDataService;
 import ui.view.factory.DashboardSubviewFactory;
 import ui.view.render.DashboardNodeFactory;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class DashboardController implements DashboardPaneHost {
-    private static final int ADVISOR_ID = 1;
-
     @FXML
     private Label npsValueLabel;
     @FXML
     private Label listTitleLabel;
+    @FXML
+    private Label advisorValueLabel;
     @FXML
     private ToggleButton incidentsToggle;
     @FXML
@@ -35,12 +38,15 @@ public class DashboardController implements DashboardPaneHost {
     private VBox actionPane;
 
     private final ObservableList<Object> leftItems = FXCollections.observableArrayList();
-    private final Set<Integer> selectedActionIds = new HashSet<>();
     private final DashboardNodeFactory nodeFactory = new DashboardNodeFactory();
+    private final Timeline refreshTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> refreshDashboard()));
 
     private DashboardMode currentMode = DashboardMode.INCIDENTS;
     private DashboardModeHandlerFactory modeHandlerFactory;
     private DashboardSubviewFactory subviewFactory;
+    private DashboardDataService dashboardDataService;
+    private int advisorId;
+    private Runnable backToSimulationAction;
 
     @FXML
     private void initialize() {
@@ -53,12 +59,30 @@ public class DashboardController implements DashboardPaneHost {
     }
 
     public void initializeDashboard(DashboardDataService dashboardDataService,
-                                    JourneyDetailNavigator journeyDetailNavigator) {
+                                    JourneyDetailNavigator journeyDetailNavigator,
+                                    Advisor advisor,
+                                    Runnable backToSimulationAction) {
+        this.dashboardDataService = dashboardDataService;
         this.subviewFactory = new DashboardSubviewFactory();
         this.modeHandlerFactory = new DashboardModeHandlerFactory(dashboardDataService, subviewFactory, journeyDetailNavigator);
-        npsValueLabel.setText(String.valueOf(Math.round(dashboardDataService.getCompanyNps())));
+        this.advisorId = advisor.getId();
+        this.backToSimulationAction = backToSimulationAction;
+        advisorValueLabel.setText(advisor.getFirstName() + " " + advisor.getLastName());
         incidentsToggle.setSelected(true);
+        refreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        refreshTimeline.play();
         configureMode(DashboardMode.INCIDENTS);
+    }
+
+    public void stopAutoRefresh() {
+        refreshTimeline.stop();
+    }
+
+    @FXML
+    private void goBackToSimulation() {
+        if (backToSimulationAction != null) {
+            backToSimulationAction.run();
+        }
     }
 
     @FXML
@@ -79,7 +103,14 @@ public class DashboardController implements DashboardPaneHost {
         customersToggle.setSelected(mode == DashboardMode.CUSTOMERS);
         listTitleLabel.setText(handler.getListTitle());
         leftListView.setCellFactory(listView -> handler.createListCell());
-        leftItems.setAll(handler.loadItems(ADVISOR_ID));
+        try {
+            updateNpsDisplay();
+            leftItems.setAll(handler.loadItems(advisorId));
+        } catch (RuntimeException exception) {
+            leftItems.clear();
+            showErrorState("Dashboard data could not be loaded right now.");
+            return;
+        }
 
         if (leftItems.isEmpty()) {
             showEmptyDetail("Dashboard Detail", handler.getEmptyDetailMessage());
@@ -90,8 +121,58 @@ public class DashboardController implements DashboardPaneHost {
         leftListView.getSelectionModel().selectFirst();
     }
 
+    private void refreshDashboard() {
+        if (dashboardDataService == null || modeHandlerFactory == null) {
+            return;
+        }
+
+        Object previousSelection = leftListView.getSelectionModel().getSelectedItem();
+        SelectionKey selectionKey = SelectionKey.from(previousSelection);
+        DashboardModeHandler handler = modeHandlerFactory.create(currentMode);
+
+        try {
+            updateNpsDisplay();
+            leftItems.setAll(handler.loadItems(advisorId));
+        } catch (RuntimeException exception) {
+            leftItems.clear();
+            showErrorState("Dashboard data could not be refreshed right now.");
+            return;
+        }
+
+        if (leftItems.isEmpty()) {
+            showEmptyDetail("Dashboard Detail", handler.getEmptyDetailMessage());
+            showEmptyActions(handler.getEmptyActionsMessage());
+            return;
+        }
+
+        Object matchingItem = findMatchingItem(selectionKey);
+        if (matchingItem != null) {
+            leftListView.getSelectionModel().select(matchingItem);
+        } else if (leftListView.getSelectionModel().getSelectedItem() == null) {
+            leftListView.getSelectionModel().selectFirst();
+        } else {
+            refreshCurrentSelection();
+        }
+    }
+
+    private Object findMatchingItem(SelectionKey selectionKey) {
+        if (selectionKey == null) {
+            return null;
+        }
+        for (Object item : leftItems) {
+            if (selectionKey.matches(item)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     private void handleSelection(Object selection) {
-        modeHandlerFactory.create(currentMode).handleSelection(selection, this);
+        try {
+            modeHandlerFactory.create(currentMode).handleSelection(selection, this);
+        } catch (RuntimeException exception) {
+            showErrorState("Selection details could not be loaded right now.");
+        }
     }
 
     private void refreshCurrentSelection() {
@@ -127,13 +208,41 @@ public class DashboardController implements DashboardPaneHost {
     }
 
     @Override
-    public boolean isActionSelected(int actionId) {
-        return selectedActionIds.contains(actionId);
+    public void refreshDashboardData() {
+        refreshDashboard();
     }
 
-    @Override
-    public void selectAction(int actionId) {
-        selectedActionIds.add(actionId);
-        refreshCurrentSelection();
+    private void updateNpsDisplay() {
+        long roundedNps = Math.round(dashboardDataService.getCompanyNps());
+        npsValueLabel.setText(String.valueOf(roundedNps));
+        npsValueLabel.getStyleClass().removeAll("nps-positive", "nps-negative");
+        npsValueLabel.getStyleClass().add(roundedNps < 0 ? "nps-negative" : "nps-positive");
+    }
+
+    private void showErrorState(String message) {
+        showEmptyDetail("Dashboard Detail", message);
+        showEmptyActions(message);
+    }
+
+    private record SelectionKey(String type, int id) {
+        static SelectionKey from(Object item) {
+            if (item instanceof IncidentOverview overview) {
+                return new SelectionKey("incident", overview.getIncidentId());
+            }
+            if (item instanceof CustomerOverview overview) {
+                return new SelectionKey("customer", overview.getCustomerId());
+            }
+            return null;
+        }
+
+        boolean matches(Object item) {
+            if ("incident".equals(type) && item instanceof IncidentOverview overview) {
+                return overview.getIncidentId() == id;
+            }
+            if ("customer".equals(type) && item instanceof CustomerOverview overview) {
+                return overview.getCustomerId() == id;
+            }
+            return false;
+        }
     }
 }

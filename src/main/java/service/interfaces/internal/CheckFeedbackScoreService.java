@@ -1,7 +1,7 @@
 package service.interfaces.internal;
 
-import model.FeedbackIncident;
-import model.FeedbackItem;
+import model.domain.FeedbackIncident;
+import model.domain.FeedbackItem;
 
 import java.util.List;
 

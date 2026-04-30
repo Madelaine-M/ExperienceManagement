@@ -1,6 +1,6 @@
 package repository.implementation.mapper;
 
-import model.Advisor;
+import model.domain.Advisor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -1,6 +1,6 @@
 package repository.implementation.support;
 
-import model.FeedbackItem;
+import model.domain.FeedbackItem;
 import repository.implementation.mapper.FeedbackItemResultSetMapper;
 
 import java.sql.Connection;

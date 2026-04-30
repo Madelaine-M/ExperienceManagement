@@ -4,6 +4,7 @@ import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.interfaces.NPSScores;
 
 import java.sql.Connection;
@@ -40,6 +41,7 @@ public class DatabaseNPSScores implements NPSScores {
             }
         } catch (SQLException e) {
             logger.error("Error while counting feedbacks for score range {} to {}", min, max, e);
+            throw new RepositoryException("Failed to count feedbacks for score range " + min + " to " + max, e);
         }
 
         return 0;

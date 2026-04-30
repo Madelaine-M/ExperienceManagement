@@ -1,8 +1,8 @@
 package repository.implementation.mapper;
 
-import model.DelayIncident;
-import model.FeedbackIncident;
-import model.Incident;
+import model.domain.DelayIncident;
+import model.domain.FeedbackIncident;
+import model.domain.Incident;
 import model.enums.FeedbackCategory;
 import model.enums.IncidentStatus;
 import model.enums.IncidentType;
@@ -43,9 +43,7 @@ public class IncidentResultSetMapper {
                 delayIncident.setDelayMinutes(delayMinutes);
             }
         }
-
         incident.setDescription(rs.getString("description"));
-        incident.setPriorityScore(rs.getDouble("priority_score"));
         incident.setScoreImpact(rs.getDouble("score_impact"));
         incident.setRevenueRisk(rs.getInt("revenue_risk"));
 

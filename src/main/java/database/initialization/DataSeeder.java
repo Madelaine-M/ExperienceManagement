@@ -1,16 +1,16 @@
 package database.initialization;
 
-import model.ActionItem;
-import model.Advisor;
-import model.Customer;
-import model.CustomerCvProfile;
-import model.CustomerNote;
-import model.DelayIncident;
-import model.Feedback;
-import model.FeedbackIncident;
-import model.FeedbackItem;
-import model.Flight;
-import model.Incident;
+import model.domain.ActionItem;
+import model.domain.Advisor;
+import model.domain.Customer;
+import model.domain.CustomerCvProfile;
+import model.domain.CustomerNote;
+import model.domain.DelayIncident;
+import model.domain.Feedback;
+import model.domain.FeedbackIncident;
+import model.domain.FeedbackItem;
+import model.domain.Flight;
+import model.domain.Incident;
 import model.enums.ActionStatus;
 import model.enums.CustomerStatus;
 import model.enums.CustomerType;
@@ -58,12 +58,12 @@ public class DataSeeder {
 
         Customer customerOne = createCustomer(
                 "Max", "Mustermann", "max@test.de", "1989-04-17",
-                true, advisorOne.getId(), 84.0f,
+                true, advisorOne.getId(),
                 "Quiet cabin", customerUpdate
         );
         Customer customerTwo = createCustomer(
                 "Erika", "Musterfrau", "erika@web.de", "1993-09-02",
-                false, advisorTwo.getId(), 58.0f,
+                false, advisorTwo.getId(),
                 "Aisle seat", customerUpdate
         );
         createCustomerCvProfile(customerOne.getId(), false, true, false, PaymentMethod.IMMEDIATE, false,
@@ -176,7 +176,7 @@ public class DataSeeder {
     }
 
     private static Customer createCustomer(String firstName, String lastName, String email, String birthDate,
-                                           boolean returning, Integer advisorId, float cvScore,
+                                           boolean returning, Integer advisorId,
                                            String preferences, CustomerUpdate customerUpdate) {
         Customer customer = new Customer(
                 0,
@@ -187,7 +187,6 @@ public class DataSeeder {
                 CustomerStatus.BOOKED,
                 returning,
                 advisorId,
-                cvScore,
                 preferences,
                 "Priority follow-up"
         );
@@ -253,7 +252,6 @@ public class DataSeeder {
                     0,
                     customerId,
                     description,
-                    priorityScore,
                     scoreImpact,
                     revenueRisk,
                     status,
@@ -270,7 +268,6 @@ public class DataSeeder {
                     0,
                     customerId,
                     description,
-                    priorityScore,
                     scoreImpact,
                     revenueRisk,
                     status,
@@ -298,7 +295,6 @@ public class DataSeeder {
                 suggestionOne,
                 suggestionTwo,
                 ActionStatus.SUGGESTED,
-                priority,
                 scoreImpact,
                 expectedRec,
                 expectedRebooking

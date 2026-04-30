@@ -1,6 +1,6 @@
 package repository.implementation.support;
 
-import model.Flight;
+import model.domain.Flight;
 import repository.implementation.mapper.FlightResultSetMapper;
 
 import java.sql.Connection;

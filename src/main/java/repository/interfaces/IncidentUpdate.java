@@ -1,6 +1,6 @@
 package repository.interfaces;
 
-import model.Incident;
+import model.domain.Incident;
 import model.enums.IncidentStatus;
 
 public interface IncidentUpdate {

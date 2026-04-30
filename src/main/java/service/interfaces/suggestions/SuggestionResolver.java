@@ -1,7 +1,7 @@
 package service.interfaces.suggestions;
 
 
-import model.Incident;
+import model.domain.Incident;
 
 public interface SuggestionResolver {
     boolean supports(Incident incident);

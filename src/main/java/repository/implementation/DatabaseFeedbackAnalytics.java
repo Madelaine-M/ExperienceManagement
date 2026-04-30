@@ -2,10 +2,11 @@ package repository.implementation;
 
 import database.connection.ConnectionProvider;
 import database.connection.DatabaseConnectionProvider;
-import model.Feedback;
-import model.FeedbackItem;
+import model.domain.Feedback;
+import model.domain.FeedbackItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import repository.RepositoryException;
 import repository.implementation.mapper.FeedbackItemResultSetMapper;
 import repository.implementation.mapper.FeedbackResultSetMapper;
 import repository.implementation.support.FeedbackItemLoader;
@@ -62,6 +63,7 @@ public class DatabaseFeedbackAnalytics implements FeedbackAnalytics {
             }
         } catch (SQLException e) {
             logger.error("Error while loading feedbacks below rating {}", threshold, e);
+            throw new RepositoryException("Failed to load feedbacks below rating " + threshold, e);
         }
 
         return feedbacks;
@@ -84,6 +86,7 @@ public class DatabaseFeedbackAnalytics implements FeedbackAnalytics {
             }
         } catch (SQLException e) {
             logger.error("Error while loading feedback items with score <= {}", maxScore, e);
+            throw new RepositoryException("Failed to load feedback items with score <= " + maxScore, e);
         }
 
         return items;
@@ -106,6 +109,7 @@ public class DatabaseFeedbackAnalytics implements FeedbackAnalytics {
             }
         } catch (SQLException e) {
             logger.error("Error while loading feedback items by category {}", category, e);
+            throw new RepositoryException("Failed to load feedback items by category " + category, e);
         }
 
         return items;
@@ -127,6 +131,7 @@ public class DatabaseFeedbackAnalytics implements FeedbackAnalytics {
             }
         } catch (SQLException e) {
             logger.error("Error while calculating average rating for category {}", category, e);
+            throw new RepositoryException("Failed to calculate average rating for category " + category, e);
         }
 
         return 0.0;

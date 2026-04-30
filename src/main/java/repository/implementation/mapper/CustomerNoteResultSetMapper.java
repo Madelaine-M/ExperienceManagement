@@ -1,6 +1,6 @@
 package repository.implementation.mapper;
 
-import model.CustomerNote;
+import model.domain.CustomerNote;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

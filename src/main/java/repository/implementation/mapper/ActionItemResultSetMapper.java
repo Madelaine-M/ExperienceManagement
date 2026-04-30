@@ -1,6 +1,6 @@
 package repository.implementation.mapper;
 
-import model.ActionItem;
+import model.domain.ActionItem;
 import model.enums.ActionStatus;
 
 import java.sql.ResultSet;
@@ -13,7 +13,7 @@ public class ActionItemResultSetMapper {
         actionItem.setId(rs.getInt("id"));
         actionItem.setIncidentId(rs.getInt("incident_id"));
         actionItem.setDescription(rs.getString("description"));
-        actionItem.setSugegstion1(rs.getString("suggestion_1"));
+        actionItem.setSuggestion1(rs.getString("suggestion_1"));
         actionItem.setSuggestion2(rs.getString("suggestion_2"));
 
         String status = rs.getString("status");
@@ -21,7 +21,6 @@ public class ActionItemResultSetMapper {
             actionItem.setStatus(ActionStatus.valueOf(status));
         }
 
-        actionItem.setPriority(rs.getInt("priority"));
         actionItem.setScoreImpact(rs.getDouble("score_impact"));
         actionItem.setExpectedRec(rs.getDouble("expected_rec"));
         actionItem.setExpectedRebooking(rs.getDouble("expected_rebooking"));

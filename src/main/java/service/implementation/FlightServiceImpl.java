@@ -1,6 +1,6 @@
 package service.implementation;
 
-import model.Flight;
+import model.domain.Flight;
 import repository.interfaces.FlightRepository;
 import service.interfaces.frontend.FlightService;
 

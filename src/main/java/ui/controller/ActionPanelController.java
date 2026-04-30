@@ -1,16 +1,24 @@
 package ui.controller;
 
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
+import javafx.stage.Window;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.scene.layout.VBox;
-import model.ActionItem;
+import model.domain.ActionItem;
 import ui.view.DashboardFormatters;
 import ui.view.render.DashboardNodeFactory;
+import ui.service.DashboardDataService;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.function.IntConsumer;
 
 public class ActionPanelController {
     @FXML
@@ -22,8 +30,8 @@ public class ActionPanelController {
 
     public void showActions(List<ActionItem> actions,
                             int incidentId,
-                            Set<Integer> selectedActionIds,
-                            IntConsumer selectionHandler) {
+                            DashboardDataService dashboardDataService,
+                            Runnable recommendationSentHandler) {
         contentBox.getChildren().setAll(nodeFactory.createSectionTitle("Decision Support"));
 
         if (actions == null || actions.isEmpty()) {
@@ -32,7 +40,7 @@ public class ActionPanelController {
         }
 
         for (ActionItem actionItem : actions) {
-            contentBox.getChildren().add(createActionCard(actionItem, selectedActionIds.contains(actionItem.getId()), selectionHandler));
+            contentBox.getChildren().add(createActionCard(actionItem, dashboardDataService, recommendationSentHandler));
         }
         contentBox.getChildren().add(createImpactCard(actions.get(0)));
     }
@@ -48,7 +56,9 @@ public class ActionPanelController {
         return root;
     }
 
-    private VBox createActionCard(ActionItem actionItem, boolean selected, IntConsumer selectionHandler) {
+    private VBox createActionCard(ActionItem actionItem,
+                                  DashboardDataService dashboardDataService,
+                                  Runnable recommendationSentHandler) {
         VBox card = nodeFactory.createCard("action-card");
         Label header = new Label("System Recommendation");
         header.getStyleClass().add("action-title");
@@ -58,9 +68,11 @@ public class ActionPanelController {
         description.setWrapText(true);
 
         VBox recommendations = new VBox(12);
-        recommendations.getChildren().add(createRecommendationOption(actionItem, 1, actionItem.getSugegstion1(), selected, selectionHandler));
+        recommendations.getChildren().add(createRecommendationOption(actionItem, 1, actionItem.getSuggestion1(),
+                dashboardDataService, recommendationSentHandler));
         if (actionItem.getSuggestion2() != null && !actionItem.getSuggestion2().isBlank()) {
-            recommendations.getChildren().add(createRecommendationOption(actionItem, 2, actionItem.getSuggestion2(), selected, selectionHandler));
+            recommendations.getChildren().add(createRecommendationOption(actionItem, 2, actionItem.getSuggestion2(),
+                    dashboardDataService, recommendationSentHandler));
         }
 
         card.getChildren().addAll(header, description, recommendations);
@@ -70,8 +82,8 @@ public class ActionPanelController {
     private VBox createRecommendationOption(ActionItem actionItem,
                                             int optionNumber,
                                             String text,
-                                            boolean selected,
-                                            IntConsumer selectionHandler) {
+                                            DashboardDataService dashboardDataService,
+                                            Runnable recommendationSentHandler) {
         VBox optionCard = nodeFactory.createCard("recommendation-option");
         Label optionLabel = new Label("Option " + optionNumber);
         optionLabel.getStyleClass().add("recommendation-label");
@@ -81,11 +93,10 @@ public class ActionPanelController {
         suggestion.setWrapText(true);
 
         var button = nodeFactory.createActionButton(
-                selected ? "Selected for follow-up" : "Select this recommendation",
-                selected ? "secondary-button" : "primary-button",
-                () -> selectionHandler.accept(actionItem.getId())
+                "Compose recovery mail",
+                "primary-button",
+                () -> openRecommendationDialog(actionItem.getId(), optionNumber, dashboardDataService, recommendationSentHandler)
         );
-        button.setDisable(selected);
 
         optionCard.getChildren().addAll(optionLabel, suggestion, button);
         return optionCard;
@@ -100,5 +111,53 @@ public class ActionPanelController {
                 nodeFactory.createMetricLine("Score impact", String.format(Locale.ENGLISH, "%.2f", actionItem.getScoreImpact()))
         );
         return card;
+    }
+
+    private void openRecommendationDialog(int actionId,
+                                          int optionNumber,
+                                          DashboardDataService dashboardDataService,
+                                          Runnable recommendationSentHandler) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/view/RecommendationEmailView.fxml"));
+            Parent dialogRoot = loader.load();
+            RecommendationEmailController controller = loader.getController();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            Window ownerWindow = root != null && root.getScene() != null ? root.getScene().getWindow() : null;
+            if (ownerWindow != null) {
+                dialogStage.initOwner(ownerWindow);
+            }
+
+            Scene scene = new Scene(dialogRoot, 720, 620);
+            scene.getStylesheets().add(ActionPanelController.class.getResource("/ui/view/dashboard.css").toExternalForm());
+            dialogStage.setScene(scene);
+            dialogStage.setTitle("Recovery Mail");
+
+            controller.configure(
+                    dashboardDataService.prepareRecommendationDraft(actionId, optionNumber),
+                    dashboardDataService,
+                    recommendationSentHandler,
+                    dialogStage
+            );
+
+            dialogStage.showAndWait();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to open recommendation email dialog.", e);
+        } catch (RuntimeException exception) {
+            showRecommendationError("Recommendation mail could not be opened right now.");
+        }
+    }
+
+    private void showRecommendationError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Action Unavailable");
+        alert.setHeaderText("Recommendation action failed");
+        alert.setContentText(message);
+        Window ownerWindow = root != null && root.getScene() != null ? root.getScene().getWindow() : null;
+        if (ownerWindow != null) {
+            alert.initOwner(ownerWindow);
+        }
+        alert.showAndWait();
     }
 }

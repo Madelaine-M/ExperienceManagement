@@ -1,6 +1,6 @@
 package service.implementation;
 
-import model.CustomerNote;
+import model.domain.CustomerNote;
 import repository.interfaces.CustomerNoteLookup;
 import repository.interfaces.CustomerNoteUpdate;
 import service.interfaces.frontend.CustomerNoteService;

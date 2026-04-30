@@ -1,6 +1,6 @@
 package repository.implementation.mapper;
 
-import model.FeedbackItem;
+import model.domain.FeedbackItem;
 import model.enums.FeedbackCategory;
 
 import java.sql.ResultSet;

@@ -1,32 +1,30 @@
 package service.implementation;
 
-import model.Customer;
-import model.CustomerDetailView;
-import model.CustomerOverview;
-import model.Incident;
+import model.domain.Customer;
+import model.view.CustomerDetailView;
+import model.view.CustomerOverview;
 import repository.interfaces.CustomerLookup;
 
 import repository.interfaces.CustomerSearch;
 import repository.interfaces.CustomerUpdate;
 import repository.interfaces.CustomerView;
 import service.interfaces.frontend.CustomerService;
-import service.interfaces.frontend.IncidentService;
 
 import java.util.List;
-
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerLookup customerLookup;
     private final CustomerSearch customerSearch;
     private final CustomerUpdate customerUpdate;
-    private final IncidentService incidentService;
     private final CustomerView customerView;
 
-    public CustomerServiceImpl(CustomerLookup customerLookup, CustomerSearch customerSearch, CustomerUpdate customerUpdate, IncidentService incidentService, CustomerView customerView, CustomerOverview customerOverview) {
+    public CustomerServiceImpl(CustomerLookup customerLookup,
+                               CustomerSearch customerSearch,
+                               CustomerUpdate customerUpdate,
+                               CustomerView customerView) {
         this.customerLookup=customerLookup;
         this.customerSearch=customerSearch;
         this.customerUpdate=customerUpdate;
-        this.incidentService=incidentService;
         this.customerView = customerView;
     }
 
@@ -41,8 +39,8 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<Customer> findByAdvisor(int advisorId) {
-        return customerSearch.findByAdvisor(advisorId);
+    public List<Customer> findByAdvisorId(int advisorId) {
+        return customerSearch.findByAdvisorId(advisorId);
     }
 
     @Override
@@ -68,15 +66,5 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDetailView findDetailByCustomerId(int customerId) {
         return customerView.findDetailByCustomerId(customerId);
-    }
-
-    public boolean CheckIncident (Customer customer){//logging
-        List<Incident> incidents = incidentService.findByAdvisorId(customer.getAssignedAdvisorId());
-        for(Incident incident : incidents){
-            if (incident.getCustomerId() == customer.getId()){
-                return true;
-            }
-        }
-        return false;
     }
 }

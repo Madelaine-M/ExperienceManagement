@@ -1,8 +1,8 @@
 package service.interfaces.frontend;
 
-import model.Incident;
-import model.IncidentDetailView;
-import model.IncidentOverview;
+import model.domain.Incident;
+import model.view.IncidentDetailView;
+import model.view.IncidentOverview;
 import model.enums.IncidentStatus;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public interface IncidentService {
 
     void updateStatus(int id, IncidentStatus status);
 
-    List<IncidentOverview> findAllPrioritizedOverviews(int incidentId);
+    List<IncidentOverview> findOpenOverviewsByAdvisorId(int advisorId);
 
     IncidentDetailView findDetailByIncidentId(int incidentId);
 

@@ -1,6 +1,6 @@
 package repository.implementation.mapper;
 
-import model.Feedback;
+import model.domain.Feedback;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

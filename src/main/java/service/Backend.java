@@ -14,6 +14,8 @@ import repository.implementation.DatabaseFlightRepository;
 import repository.implementation.DatabaseIncidentRepository;
 import repository.implementation.DatabaseIncidentView;
 import repository.implementation.DatabaseNPSScores;
+import service.implementation.cv.CVScoreCalcServiceImpl;
+import service.implementation.cv.CustomerCvScoreServiceImpl;
 import repository.interfaces.ActionLookup;
 import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
@@ -64,12 +66,28 @@ public class Backend {
         DatabaseCustomerCvProfileRepository customerCvProfileRepository = new DatabaseCustomerCvProfileRepository();
         DatabaseCustomerRepository customerRepository = new DatabaseCustomerRepository();
         DatabaseCustomerNoteRepository customerNoteRepository = new DatabaseCustomerNoteRepository();
-        DatabaseCustomerView customerViewRepository = new DatabaseCustomerView();
+        DatabaseFlightRepository flightRepository = new DatabaseFlightRepository();
+        CustomerCvScoreServiceImpl customerCvScoreService = new CustomerCvScoreServiceImpl(
+                customerRepository,
+                customerCvProfileRepository,
+                flightRepository,
+                new CVScoreCalcServiceImpl()
+        );
+        DatabaseCustomerView customerViewRepository = new DatabaseCustomerView(
+                new database.connection.DatabaseConnectionProvider(),
+                new repository.implementation.mapper.CustomerViewMapper(),
+                new repository.implementation.support.OpenIncidentSummaryLoader(),
+                new repository.implementation.support.FlightViewLoader(),
+                new repository.implementation.support.CustomerNoteLoader(),
+                new repository.implementation.support.PreviousFlightsSummaryFormatter(),
+                customerCvProfileRepository,
+                new DatabaseAdvisorRepository(),
+                customerCvScoreService
+        );
         DatabaseFeedbackLookup feedbackLookupRepository = new DatabaseFeedbackLookup();
         DatabaseFeedbackUpdate feedbackUpdateRepository = new DatabaseFeedbackUpdate();
         DatabaseFeedbackAnalytics feedbackAnalyticsRepository = new DatabaseFeedbackAnalytics();
         DatabaseNPSScores npsScoresRepository = new DatabaseNPSScores();
-        DatabaseFlightRepository flightRepository = new DatabaseFlightRepository();
         DatabaseIncidentRepository incidentRepository = new DatabaseIncidentRepository();
         DatabaseIncidentView incidentViewRepository = new DatabaseIncidentView();
         DatabaseActionRepository actionRepository = new DatabaseActionRepository();

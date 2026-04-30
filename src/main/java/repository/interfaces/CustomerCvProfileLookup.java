@@ -1,6 +1,6 @@
 package repository.interfaces;
 
-import model.CustomerCvProfile;
+import model.domain.CustomerCvProfile;
 
 public interface CustomerCvProfileLookup {
 

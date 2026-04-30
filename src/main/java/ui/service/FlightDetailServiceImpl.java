@@ -1,7 +1,7 @@
 package ui.service;
 
-import model.Customer;
-import model.Flight;
+import model.domain.Customer;
+import model.domain.Flight;
 import service.interfaces.frontend.CustomerService;
 import service.interfaces.frontend.FeedbackService;
 import service.interfaces.frontend.FlightService;
