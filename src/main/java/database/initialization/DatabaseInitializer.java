@@ -6,15 +6,38 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-public class DatabaseInitializer {
+public final class DatabaseInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
 
+    private DatabaseInitializer() {
+    }
+
     public static void initialize() {
-        String createCustomers = """
+        try (Connection conn = DatabaseManager.getConnection()) {
+            executeSchemaCreation(conn);
+            logger.info("Database was correctly initialized");
+        } catch (SQLException e) {
+            logger.error("Initialization error", e);
+            throw new IllegalStateException("Database could not be initialized.", e);
+        }
+    }
+
+    private static void executeSchemaCreation(Connection conn) throws SQLException {
+        executeSql(conn, createAdvisorsSql());
+        executeSql(conn, createCustomersSql());
+        executeSql(conn, createCustomerCvProfilesSql());
+        executeSql(conn, createFlightsSql());
+        executeSql(conn, createFeedbacksSql());
+        executeSql(conn, createFeedbackItemsSql());
+        executeSql(conn, createIncidentsSql());
+        executeSql(conn, createActionItemsSql());
+        executeSql(conn, createCustomerNotesSql());
+    }
+
+    private static String createCustomersSql() {
+        return """
             CREATE TABLE IF NOT EXISTS customers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 first_name TEXT NOT NULL,
@@ -31,7 +54,10 @@ public class DatabaseInitializer {
                     ON DELETE SET NULL
             );
             """;
-        String createCustomerCvProfiles = """
+    }
+
+    private static String createCustomerCvProfilesSql() {
+        return """
             CREATE TABLE IF NOT EXISTS customer_cv_profiles (
                 customer_id INTEGER PRIMARY KEY,
                 marketing_purpose INTEGER DEFAULT 0,
@@ -45,7 +71,10 @@ public class DatabaseInitializer {
                     ON DELETE CASCADE
             );
             """;
-        String createIncidents = """
+    }
+
+    private static String createIncidentsSql() {
+        return """
             CREATE TABLE IF NOT EXISTS incidents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER,
@@ -74,7 +103,10 @@ public class DatabaseInitializer {
                     ON DELETE SET NULL
             );
             """;
-        String createFeedbacks = """
+    }
+
+    private static String createFeedbacksSql() {
+        return """
             CREATE TABLE IF NOT EXISTS feedbacks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER NOT NULL,
@@ -90,7 +122,10 @@ public class DatabaseInitializer {
                     ON DELETE CASCADE
             );
             """;
-        String createFeedbackItems = """
+    }
+
+    private static String createFeedbackItemsSql() {
+        return """
             CREATE TABLE IF NOT EXISTS feedback_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 feedback_id INTEGER NOT NULL,
@@ -102,7 +137,10 @@ public class DatabaseInitializer {
                     ON DELETE CASCADE
             );
             """;
-        String createAdvisors = """
+    }
+
+    private static String createAdvisorsSql() {
+        return """
             CREATE TABLE IF NOT EXISTS advisors (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 first_name TEXT NOT NULL,
@@ -112,7 +150,10 @@ public class DatabaseInitializer {
                 workload_score REAL DEFAULT 0.0
             );
             """;
-        String createActionItems = """
+    }
+
+    private static String createActionItemsSql() {
+        return """
             CREATE TABLE IF NOT EXISTS action_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 incident_id INTEGER NOT NULL,
@@ -128,7 +169,10 @@ public class DatabaseInitializer {
                     ON DELETE CASCADE
             );
             """;
-        String createFlights = """
+    }
+
+    private static String createFlightsSql() {
+        return """
             CREATE TABLE IF NOT EXISTS flights (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER NOT NULL,
@@ -143,7 +187,10 @@ public class DatabaseInitializer {
                     ON DELETE CASCADE
             );
             """;
-        String createCustomerNotes = """
+    }
+
+    private static String createCustomerNotesSql() {
+        return """
             CREATE TABLE IF NOT EXISTS customer_notes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER NOT NULL,
@@ -158,275 +205,11 @@ public class DatabaseInitializer {
                     ON DELETE CASCADE
             );
             """;
-        try (Connection conn = DatabaseManager.getConnection()) {
-
-            executeSql(conn, createAdvisors);
-            executeSql(conn, createCustomers);
-            executeSql(conn, createCustomerCvProfiles);
-            executeSql(conn, createFlights);
-            executeSql(conn, createFeedbacks);
-            executeSql(conn, createFeedbackItems);
-            executeSql(conn, createIncidents);
-            executeSql(conn, createActionItems);
-            executeSql(conn, createCustomerNotes);
-            ensureCustomerColumnsExist(conn);
-            backfillCustomerCvProfiles(conn);
-            ensureFlightColumnsExist(conn);
-            ensureFeedbackColumnsExist(conn);
-            ensureIncidentColumnsExist(conn);
-            ensureActionItemColumnsExist(conn);
-            ensureCustomerNoteColumnsExist(conn);
-
-            logger.info("Database was correctly initialized");
-
-        } catch (Exception e) {
-            logger.error("Initialization error", e);
-        }
-    }
-
-    private static void ensureIncidentColumnsExist(Connection conn) throws SQLException {
-        if (!columnExists(conn, "incidents", "feedback_type")) {
-            executeSql(conn, """
-                ALTER TABLE incidents
-                ADD COLUMN feedback_type TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "incidents", "feedback_id")) {
-            executeSql(conn, """
-                ALTER TABLE incidents
-                ADD COLUMN feedback_id INTEGER;
-                """);
-        }
-
-        if (!columnExists(conn, "incidents", "revenue_risk")) {
-            executeSql(conn, """
-                ALTER TABLE incidents
-                ADD COLUMN revenue_risk INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "incidents", "assigned_advisor_id")) {
-            executeSql(conn, """
-                ALTER TABLE incidents
-                ADD COLUMN assigned_advisor_id INTEGER;
-                """);
-        }
-
-        if (!columnExists(conn, "incidents", "source_feedback_item_id")) {
-            executeSql(conn, """
-                ALTER TABLE incidents
-                ADD COLUMN source_feedback_item_id INTEGER;
-                """);
-        }
-
-        if (!columnExists(conn, "incidents", "flight_id")) {
-            executeSql(conn, """
-                ALTER TABLE incidents
-                ADD COLUMN flight_id INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "incidents", "delay_minutes")) {
-            executeSql(conn, """
-                ALTER TABLE incidents
-                ADD COLUMN delay_minutes INTEGER;
-                """);
-        }
-    }
-
-    private static void ensureFlightColumnsExist(Connection conn) throws SQLException {
-        if (!columnExists(conn, "flights", "flight_number")) {
-            executeSql(conn, """
-                ALTER TABLE flights
-                ADD COLUMN flight_number TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "flights", "booking_date")) {
-            executeSql(conn, """
-                ALTER TABLE flights
-                ADD COLUMN booking_date TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "flights", "flight_date")) {
-            executeSql(conn, """
-                ALTER TABLE flights
-                ADD COLUMN flight_date TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "flights", "booking_package")) {
-            executeSql(conn, """
-                ALTER TABLE flights
-                ADD COLUMN booking_package TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "flights", "status")) {
-            executeSql(conn, """
-                ALTER TABLE flights
-                ADD COLUMN status TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "flights", "is_current")) {
-            executeSql(conn, """
-                ALTER TABLE flights
-                ADD COLUMN is_current INTEGER DEFAULT 0;
-                """);
-        }
-    }
-
-    private static void ensureCustomerColumnsExist(Connection conn) throws SQLException {
-        if (!columnExists(conn, "customers", "is_returning")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN is_returning INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "customers", "preferences")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN preferences TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "customers", "apply_to_next_booking")) {
-            executeSql(conn, """
-                ALTER TABLE customers
-                ADD COLUMN apply_to_next_booking TEXT;
-                """);
-        }
-
-    }
-
-    private static void backfillCustomerCvProfiles(Connection conn) throws SQLException {
-        if (!columnExists(conn, "customers", "marketing_purpose")
-                || !columnExists(conn, "customers", "newsletter_subscription")
-                || !columnExists(conn, "customers", "referral_code")
-                || !columnExists(conn, "customers", "payment_method")
-                || !columnExists(conn, "customers", "public_person")
-                || !columnExists(conn, "customers", "customer_type")) {
-            return;
-        }
-
-        executeSql(conn, """
-            INSERT INTO customer_cv_profiles (
-                customer_id, marketing_purpose, newsletter_subscription, referral_code,
-                payment_method, public_person, customer_type
-            )
-            SELECT c.id,
-                   c.marketing_purpose,
-                   c.newsletter_subscription,
-                   c.referral_code,
-                   c.payment_method,
-                   c.public_person,
-                   c.customer_type
-            FROM customers c
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM customer_cv_profiles p
-                WHERE p.customer_id = c.id
-            );
-            """);
-    }
-
-    private static void ensureCustomerNoteColumnsExist(Connection conn) throws SQLException {
-        if (!columnExists(conn, "customer_notes", "updated_at")) {
-            executeSql(conn, """
-                ALTER TABLE customer_notes
-                ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-                """);
-        }
-    }
-
-    private static void ensureFeedbackColumnsExist(Connection conn) throws SQLException {
-        if (!columnExists(conn, "feedbacks", "total_score")) {
-            executeSql(conn, """
-                ALTER TABLE feedbacks
-                ADD COLUMN total_score REAL DEFAULT 0.0;
-                """);
-        }
-
-        if (!columnExists(conn, "feedbacks", "customer_sat_score")) {
-            executeSql(conn, """
-                ALTER TABLE feedbacks
-                ADD COLUMN customer_sat_score INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "feedbacks", "referral_score")) {
-            executeSql(conn, """
-                ALTER TABLE feedbacks
-                ADD COLUMN referral_score INTEGER DEFAULT 0;
-                """);
-        }
-
-        if (!columnExists(conn, "feedbacks", "flight_id")) {
-            executeSql(conn, """
-                ALTER TABLE feedbacks
-                ADD COLUMN flight_id INTEGER DEFAULT 0;
-                """);
-        }
-    }
-
-    private static void ensureActionItemColumnsExist(Connection conn) throws SQLException {
-        if (!columnExists(conn, "action_items", "suggestion_1")) {
-            executeSql(conn, """
-                ALTER TABLE action_items
-                ADD COLUMN suggestion_1 TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "action_items", "suggestion_2")) {
-            executeSql(conn, """
-                ALTER TABLE action_items
-                ADD COLUMN suggestion_2 TEXT;
-                """);
-        }
-
-        if (!columnExists(conn, "action_items", "score_impact")) {
-            executeSql(conn, """
-                ALTER TABLE action_items
-                ADD COLUMN score_impact REAL DEFAULT 0.0;
-                """);
-        }
-
-        if (!columnExists(conn, "action_items", "expected_rec")) {
-            executeSql(conn, """
-                ALTER TABLE action_items
-                ADD COLUMN expected_rec REAL DEFAULT 0.0;
-                """);
-        }
-
-        if (!columnExists(conn, "action_items", "expected_rebooking")) {
-            executeSql(conn, """
-                ALTER TABLE action_items
-                ADD COLUMN expected_rebooking REAL DEFAULT 0.0;
-                """);
-        }
     }
 
     private static void executeSql(Connection conn, String sql) throws SQLException {
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.execute();
         }
-    }
-
-    private static boolean columnExists(Connection conn, String tableName, String columnName) throws SQLException {
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("PRAGMA table_info(" + tableName + ")")) {
-
-            while (rs.next()) {
-                if (columnName.equalsIgnoreCase(rs.getString("name"))) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 }

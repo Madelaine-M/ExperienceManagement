@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.CustomerCvProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +18,6 @@ public class DatabaseCustomerCvProfileRepository implements CustomerCvProfileLoo
     private static final Logger logger = LoggerFactory.getLogger(DatabaseCustomerCvProfileRepository.class);
     private final ConnectionProvider connectionProvider;
     private final CustomerCvProfileResultSetMapper profileMapper;
-
-    public DatabaseCustomerCvProfileRepository() {
-        this(new DatabaseConnectionProvider(), new CustomerCvProfileResultSetMapper());
-    }
 
     public DatabaseCustomerCvProfileRepository(ConnectionProvider connectionProvider,
                                                CustomerCvProfileResultSetMapper profileMapper) {

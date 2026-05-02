@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.Feedback;
 import model.domain.FeedbackItem;
 import org.slf4j.Logger;
@@ -24,10 +23,6 @@ public class DatabaseFeedbackUpdate implements FeedbackUpdate {
     private final ConnectionProvider connectionProvider;
     private final GeneratedKeyExtractor generatedKeyExtractor;
     private final FlightIdResolver flightIdResolver;
-
-    public DatabaseFeedbackUpdate() {
-        this(new DatabaseConnectionProvider(), new GeneratedKeyExtractor(), new FlightIdResolver());
-    }
 
     public DatabaseFeedbackUpdate(ConnectionProvider connectionProvider, GeneratedKeyExtractor generatedKeyExtractor,
                                   FlightIdResolver flightIdResolver) {

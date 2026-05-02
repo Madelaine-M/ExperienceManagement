@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.Customer;
 import repository.interfaces.CustomerLookup;
 import org.slf4j.Logger;
@@ -21,10 +20,6 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
     private final ConnectionProvider connectionProvider;
     private final CustomerResultSetMapper customerMapper;
     private final GeneratedKeyExtractor generatedKeyExtractor;
-
-    public DatabaseCustomerRepository() {
-        this(new DatabaseConnectionProvider(), new CustomerResultSetMapper(), new GeneratedKeyExtractor());
-    }
 
     public DatabaseCustomerRepository(ConnectionProvider connectionProvider, CustomerResultSetMapper customerMapper,
                                       GeneratedKeyExtractor generatedKeyExtractor) {

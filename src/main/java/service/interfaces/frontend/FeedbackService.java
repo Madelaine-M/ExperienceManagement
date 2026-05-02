@@ -16,8 +16,6 @@ public interface FeedbackService {
 
     List<FeedbackItem> findItemsByFeedbackId(int id);
 
-    List<Feedback> findByOverallRatingLessThan(int threshold);
-
     List<FeedbackItem> findLowScores(int maxScore);
 
     List<FeedbackItem> findByCategory(String category);

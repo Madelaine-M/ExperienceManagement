@@ -1,7 +1,11 @@
 package ui.app;
 
 import database.initialization.DataSeeder;
+import database.connection.DatabaseConnectionProvider;
+import repository.implementation.DatabaseRecommendationResolutionStore;
+import repository.interfaces.RecommendationResolutionStore;
 import service.Backend;
+import service.BackendFactory;
 import service.implementation.ActionServiceImpl;
 import service.implementation.CustomerNoteServiceImpl;
 import service.implementation.CustomerServiceImpl;
@@ -13,8 +17,6 @@ import service.implementation.Priority.ExpectedImpactCalcServiceImpl;
 import service.implementation.Priority.PriorityCalcServiceImpl;
 import service.implementation.RecommendationExecutionServiceImpl;
 import service.implementation.advisor.LowestLoadAdvisorAssignmentServiceImpl;
-import service.implementation.cv.CVScoreCalcServiceImpl;
-import service.implementation.cv.CustomerCvScoreServiceImpl;
 import service.implementation.incidents.action.CreateSuggestedActionServiceImpl;
 import service.implementation.incidents.delay.CreateDelayIncidentServiceImpl;
 import service.implementation.incidents.feedback.CreateFeedbackIncidentServiceImpl;
@@ -30,7 +32,6 @@ import service.interfaces.internal.AdvisorAssignmentService;
 import service.interfaces.internal.CreateDelayIncidentService;
 import service.interfaces.internal.CreateFeedbackIncidentService;
 import service.interfaces.internal.CreateSuggestedActionService;
-import service.interfaces.internal.CustomerCvScoreService;
 import service.interfaces.internal.ExpectedImpactCalcService;
 import service.interfaces.internal.PriorityCalcService;
 import simulation.SimulationService;
@@ -51,17 +52,11 @@ import java.util.Random;
 
 public class DashboardApplicationBootstrap {
     public DashboardApplicationContext bootstrap() {
-        Backend backend = new Backend();
+        Backend backend = new BackendFactory().create();
         seedDatabase(backend);
-        CustomerCvScoreService customerCvScoreService = new CustomerCvScoreServiceImpl(
-                backend.getCustomerLookup(),
-                backend.getCustomerCvProfileLookup(),
-                backend.getFlightRepository(),
-                new CVScoreCalcServiceImpl()
-        );
         ExpectedImpactCalcService expectedImpactCalcService = new ExpectedImpactCalcServiceImpl();
         PriorityCalcService priorityCalcService = new PriorityCalcServiceImpl(
-                customerCvScoreService,
+                backend.getCustomerCvScoreService(),
                 expectedImpactCalcService
         );
 
@@ -80,7 +75,6 @@ public class DashboardApplicationBootstrap {
         );
         ActionService actionService = new ActionServiceImpl(
                 backend.getActionLookup(),
-                backend.getActionManagement(),
                 backend.getActionUpdate()
         );
         FeedbackService feedbackService = new FeedbackServiceImpl(
@@ -94,11 +88,15 @@ public class DashboardApplicationBootstrap {
         );
         FlightService flightService = new FlightServiceImpl(backend.getFlightRepository());
         NPSService npsService = new NPSServiceImpl(backend.getNpsScores());
+        RecommendationResolutionStore recommendationResolutionStore = new DatabaseRecommendationResolutionStore(
+                new DatabaseConnectionProvider()
+        );
         RecommendationExecutionService recommendationExecutionService = new RecommendationExecutionServiceImpl(
                 actionService,
                 incidentService,
                 customerService,
-                backend.getAdvisorRepository()
+                backend.getAdvisorRepository(),
+                recommendationResolutionStore
         );
 
         DashboardDataService dashboardDataService = new DashboardDataServiceImpl(

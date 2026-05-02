@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.Advisor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +22,6 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
     private final ConnectionProvider connectionProvider;
     private final AdvisorResultSetMapper advisorMapper;
     private final GeneratedKeyExtractor generatedKeyExtractor;
-
-    public DatabaseAdvisorRepository() {
-        this(new DatabaseConnectionProvider(), new AdvisorResultSetMapper(), new GeneratedKeyExtractor());
-    }
 
     public DatabaseAdvisorRepository(ConnectionProvider connectionProvider, AdvisorResultSetMapper advisorMapper,
                                      GeneratedKeyExtractor generatedKeyExtractor) {

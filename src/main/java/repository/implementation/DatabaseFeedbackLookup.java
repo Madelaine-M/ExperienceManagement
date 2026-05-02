@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.Feedback;
 import model.domain.FeedbackItem;
 import org.slf4j.Logger;
@@ -23,10 +22,6 @@ public class DatabaseFeedbackLookup implements FeedbackLookup {
     private final ConnectionProvider connectionProvider;
     private final FeedbackResultSetMapper feedbackMapper;
     private final FeedbackItemLoader feedbackItemLoader;
-
-    public DatabaseFeedbackLookup() {
-        this(new DatabaseConnectionProvider(), new FeedbackResultSetMapper(), new FeedbackItemLoader());
-    }
 
     public DatabaseFeedbackLookup(ConnectionProvider connectionProvider, FeedbackResultSetMapper feedbackMapper,
                                   FeedbackItemLoader feedbackItemLoader) {

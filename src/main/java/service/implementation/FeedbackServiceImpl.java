@@ -45,11 +45,6 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public List<Feedback> findByOverallRatingLessThan(int threshold) {
-        return feedbackAnalytics.findByOverallRatingLessThan(threshold);
-    }
-
-    @Override
     public List<FeedbackItem> findLowScores(int maxScore) {
         return feedbackAnalytics.findLowScores(maxScore);
     }

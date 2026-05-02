@@ -1,5 +1,3 @@
-import database.initialization.DataSeeder;
-import service.Backend;
 import ui.app.DashboardApp;
 
 public class Main {

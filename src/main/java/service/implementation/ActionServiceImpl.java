@@ -2,7 +2,6 @@ package service.implementation;
 
 import model.domain.ActionItem;
 import repository.interfaces.ActionLookup;
-import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
 import service.interfaces.frontend.ActionService;
 
@@ -10,16 +9,10 @@ import java.util.List;
 
 public class ActionServiceImpl implements ActionService {
     private final ActionLookup actionLookup;
-    private final ActionManagement actionManagement;
     private final ActionUpdate actionUpdate;
-    public ActionServiceImpl(ActionLookup actionLookup, ActionManagement actionManagement,  ActionUpdate actionUpdate) {
+    public ActionServiceImpl(ActionLookup actionLookup, ActionUpdate actionUpdate) {
         this.actionLookup = actionLookup;
-        this.actionManagement = actionManagement;
         this.actionUpdate = actionUpdate;
-    }
-    @Override
-    public List<ActionItem> findSuggestedActionsByAdvisorId(int advisorId) {
-        return actionManagement.findSuggestedActionsByAdvisorId(advisorId);
     }
 
     @Override

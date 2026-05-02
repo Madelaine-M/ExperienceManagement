@@ -21,8 +21,6 @@ import repository.implementation.support.PreviousFlightsSummaryFormatter;
 import repository.interfaces.AdvisorRepository;
 import repository.interfaces.CustomerCvProfileLookup;
 import repository.interfaces.CustomerView;
-import service.implementation.cv.CVScoreCalcServiceImpl;
-import service.implementation.cv.CustomerCvScoreServiceImpl;
 import service.interfaces.internal.CustomerCvScoreService;
 import support.RecoveryActionNoteCodec;
 
@@ -44,25 +42,6 @@ public class DatabaseCustomerView implements CustomerView {
     private final AdvisorRepository advisorRepository;
     private final CustomerCvScoreService customerCvScoreService;
     private final ConnectionProvider connectionProvider;
-
-    public DatabaseCustomerView() {
-        this(
-                new DatabaseConnectionProvider(),
-                new CustomerViewMapper(),
-                new OpenIncidentSummaryLoader(),
-                new FlightViewLoader(),
-                new CustomerNoteLoader(),
-                new PreviousFlightsSummaryFormatter(),
-                new DatabaseCustomerCvProfileRepository(),
-                new DatabaseAdvisorRepository(),
-                new CustomerCvScoreServiceImpl(
-                        new DatabaseCustomerRepository(),
-                        new DatabaseCustomerCvProfileRepository(),
-                        new DatabaseFlightRepository(),
-                        new CVScoreCalcServiceImpl()
-                )
-        );
-    }
 
     public DatabaseCustomerView(ConnectionProvider connectionProvider,
                                 CustomerViewMapper customerViewMapper,

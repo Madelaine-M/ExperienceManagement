@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.CustomerCvProfile;
 import model.domain.Flight;
 import model.view.IncidentDetailView;
@@ -29,16 +28,6 @@ public class DatabaseIncidentView implements IncidentView {
     private final PreviousFlightsSummaryFormatter previousFlightsSummaryFormatter;
     private final CustomerCvProfileLookup customerCvProfileLookup;
     private final ConnectionProvider connectionProvider;
-
-    public DatabaseIncidentView() {
-        this(
-                new DatabaseConnectionProvider(),
-                new IncidentViewMapper(),
-                new FlightViewLoader(),
-                new PreviousFlightsSummaryFormatter(),
-                new DatabaseCustomerCvProfileRepository()
-        );
-    }
 
     public DatabaseIncidentView(ConnectionProvider connectionProvider,
                                 IncidentViewMapper incidentViewMapper,

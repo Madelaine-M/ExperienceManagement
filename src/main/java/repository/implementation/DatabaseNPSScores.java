@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import repository.RepositoryException;
@@ -15,10 +14,6 @@ import java.sql.SQLException;
 public class DatabaseNPSScores implements NPSScores {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseNPSScores.class);
     private final ConnectionProvider connectionProvider;
-
-    public DatabaseNPSScores() {
-        this(new DatabaseConnectionProvider());
-    }
 
     public DatabaseNPSScores(ConnectionProvider connectionProvider) {
         this.connectionProvider = connectionProvider;

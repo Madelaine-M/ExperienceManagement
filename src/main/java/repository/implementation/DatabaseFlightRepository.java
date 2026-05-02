@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.Flight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +22,6 @@ public class DatabaseFlightRepository implements FlightRepository {
     private final ConnectionProvider connectionProvider;
     private final FlightResultSetMapper flightMapper;
     private final GeneratedKeyExtractor generatedKeyExtractor;
-
-    public DatabaseFlightRepository() {
-        this(new DatabaseConnectionProvider(), new FlightResultSetMapper(), new GeneratedKeyExtractor());
-    }
 
     public DatabaseFlightRepository(ConnectionProvider connectionProvider, FlightResultSetMapper flightMapper,
                                     GeneratedKeyExtractor generatedKeyExtractor) {

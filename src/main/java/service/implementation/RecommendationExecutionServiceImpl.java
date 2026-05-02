@@ -1,16 +1,13 @@
 package service.implementation;
 
-import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.ActionItem;
 import model.domain.Advisor;
 import model.domain.Customer;
 import model.domain.CustomerNote;
 import model.domain.Incident;
-import model.workflow.RecommendationEmailDraft;
-import model.enums.ActionStatus;
-import model.enums.IncidentStatus;
 import repository.interfaces.AdvisorRepository;
+import repository.interfaces.RecommendationResolutionStore;
+import model.workflow.RecommendationEmailDraft;
 import service.interfaces.frontend.ActionService;
 import service.interfaces.frontend.CustomerService;
 import service.interfaces.frontend.IncidentService;
@@ -18,42 +15,24 @@ import service.interfaces.frontend.RecommendationExecutionService;
 import support.RecoveryActionNoteCodec;
 
 import java.time.LocalDateTime;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.List;
 
 public class RecommendationExecutionServiceImpl implements RecommendationExecutionService {
     private final ActionService actionService;
     private final IncidentService incidentService;
     private final CustomerService customerService;
     private final AdvisorRepository advisorRepository;
-    private final ConnectionProvider connectionProvider;
-
-    public RecommendationExecutionServiceImpl(ActionService actionService,
-                                              IncidentService incidentService,
-                                              CustomerService customerService,
-                                              AdvisorRepository advisorRepository) {
-        this(
-                actionService,
-                incidentService,
-                customerService,
-                advisorRepository,
-                new DatabaseConnectionProvider()
-        );
-    }
+    private final RecommendationResolutionStore recommendationResolutionStore;
 
     public RecommendationExecutionServiceImpl(ActionService actionService,
                                               IncidentService incidentService,
                                               CustomerService customerService,
                                               AdvisorRepository advisorRepository,
-                                              ConnectionProvider connectionProvider) {
+                                              RecommendationResolutionStore recommendationResolutionStore) {
         this.actionService = actionService;
         this.incidentService = incidentService;
         this.customerService = customerService;
         this.advisorRepository = advisorRepository;
-        this.connectionProvider = connectionProvider;
+        this.recommendationResolutionStore = recommendationResolutionStore;
     }
 
     @Override
@@ -92,8 +71,7 @@ public class RecommendationExecutionServiceImpl implements RecommendationExecuti
         int advisorId = resolveAdvisorId(incident, customer);
         String selectedSuggestion = resolveSuggestion(actionItem, optionNumber);
 
-        executeRecommendationTransaction(
-                incident.getId(),
+        CustomerNote note = buildRecommendationNote(
                 customer.getId(),
                 advisorId,
                 optionNumber,
@@ -101,64 +79,7 @@ public class RecommendationExecutionServiceImpl implements RecommendationExecuti
                 trimmedSubject,
                 trimmedBody
         );
-    }
-
-    private void executeRecommendationTransaction(int incidentId,
-                                                  int customerId,
-                                                  int advisorId,
-                                                  int optionNumber,
-                                                  String selectedSuggestion,
-                                                  String subject,
-                                                  String emailBody) {
-        String updateActionsSql = "UPDATE action_items SET status = ? WHERE incident_id = ?;";
-        String updateIncidentSql = "UPDATE incidents SET status = ? WHERE id = ?;";
-        String insertNoteSql = """
-                INSERT INTO customer_notes (customer_id, advisor_id, note_text, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?);
-                """;
-
-        try (Connection connection = connectionProvider.getConnection()) {
-            connection.setAutoCommit(false);
-
-            try (PreparedStatement actionStatement = connection.prepareStatement(updateActionsSql);
-                 PreparedStatement incidentStatement = connection.prepareStatement(updateIncidentSql);
-                 PreparedStatement noteStatement = connection.prepareStatement(insertNoteSql)) {
-
-                actionStatement.setString(1, ActionStatus.COMPLETED.name());
-                actionStatement.setInt(2, incidentId);
-                int updatedActions = actionStatement.executeUpdate();
-                if (updatedActions <= 0) {
-                    throw new IllegalStateException("No action items were completed for incident " + incidentId + ".");
-                }
-
-                incidentStatement.setString(1, IncidentStatus.CLOSED.name());
-                incidentStatement.setInt(2, incidentId);
-                int updatedIncidents = incidentStatement.executeUpdate();
-                if (updatedIncidents != 1) {
-                    throw new IllegalStateException("Incident " + incidentId + " could not be closed.");
-                }
-
-                CustomerNote note = buildRecommendationNote(customerId, advisorId, optionNumber, selectedSuggestion, subject, emailBody);
-                noteStatement.setInt(1, note.getCustomerId());
-                noteStatement.setInt(2, note.getAdvisorId());
-                noteStatement.setString(3, note.getNoteText());
-                noteStatement.setTimestamp(4, Timestamp.valueOf(note.getCreatedAt()));
-                noteStatement.setTimestamp(5, Timestamp.valueOf(note.getUpdatedAt()));
-                int insertedNotes = noteStatement.executeUpdate();
-                if (insertedNotes != 1) {
-                    throw new IllegalStateException("Recommendation note could not be saved.");
-                }
-
-                connection.commit();
-            } catch (Exception exception) {
-                connection.rollback();
-                throw exception;
-            } finally {
-                connection.setAutoCommit(true);
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Recommendation could not be completed.", exception);
-        }
+        recommendationResolutionStore.completeRecommendationResolution(incident.getId(), note);
     }
 
     private CustomerNote buildRecommendationNote(int customerId,

@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.ActionItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +8,6 @@ import repository.RepositoryException;
 import repository.implementation.mapper.ActionItemResultSetMapper;
 import repository.implementation.support.GeneratedKeyExtractor;
 import repository.interfaces.ActionLookup;
-import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
 
 import java.sql.Connection;
@@ -20,15 +18,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabaseActionRepository implements ActionLookup, ActionUpdate, ActionManagement {
+public class DatabaseActionRepository implements ActionLookup, ActionUpdate {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseActionRepository.class);
     private final ConnectionProvider connectionProvider;
     private final ActionItemResultSetMapper actionItemMapper;
     private final GeneratedKeyExtractor generatedKeyExtractor;
-
-    public DatabaseActionRepository() {
-        this(new DatabaseConnectionProvider(), new ActionItemResultSetMapper(), new GeneratedKeyExtractor());
-    }
 
     public DatabaseActionRepository(ConnectionProvider connectionProvider, ActionItemResultSetMapper actionItemMapper,
                                     GeneratedKeyExtractor generatedKeyExtractor) {
@@ -125,36 +119,5 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate, Act
         }
 
         return actionItems;
-    }
-    
-    @Override
-    public List<ActionItem> findSuggestedActionsByAdvisorId(int advisorId) {
-        List<ActionItem> actions = new ArrayList<>();
-
-        String sql = """
-        SELECT ai.*
-        FROM action_items ai
-        JOIN incidents i ON ai.incident_id = i.id
-        WHERE i.assigned_advisor_id = ? 
-        AND ai.status = 'SUGGESTED'
-        ORDER BY ai.id ASC;
-        """;
-
-        try (Connection conn = connectionProvider.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, advisorId);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    actions.add(actionItemMapper.map(rs));
-                }
-            }
-        } catch (SQLException e) {
-            logger.error("Error while loading priority actions for advisor {}", advisorId, e);
-            throw new RepositoryException("Failed to load suggested actions for advisor " + advisorId, e);
-        }
-
-        return actions;
     }
 }

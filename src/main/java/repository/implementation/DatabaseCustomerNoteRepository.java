@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.CustomerNote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,15 +26,6 @@ public class DatabaseCustomerNoteRepository implements CustomerNoteLookup, Custo
     private final CustomerNoteResultSetMapper customerNoteMapper;
     private final CustomerNoteLoader customerNoteLoader;
     private final GeneratedKeyExtractor generatedKeyExtractor;
-
-    public DatabaseCustomerNoteRepository() {
-        this(
-                new DatabaseConnectionProvider(),
-                new CustomerNoteResultSetMapper(),
-                new CustomerNoteLoader(),
-                new GeneratedKeyExtractor()
-        );
-    }
 
     public DatabaseCustomerNoteRepository(ConnectionProvider connectionProvider,
                                           CustomerNoteResultSetMapper customerNoteMapper,

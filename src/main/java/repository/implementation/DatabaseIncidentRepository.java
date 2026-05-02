@@ -1,7 +1,6 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
 import model.domain.DelayIncident;
 import model.domain.FeedbackIncident;
 import model.domain.Incident;
@@ -26,15 +25,6 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
     private final IncidentResultSetMapper incidentMapper;
     private final GeneratedKeyExtractor generatedKeyExtractor;
     private final FlightIdResolver flightIdResolver;
-
-    public DatabaseIncidentRepository() {
-        this(
-                new DatabaseConnectionProvider(),
-                new IncidentResultSetMapper(),
-                new GeneratedKeyExtractor(),
-                new FlightIdResolver()
-        );
-    }
 
     public DatabaseIncidentRepository(ConnectionProvider connectionProvider, IncidentResultSetMapper incidentMapper,
                                       GeneratedKeyExtractor generatedKeyExtractor, FlightIdResolver flightIdResolver) {

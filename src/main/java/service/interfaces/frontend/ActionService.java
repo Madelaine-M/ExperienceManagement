@@ -6,8 +6,6 @@ import java.util.List;
 
 public interface ActionService {
 
-    List<ActionItem> findSuggestedActionsByAdvisorId(int advisorId);
-
     void save(ActionItem actionItem);
 
     void updateStatus(int id, String status);

@@ -1,15 +1,11 @@
 package repository.implementation;
 
 import database.connection.ConnectionProvider;
-import database.connection.DatabaseConnectionProvider;
-import model.domain.Feedback;
 import model.domain.FeedbackItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import repository.RepositoryException;
 import repository.implementation.mapper.FeedbackItemResultSetMapper;
-import repository.implementation.mapper.FeedbackResultSetMapper;
-import repository.implementation.support.FeedbackItemLoader;
 import repository.interfaces.FeedbackAnalytics;
 
 import java.sql.Connection;
@@ -22,51 +18,12 @@ import java.util.List;
 public class DatabaseFeedbackAnalytics implements FeedbackAnalytics {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseFeedbackAnalytics.class);
     private final ConnectionProvider connectionProvider;
-    private final FeedbackResultSetMapper feedbackMapper;
     private final FeedbackItemResultSetMapper feedbackItemMapper;
-    private final FeedbackItemLoader feedbackItemLoader;
 
-    public DatabaseFeedbackAnalytics() {
-        this(
-                new DatabaseConnectionProvider(),
-                new FeedbackResultSetMapper(),
-                new FeedbackItemResultSetMapper(),
-                new FeedbackItemLoader()
-        );
-    }
-
-    public DatabaseFeedbackAnalytics(ConnectionProvider connectionProvider, FeedbackResultSetMapper feedbackMapper,
-                                     FeedbackItemResultSetMapper feedbackItemMapper,
-                                     FeedbackItemLoader feedbackItemLoader) {
+    public DatabaseFeedbackAnalytics(ConnectionProvider connectionProvider,
+                                     FeedbackItemResultSetMapper feedbackItemMapper) {
         this.connectionProvider = connectionProvider;
-        this.feedbackMapper = feedbackMapper;
         this.feedbackItemMapper = feedbackItemMapper;
-        this.feedbackItemLoader = feedbackItemLoader;
-    }
-
-    @Override
-    public List<Feedback> findByOverallRatingLessThan(int threshold) {
-        List<Feedback> feedbacks = new ArrayList<>();
-        String sql = "SELECT * FROM feedbacks WHERE total_score < ? ORDER BY total_score ASC, id ASC;";
-
-        try (Connection conn = connectionProvider.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, threshold);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    Feedback feedback = feedbackMapper.map(rs);
-                    feedback.setItems(feedbackItemLoader.loadItemsByFeedbackId(conn, feedback.getId()));
-                    feedbacks.add(feedback);
-                }
-            }
-        } catch (SQLException e) {
-            logger.error("Error while loading feedbacks below rating {}", threshold, e);
-            throw new RepositoryException("Failed to load feedbacks below rating " + threshold, e);
-        }
-
-        return feedbacks;
     }
 
     @Override

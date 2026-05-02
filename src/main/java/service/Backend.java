@@ -1,23 +1,6 @@
 package service;
 
-import database.initialization.DatabaseInitializer;
-import repository.implementation.DatabaseActionRepository;
-import repository.implementation.DatabaseAdvisorRepository;
-import repository.implementation.DatabaseCustomerCvProfileRepository;
-import repository.implementation.DatabaseCustomerRepository;
-import repository.implementation.DatabaseCustomerNoteRepository;
-import repository.implementation.DatabaseCustomerView;
-import repository.implementation.DatabaseFeedbackAnalytics;
-import repository.implementation.DatabaseFeedbackLookup;
-import repository.implementation.DatabaseFeedbackUpdate;
-import repository.implementation.DatabaseFlightRepository;
-import repository.implementation.DatabaseIncidentRepository;
-import repository.implementation.DatabaseIncidentView;
-import repository.implementation.DatabaseNPSScores;
-import service.implementation.cv.CVScoreCalcServiceImpl;
-import service.implementation.cv.CustomerCvScoreServiceImpl;
 import repository.interfaces.ActionLookup;
-import repository.interfaces.ActionManagement;
 import repository.interfaces.ActionUpdate;
 import repository.interfaces.AdvisorRepository;
 import repository.interfaces.CustomerCvProfileLookup;
@@ -37,10 +20,10 @@ import repository.interfaces.IncidentManagement;
 import repository.interfaces.IncidentUpdate;
 import repository.interfaces.IncidentView;
 import repository.interfaces.NPSScores;
+import service.interfaces.internal.CustomerCvScoreService;
 
 public class Backend {
     private final ActionLookup actionLookup;
-    private final ActionManagement actionManagement;
     private final ActionUpdate actionUpdate;
     private final AdvisorRepository advisorRepository;
     private final CustomerCvProfileLookup customerCvProfileLookup;
@@ -51,6 +34,7 @@ public class Backend {
     private final CustomerSearch customerSearch;
     private final CustomerUpdate customerUpdate;
     private final CustomerView customerView;
+    private final CustomerCvScoreService customerCvScoreService;
     private final FeedbackAnalytics feedbackAnalytics;
     private final FeedbackLookup feedbackLookup;
     private final FeedbackUpdate feedbackUpdate;
@@ -61,65 +45,52 @@ public class Backend {
     private final IncidentUpdate incidentUpdate;
     private final IncidentView incidentView;
 
-    public Backend() {
-        DatabaseInitializer.initialize();
-        DatabaseCustomerCvProfileRepository customerCvProfileRepository = new DatabaseCustomerCvProfileRepository();
-        DatabaseCustomerRepository customerRepository = new DatabaseCustomerRepository();
-        DatabaseCustomerNoteRepository customerNoteRepository = new DatabaseCustomerNoteRepository();
-        DatabaseFlightRepository flightRepository = new DatabaseFlightRepository();
-        CustomerCvScoreServiceImpl customerCvScoreService = new CustomerCvScoreServiceImpl(
-                customerRepository,
-                customerCvProfileRepository,
-                flightRepository,
-                new CVScoreCalcServiceImpl()
-        );
-        DatabaseCustomerView customerViewRepository = new DatabaseCustomerView(
-                new database.connection.DatabaseConnectionProvider(),
-                new repository.implementation.mapper.CustomerViewMapper(),
-                new repository.implementation.support.OpenIncidentSummaryLoader(),
-                new repository.implementation.support.FlightViewLoader(),
-                new repository.implementation.support.CustomerNoteLoader(),
-                new repository.implementation.support.PreviousFlightsSummaryFormatter(),
-                customerCvProfileRepository,
-                new DatabaseAdvisorRepository(),
-                customerCvScoreService
-        );
-        DatabaseFeedbackLookup feedbackLookupRepository = new DatabaseFeedbackLookup();
-        DatabaseFeedbackUpdate feedbackUpdateRepository = new DatabaseFeedbackUpdate();
-        DatabaseFeedbackAnalytics feedbackAnalyticsRepository = new DatabaseFeedbackAnalytics();
-        DatabaseNPSScores npsScoresRepository = new DatabaseNPSScores();
-        DatabaseIncidentRepository incidentRepository = new DatabaseIncidentRepository();
-        DatabaseIncidentView incidentViewRepository = new DatabaseIncidentView();
-        DatabaseActionRepository actionRepository = new DatabaseActionRepository();
-        this.actionLookup = actionRepository;
-        this.actionManagement = actionRepository;
-        this.actionUpdate = actionRepository;
-        this.advisorRepository = new DatabaseAdvisorRepository();
-        this.customerCvProfileLookup = customerCvProfileRepository;
-        this.customerCvProfileUpdate = customerCvProfileRepository;
-        this.customerLookup = customerRepository;
-        this.customerNoteLookup = customerNoteRepository;
-        this.customerNoteUpdate = customerNoteRepository;
-        this.customerSearch = customerRepository;
-        this.customerUpdate = customerRepository;
-        this.customerView = customerViewRepository;
-        this.feedbackAnalytics = feedbackAnalyticsRepository;
-        this.feedbackLookup = feedbackLookupRepository;
-        this.feedbackUpdate = feedbackUpdateRepository;
-        this.npsScores = npsScoresRepository;
+    public Backend(ActionLookup actionLookup,
+                   ActionUpdate actionUpdate,
+                   AdvisorRepository advisorRepository,
+                   CustomerCvProfileLookup customerCvProfileLookup,
+                   CustomerCvProfileUpdate customerCvProfileUpdate,
+                   CustomerLookup customerLookup,
+                   CustomerNoteLookup customerNoteLookup,
+                   CustomerNoteUpdate customerNoteUpdate,
+                   CustomerSearch customerSearch,
+                   CustomerUpdate customerUpdate,
+                   CustomerView customerView,
+                   CustomerCvScoreService customerCvScoreService,
+                   FeedbackAnalytics feedbackAnalytics,
+                   FeedbackLookup feedbackLookup,
+                   FeedbackUpdate feedbackUpdate,
+                   NPSScores npsScores,
+                   FlightRepository flightRepository,
+                   IncidentLookup incidentLookup,
+                   IncidentManagement incidentManagement,
+                   IncidentUpdate incidentUpdate,
+                   IncidentView incidentView) {
+        this.actionLookup = actionLookup;
+        this.actionUpdate = actionUpdate;
+        this.advisorRepository = advisorRepository;
+        this.customerCvProfileLookup = customerCvProfileLookup;
+        this.customerCvProfileUpdate = customerCvProfileUpdate;
+        this.customerLookup = customerLookup;
+        this.customerNoteLookup = customerNoteLookup;
+        this.customerNoteUpdate = customerNoteUpdate;
+        this.customerSearch = customerSearch;
+        this.customerUpdate = customerUpdate;
+        this.customerView = customerView;
+        this.customerCvScoreService = customerCvScoreService;
+        this.feedbackAnalytics = feedbackAnalytics;
+        this.feedbackLookup = feedbackLookup;
+        this.feedbackUpdate = feedbackUpdate;
+        this.npsScores = npsScores;
         this.flightRepository = flightRepository;
-        this.incidentLookup = incidentRepository;
-        this.incidentManagement = incidentRepository;
-        this.incidentUpdate = incidentRepository;
-        this.incidentView = incidentViewRepository;
+        this.incidentLookup = incidentLookup;
+        this.incidentManagement = incidentManagement;
+        this.incidentUpdate = incidentUpdate;
+        this.incidentView = incidentView;
     }
 
     public ActionLookup getActionLookup() {
         return actionLookup;
-    }
-
-    public ActionManagement getActionManagement() {
-        return actionManagement;
     }
 
     public ActionUpdate getActionUpdate() {
@@ -160,6 +131,10 @@ public class Backend {
 
     public CustomerView getCustomerView() {
         return customerView;
+    }
+
+    public CustomerCvScoreService getCustomerCvScoreService() {
+        return customerCvScoreService;
     }
 
     public IncidentLookup getIncidentLookup() {
