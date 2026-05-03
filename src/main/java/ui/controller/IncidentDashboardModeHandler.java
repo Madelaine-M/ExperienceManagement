@@ -14,6 +14,7 @@ public class IncidentDashboardModeHandler implements DashboardModeHandler {
     private final DashboardDataService dashboardDataService;
     private final DashboardSubviewFactory subviewFactory;
     private final JourneyDetailNavigator journeyDetailNavigator;
+    private int currentAdvisorId;
 
     public IncidentDashboardModeHandler(DashboardDataService dashboardDataService,
                                         DashboardSubviewFactory subviewFactory,
@@ -30,6 +31,7 @@ public class IncidentDashboardModeHandler implements DashboardModeHandler {
 
     @Override
     public List<Object> loadItems(int advisorId) {
+        currentAdvisorId = advisorId;
         try {
             return new ArrayList<>(dashboardDataService.loadOpenIncidentOverviews(advisorId));
         } catch (RuntimeException exception) {
@@ -75,7 +77,12 @@ public class IncidentDashboardModeHandler implements DashboardModeHandler {
         }
 
         var detailView = subviewFactory.loadIncidentDetailView();
-        detailView.controller().configure(journeyDetailNavigator);
+        detailView.controller().configure(
+                journeyDetailNavigator,
+                dashboardDataService,
+                currentAdvisorId,
+                host::refreshDashboardData
+        );
         detailView.controller().setData(detail, overview);
         host.showDetail(detailView.root());
 

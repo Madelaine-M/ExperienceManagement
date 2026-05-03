@@ -73,7 +73,7 @@ public class IncidentViewMapper {
         }
 
         int delayMinutes = rs.getInt("delay_minutes");
-        if (!rs.wasNull()) {
+        if (detail.getIncidentType() == IncidentType.DELAY && !rs.wasNull()) {
             detail.setDelayMinutes(delayMinutes);
         }
 

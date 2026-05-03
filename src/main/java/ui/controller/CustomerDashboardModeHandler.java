@@ -15,6 +15,7 @@ public class CustomerDashboardModeHandler implements DashboardModeHandler {
     private final DashboardDataService dashboardDataService;
     private final DashboardSubviewFactory subviewFactory;
     private final JourneyDetailNavigator journeyDetailNavigator;
+    private int currentAdvisorId;
 
     public CustomerDashboardModeHandler(DashboardDataService dashboardDataService,
                                         DashboardSubviewFactory subviewFactory,
@@ -31,6 +32,7 @@ public class CustomerDashboardModeHandler implements DashboardModeHandler {
 
     @Override
     public List<Object> loadItems(int advisorId) {
+        currentAdvisorId = advisorId;
         try {
             return new ArrayList<>(dashboardDataService.loadCustomerOverviews(advisorId));
         } catch (RuntimeException exception) {
@@ -76,7 +78,12 @@ public class CustomerDashboardModeHandler implements DashboardModeHandler {
         }
 
         var detailView = subviewFactory.loadCustomerDetailView();
-        detailView.controller().configure(journeyDetailNavigator);
+        detailView.controller().configure(
+                journeyDetailNavigator,
+                dashboardDataService,
+                currentAdvisorId,
+                host::refreshDashboardData
+        );
         detailView.controller().setData(detail, overview);
         host.showDetail(detailView.root());
 

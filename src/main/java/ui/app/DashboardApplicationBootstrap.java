@@ -101,6 +101,7 @@ public class DashboardApplicationBootstrap {
 
         DashboardDataService dashboardDataService = new DashboardDataServiceImpl(
                 customerService,
+                customerNoteService,
                 incidentService,
                 actionService,
                 npsService,

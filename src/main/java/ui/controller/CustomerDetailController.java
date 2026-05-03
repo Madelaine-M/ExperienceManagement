@@ -2,7 +2,9 @@ package ui.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -29,12 +31,23 @@ public class CustomerDetailController {
 
     private final DashboardNodeFactory nodeFactory = new DashboardNodeFactory();
     private JourneyDetailNavigator journeyDetailNavigator;
+    private ui.service.DashboardDataService dashboardDataService;
+    private int advisorId;
+    private Runnable refreshDashboardAction;
+    private CustomerOverview currentOverview;
 
-    public void configure(JourneyDetailNavigator journeyDetailNavigator) {
+    public void configure(JourneyDetailNavigator journeyDetailNavigator,
+                          ui.service.DashboardDataService dashboardDataService,
+                          int advisorId,
+                          Runnable refreshDashboardAction) {
         this.journeyDetailNavigator = journeyDetailNavigator;
+        this.dashboardDataService = dashboardDataService;
+        this.advisorId = advisorId;
+        this.refreshDashboardAction = refreshDashboardAction;
     }
 
     public void setData(CustomerDetailView detail, CustomerOverview overview) {
+        this.currentOverview = overview;
         VBox section = new VBox(18);
         section.getChildren().addAll(
                 nodeFactory.createSectionTitle("Customer Detail: " + DashboardFormatters.formatName(detail.getCustomerFirstName(), detail.getCustomerLastName())),
@@ -73,6 +86,7 @@ public class CustomerDetailController {
         }
 
         section.getChildren().addAll(
+                createAddNoteCard(detail),
                 nodeFactory.createInfoCard("Advisor Notes", formatNotes(detail.getNotes())),
                 createCustomerIncidentCard(detail),
                 createPreviousFlightsCard(detail.getPreviousFlightsList(), detail.getPreviousFlights())
@@ -134,6 +148,40 @@ public class CustomerDetailController {
                 nodeFactory.createMetricLine("Subject", DashboardFormatters.defaultText(recoveryAction.getSubject(), "n/a")),
                 nodeFactory.createInfoCard("Mail Preview", DashboardFormatters.defaultText(recoveryAction.getMailBody(), "No mail body recorded."))
         );
+        return card;
+    }
+
+    private Node createAddNoteCard(CustomerDetailView detail) {
+        VBox card = nodeFactory.createCard("detail-card");
+        card.getChildren().add(nodeFactory.createSectionLabel("Add Advisor Note"));
+
+        TextArea noteInput = new TextArea();
+        noteInput.getStyleClass().add("journey-note-input");
+        noteInput.setPromptText("Add a note for this customer...");
+        noteInput.setWrapText(true);
+        noteInput.setPrefRowCount(4);
+
+        Label statusLabel = new Label();
+        statusLabel.getStyleClass().add("journey-save-status");
+
+        Button saveButton = nodeFactory.createActionButton("Save Note", "secondary-button", () -> {
+            try {
+                dashboardDataService.saveCustomerAdvisorNote(detail.getCustomerId(), advisorId, noteInput.getText());
+                noteInput.clear();
+                statusLabel.setText("Note saved.");
+                CustomerDetailView refreshed = dashboardDataService.loadCustomerDetail(detail.getCustomerId());
+                if (refreshed != null) {
+                    setData(refreshed, currentOverview);
+                }
+                if (refreshDashboardAction != null) {
+                    refreshDashboardAction.run();
+                }
+            } catch (RuntimeException exception) {
+                statusLabel.setText(exception.getMessage() == null ? "Note could not be saved." : exception.getMessage());
+            }
+        });
+
+        card.getChildren().addAll(noteInput, saveButton, statusLabel);
         return card;
     }
 

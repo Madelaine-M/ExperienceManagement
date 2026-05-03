@@ -215,8 +215,14 @@ public class DashboardController implements DashboardPaneHost {
     private void updateNpsDisplay() {
         long roundedNps = Math.round(dashboardDataService.getCompanyNps());
         npsValueLabel.setText(String.valueOf(roundedNps));
-        npsValueLabel.getStyleClass().removeAll("nps-positive", "nps-negative");
-        npsValueLabel.getStyleClass().add(roundedNps < 0 ? "nps-negative" : "nps-positive");
+        npsValueLabel.getStyleClass().removeAll("nps-positive", "nps-warning", "nps-negative");
+        if (roundedNps < 0) {
+            npsValueLabel.getStyleClass().add("nps-negative");
+        } else if (roundedNps <= 50) {
+            npsValueLabel.getStyleClass().add("nps-warning");
+        } else {
+            npsValueLabel.getStyleClass().add("nps-positive");
+        }
     }
 
     private void showErrorState(String message) {

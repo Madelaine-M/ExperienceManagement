@@ -21,6 +21,8 @@ public interface DashboardDataService {
 
     CustomerDetailView loadCustomerDetail(int customerId);
 
+    void saveCustomerAdvisorNote(int customerId, int advisorId, String noteText);
+
     List<ActionItem> loadActionItemsForIncident(int incidentId);
 
     RecommendationEmailDraft prepareRecommendationDraft(int actionId, int optionNumber);
