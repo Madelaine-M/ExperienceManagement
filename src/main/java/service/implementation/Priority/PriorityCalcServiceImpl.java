@@ -1,4 +1,4 @@
-package service.implementation.Priority;
+package service.implementation.priority;
 
 import model.domain.Incident;
 import model.enums.IncidentType;

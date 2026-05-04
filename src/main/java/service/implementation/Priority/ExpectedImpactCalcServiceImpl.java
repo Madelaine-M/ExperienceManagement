@@ -1,4 +1,4 @@
-package service.implementation.Priority;
+package service.implementation.priority;
 
 import model.enums.IncidentType;
 import service.interfaces.internal.ExpectedImpactCalcService;

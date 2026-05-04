@@ -4,19 +4,18 @@ import model.enums.CustomerType;
 import model.enums.Packages;
 import model.enums.PaymentMethod;
 
+import java.util.List;
 import java.util.Optional;
 
 public class CVCustomer {
     private final Customer customer;
     private final CustomerCvProfile cvProfile;
-    private final Flight currentFlight;
-    private final Optional<Flight> lastFlight;
+    private final List<Flight> flights;
 
-    public CVCustomer(Customer customer, CustomerCvProfile cvProfile, Flight currentFlight, Flight lastFlight) {
+    public CVCustomer(Customer customer, CustomerCvProfile cvProfile, List<Flight> flights) {
         this.customer = customer;
         this.cvProfile = cvProfile;
-        this.currentFlight = currentFlight;
-        this.lastFlight = Optional.ofNullable(lastFlight);
+        this.flights = flights != null ? List.copyOf(flights) : List.of();
     }
 
     public boolean isReturningCustomer() {
@@ -24,15 +23,21 @@ public class CVCustomer {
     }
 
     public boolean hasLastFlight() {
-        return lastFlight.isPresent();
+        return flights.size() > 1;
     }
 
     public Optional<Packages> getLastBookingPackage() {
-        return lastFlight.map(Flight::getBookingPackage);
+        if (flights.size() <= 1) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(flights.get(1).getBookingPackage());
     }
 
     public Packages getCurrentBookingPackage() {
-        return currentFlight.getBookingPackage();
+        if (flights.isEmpty() || flights.get(0).getBookingPackage() == null) {
+            return Packages.STANDARD;
+        }
+        return flights.get(0).getBookingPackage();
     }
 
     public boolean hasMarketingConsent() {

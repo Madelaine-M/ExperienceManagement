@@ -10,6 +10,9 @@ import repository.interfaces.FlightRepository;
 import service.interfaces.internal.CVScoreCalcService;
 import service.interfaces.internal.CustomerCvScoreService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CustomerCvScoreServiceImpl implements CustomerCvScoreService {
     private final CustomerLookup customerLookup;
     private final CustomerCvProfileLookup customerCvProfileLookup;
@@ -41,6 +44,12 @@ public class CustomerCvScoreServiceImpl implements CustomerCvScoreService {
         CustomerCvProfile cvProfile = customerCvProfileLookup.findByCustomerId(customerId);
         Flight lastFlight = flightRepository.findLatestPreviousByCustomerId(customerId);
 
-        return cvScoreCalcService.calculate(new CVCustomer(customer, cvProfile, currentFlight, lastFlight));
+        List<Flight> flights = new ArrayList<>();
+        flights.add(currentFlight);
+        if (lastFlight != null) {
+            flights.add(lastFlight);
+        }
+
+        return cvScoreCalcService.calculate(new CVCustomer(customer, cvProfile, flights));
     }
 }

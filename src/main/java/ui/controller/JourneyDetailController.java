@@ -153,7 +153,7 @@ public class JourneyDetailController {
         Feedback feedback = data.getFeedback();
         VBox card = nodeFactory.createCard("detail-card");
         card.getChildren().addAll(
-                nodeFactory.createMetricLine("Overall score", String.format(Locale.ENGLISH, "%.1f", feedback.getOverallScore())),
+                nodeFactory.createMetricLine("Overall score", String.format(Locale.ENGLISH, "%.1f", (double) feedback.getOverallScore())),
                 nodeFactory.createMetricLine("Customer satisfaction", String.valueOf(feedback.getCustomerSatScore())),
                 nodeFactory.createMetricLine("Referral score", String.valueOf(feedback.getReferralScore()))
         );

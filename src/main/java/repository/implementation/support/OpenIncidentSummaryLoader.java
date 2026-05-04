@@ -1,8 +1,8 @@
 package repository.implementation.support;
 
 import model.enums.IncidentType;
-import service.implementation.Priority.ExpectedImpactCalcServiceImpl;
-import service.implementation.Priority.PriorityScoreSupport;
+import service.implementation.priority.ExpectedImpactCalcServiceImpl;
+import service.implementation.priority.PriorityScoreSupport;
 import service.interfaces.internal.ExpectedImpactCalcService;
 
 import java.time.LocalDateTime;

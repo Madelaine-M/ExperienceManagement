@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ToggleButton;
@@ -126,6 +127,10 @@ public class DashboardController implements DashboardPaneHost {
             return;
         }
 
+        if (isUserTyping()) {
+            return;
+        }
+
         Object previousSelection = leftListView.getSelectionModel().getSelectedItem();
         SelectionKey selectionKey = SelectionKey.from(previousSelection);
         DashboardModeHandler handler = modeHandlerFactory.create(currentMode);
@@ -228,6 +233,14 @@ public class DashboardController implements DashboardPaneHost {
     private void showErrorState(String message) {
         showEmptyDetail("Dashboard Detail", message);
         showEmptyActions(message);
+    }
+
+    private boolean isUserTyping() {
+        if (detailPane.getScene() == null) {
+            return false;
+        }
+        Node focusOwner = detailPane.getScene().getFocusOwner();
+        return focusOwner instanceof TextInputControl;
     }
 
     private record SelectionKey(String type, int id) {

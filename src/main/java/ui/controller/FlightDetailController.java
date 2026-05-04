@@ -89,7 +89,7 @@ public class FlightDetailController {
                 nodeFactory.createMetricLine("Submitted", feedback.getCreatedAt() == null
                         ? "Unknown"
                         : FEEDBACK_TIMESTAMP.format(feedback.getCreatedAt())),
-                nodeFactory.createMetricLine("Overall score", String.format(Locale.ENGLISH, "%.1f", feedback.getOverallScore())),
+                nodeFactory.createMetricLine("Overall score", String.format(Locale.ENGLISH, "%.1f", (double) feedback.getOverallScore())),
                 nodeFactory.createMetricLine("Customer satisfaction", String.valueOf(feedback.getCustomerSatScore())),
                 nodeFactory.createMetricLine("Referral score", String.valueOf(feedback.getReferralScore()))
         );

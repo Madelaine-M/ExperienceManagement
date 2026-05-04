@@ -1,4 +1,4 @@
-package service.implementation.NPS;
+package service.implementation.nps;
 
 import repository.interfaces.NPSScores;
 import service.interfaces.frontend.NPSService;
