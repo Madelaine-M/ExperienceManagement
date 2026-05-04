@@ -1,6 +1,9 @@
 package model.domain;
 
 import model.enums.CustomerStatus;
+
+import java.time.LocalDateTime;
+
 public class Customer {
 
     private String firstName;
@@ -12,6 +15,7 @@ public class Customer {
     private Integer assignedAdvisorId;
     private String preferences = ""; //als extra Klasse / Objekt
     private String applyToNextBooking = ""; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
+    private LocalDateTime statusUpdatedAt;
 
     private int id;
 
@@ -95,12 +99,19 @@ public class Customer {
         this.preferences = preferences;
     }
 
+    public LocalDateTime getStatusUpdatedAt() {
+        return statusUpdatedAt;
+    }
+
+    public void setStatusUpdatedAt(LocalDateTime statusUpdatedAt) {
+        this.statusUpdatedAt = statusUpdatedAt;
+    }
+
     public Customer() {}
 
-    public Customer(int id, String firstName, String lastName, String email, String birthDate, CustomerStatus status,
+    public Customer(String firstName, String lastName, String email, String birthDate, CustomerStatus status,
                     boolean returning, Integer assignedAdvisorId,
                     String preferences, String applyToNextBooking) {
-        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -110,6 +121,7 @@ public class Customer {
         this.assignedAdvisorId = assignedAdvisorId;
         this.preferences = preferences;
         this.applyToNextBooking = applyToNextBooking;
+        this.statusUpdatedAt = LocalDateTime.now();
     }
 
 }

@@ -48,7 +48,6 @@ public class CreateSuggestedActionServiceImpl implements CreateSuggestedActionSe
         }
 
         ActionItem actionItem = new ActionItem(
-                0,
                 incident.getId(),
                 defaultDescription(incident),
                 null,
@@ -83,11 +82,11 @@ public class CreateSuggestedActionServiceImpl implements CreateSuggestedActionSe
                 : incident.getDescription();
     }
 
-    private double expectedRecommendationImpact(Incident incident) {
-        return Math.max(0.05, incident.getScoreImpact() / 2.0);
+    private int expectedRecommendationImpact(Incident incident) {
+        return Math.max(1, incident.getScoreImpact() / 2);
     }
 
-    private double expectedRebookingImpact(Incident incident) {
-        return Math.max(0.08, incident.getRevenueRisk() / 10000.0);
+    private int expectedRebookingImpact(Incident incident) {
+        return Math.max(1, incident.getRevenueRisk() / 1000);
     }
 }

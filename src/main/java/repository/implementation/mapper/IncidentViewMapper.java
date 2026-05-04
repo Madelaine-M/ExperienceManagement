@@ -2,6 +2,7 @@ package repository.implementation.mapper;
 
 import model.view.IncidentDetailView;
 import model.view.IncidentOverview;
+import model.enums.CustomerStatus;
 import model.enums.IncidentType;
 import model.enums.Packages;
 
@@ -16,9 +17,13 @@ public class IncidentViewMapper {
         overview.setCustomerId(rs.getInt("customer_id"));
         overview.setCustomerFirstName(rs.getString("first_name"));
         overview.setCustomerLastName(rs.getString("last_name"));
+        String customerStatusStr = rs.getString("customer_status");
+        if (customerStatusStr != null) {
+            overview.setCustomerStatus(CustomerStatus.valueOf(customerStatusStr));
+        }
         overview.setDescription(rs.getString("description"));
         overview.setRevenueRisk(rs.getInt("revenue_risk"));
-        overview.setScoreImpact(rs.getDouble("score_impact"));
+        overview.setScoreImpact(rs.getInt("score_impact"));
         java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
         if (createdAt != null) {
             overview.setCreatedAt(createdAt.toLocalDateTime());
@@ -43,6 +48,10 @@ public class IncidentViewMapper {
         detail.setCustomerId(rs.getInt("customer_id"));
         detail.setCustomerFirstName(rs.getString("first_name"));
         detail.setCustomerLastName(rs.getString("last_name"));
+        String customerStatusStr = rs.getString("customer_status");
+        if (customerStatusStr != null) {
+            detail.setCustomerStatus(CustomerStatus.valueOf(customerStatusStr));
+        }
         detail.setReturning(rs.getBoolean("is_returning"));
         detail.setCurrentFlightDate(rs.getString("flight_date"));
         int currentFlightId = rs.getInt("flight_id");

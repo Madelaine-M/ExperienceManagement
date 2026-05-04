@@ -11,5 +11,5 @@ public interface FeedbackAnalytics {
 
     List<FeedbackItem> findByCategory(String category);
 
-    double getAverageRating(String category);
+    int getAverageRating(String category);
 }

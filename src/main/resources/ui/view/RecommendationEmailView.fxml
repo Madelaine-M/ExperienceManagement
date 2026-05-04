@@ -18,15 +18,15 @@
         <Insets top="24" right="24" bottom="24" left="24"/>
     </padding>
 
-    <Label text="Recovery Mail" styleClass="section-title"/>
+    <Label fx:id="titleLabel" text="Recovery Mail" styleClass="section-title"/>
 
     <VBox spacing="10" styleClass="detail-card">
         <HBox spacing="10">
-            <Label text="Customer:" styleClass="metric-key"/>
+            <Label fx:id="primaryKeyLabel" text="Customer:" styleClass="metric-key"/>
             <Label fx:id="customerValueLabel" styleClass="metric-value"/>
         </HBox>
         <HBox spacing="10">
-            <Label text="Advisor:" styleClass="metric-key"/>
+            <Label fx:id="secondaryKeyLabel" text="Advisor:" styleClass="metric-key"/>
             <Label fx:id="advisorValueLabel" styleClass="metric-value"/>
         </HBox>
         <VBox spacing="6">
@@ -49,6 +49,6 @@
 
     <HBox spacing="12">
         <Button text="Cancel" onAction="#closeDialog" styleClass="secondary-button"/>
-        <Button text="Send and Close Incident" onAction="#sendEmail" styleClass="primary-button"/>
+        <Button fx:id="sendButton" text="Send and Close Incident" onAction="#sendEmail" styleClass="primary-button"/>
     </HBox>
 </VBox>

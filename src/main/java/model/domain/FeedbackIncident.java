@@ -14,11 +14,11 @@ public class FeedbackIncident extends Incident {
     public FeedbackIncident() {
     }
 
-    public FeedbackIncident(int id, int customerId, String description, double scoreImpact,
+    public FeedbackIncident(int customerId, String description, int scoreImpact,
                             int revenueRisk, IncidentStatus status, Integer assignedAdvisorId,
                             Integer feedbackId, FeedbackCategory feedbackType, Integer sourceFeedbackItemId,
                             LocalDateTime createdAt, Integer flightId, ActionItem suggestedAction) {
-        super(id, customerId, description, scoreImpact, revenueRisk, status, assignedAdvisorId,
+        super(customerId, description, scoreImpact, revenueRisk, status, assignedAdvisorId,
                 createdAt, flightId, suggestedAction);
         this.feedbackId = feedbackId;
         this.feedbackType = feedbackType;

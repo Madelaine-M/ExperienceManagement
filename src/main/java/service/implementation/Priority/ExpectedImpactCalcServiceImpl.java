@@ -9,6 +9,7 @@ public class ExpectedImpactCalcServiceImpl implements ExpectedImpactCalcService 
         return switch (type) {
             case FEEDBACK -> 2;
             case DELAY -> 3;
+            case ONBOARDING -> 2;
         };
     }
 

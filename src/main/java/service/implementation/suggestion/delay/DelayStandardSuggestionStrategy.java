@@ -8,6 +8,6 @@ public class DelayStandardSuggestionStrategy implements SuggestionStrategy {
     @Override
     public void apply(ActionItem actionItem, Incident incident) {
         actionItem.setSuggestion1("Lounge access");
-        actionItem.setSuggestion2("Complimentary Lounge Access during next delay");
+        actionItem.setSuggestion2("Invitation to VIP After-Party");
     }
 }

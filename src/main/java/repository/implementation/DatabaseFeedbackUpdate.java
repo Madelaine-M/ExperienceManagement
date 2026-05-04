@@ -55,7 +55,7 @@ public class DatabaseFeedbackUpdate implements FeedbackUpdate {
 
                 feedbackStmt.setInt(1, feedback.getCustomerId());
                 setCreatedAt(feedbackStmt, 2, feedback.getCreatedAt());
-                feedbackStmt.setDouble(3, feedback.getTotalScore() != 0.0 ? feedback.getTotalScore() : feedback.getOverallScore());
+                feedbackStmt.setInt(3, feedback.getTotalScore() != 0 ? feedback.getTotalScore() : feedback.getOverallScore());
                 feedbackStmt.setInt(4, feedback.getCustomerSatScore());
                 feedbackStmt.setInt(5, feedback.getReferralScore());
                 if (resolvedFlightId != null) {

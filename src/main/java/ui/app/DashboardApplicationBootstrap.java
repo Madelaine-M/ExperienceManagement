@@ -20,6 +20,7 @@ import service.implementation.advisor.LowestLoadAdvisorAssignmentServiceImpl;
 import service.implementation.incidents.action.CreateSuggestedActionServiceImpl;
 import service.implementation.incidents.delay.CreateDelayIncidentServiceImpl;
 import service.implementation.incidents.feedback.CreateFeedbackIncidentServiceImpl;
+import service.implementation.incidents.onboarding.CreateOnboardingIncidentServiceImpl;
 import service.interfaces.frontend.ActionService;
 import service.interfaces.frontend.CustomerNoteService;
 import service.interfaces.frontend.CustomerService;
@@ -31,6 +32,7 @@ import service.interfaces.frontend.RecommendationExecutionService;
 import service.interfaces.internal.AdvisorAssignmentService;
 import service.interfaces.internal.CreateDelayIncidentService;
 import service.interfaces.internal.CreateFeedbackIncidentService;
+import service.interfaces.internal.CreateOnboardingIncidentService;
 import service.interfaces.internal.CreateSuggestedActionService;
 import service.interfaces.internal.ExpectedImpactCalcService;
 import service.interfaces.internal.PriorityCalcService;
@@ -175,6 +177,12 @@ public class DashboardApplicationBootstrap {
                 expectedImpactCalcService,
                 priorityCalcService
         );
+        CreateOnboardingIncidentService createOnboardingIncidentService = new CreateOnboardingIncidentServiceImpl(
+                backend.getCustomerLookup(),
+                backend.getIncidentLookup(),
+                backend.getIncidentUpdate(),
+                expectedImpactCalcService
+        );
         CreateSuggestedActionService createSuggestedActionService = new CreateSuggestedActionServiceImpl(
                 backend.getActionLookup(),
                 backend.getActionUpdate(),
@@ -190,9 +198,11 @@ public class DashboardApplicationBootstrap {
                         backend.getFlightRepository(),
                         backend.getFeedbackLookup(),
                         backend.getFeedbackUpdate(),
+                        backend.getIncidentLookup(),
                         advisorAssignmentService,
                         createDelayIncidentService,
                         createFeedbackIncidentService,
+                        createOnboardingIncidentService,
                         createSuggestedActionService,
                         new Random()
                 )

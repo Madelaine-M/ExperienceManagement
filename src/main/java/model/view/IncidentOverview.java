@@ -1,6 +1,7 @@
 package model.view;
 
 import model.enums.IncidentType;
+import model.enums.CustomerStatus;
 import model.enums.Packages;
 
 import java.time.LocalDateTime;
@@ -10,13 +11,14 @@ public class IncidentOverview {
     private int customerId;
     private String customerFirstName;
     private String customerLastName;
+    private CustomerStatus customerStatus;
     private Packages bookingPackage;
     private IncidentType incidentType;
     private float customerCvScore;
     private double priorityScore;
     private String description;
     private int revenueRisk;
-    private double scoreImpact;
+    private int scoreImpact;
     private LocalDateTime createdAt;
 
     public IncidentOverview() {
@@ -24,7 +26,7 @@ public class IncidentOverview {
 
     public IncidentOverview(int incidentId, int customerId, String customerFirstName, String customerLastName,
                             Packages bookingPackage, double priorityScore, String description, int revenueRisk,
-                            double scoreImpact) {
+                            int scoreImpact) {
         this.incidentId = incidentId;
         this.customerId = customerId;
         this.customerFirstName = customerFirstName;
@@ -66,6 +68,14 @@ public class IncidentOverview {
 
     public void setCustomerLastName(String customerLastName) {
         this.customerLastName = customerLastName;
+    }
+
+    public CustomerStatus getCustomerStatus() {
+        return customerStatus;
+    }
+
+    public void setCustomerStatus(CustomerStatus customerStatus) {
+        this.customerStatus = customerStatus;
     }
 
     public Packages getBookingPackage() {
@@ -116,11 +126,11 @@ public class IncidentOverview {
         this.revenueRisk = revenueRisk;
     }
 
-    public double getScoreImpact() {
+    public int getScoreImpact() {
         return scoreImpact;
     }
 
-    public void setScoreImpact(double scoreImpact) {
+    public void setScoreImpact(int scoreImpact) {
         this.scoreImpact = scoreImpact;
     }
 

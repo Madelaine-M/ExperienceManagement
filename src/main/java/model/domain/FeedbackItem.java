@@ -12,9 +12,7 @@ public class FeedbackItem {
     public FeedbackItem() {
     }
 
-    public FeedbackItem(int id, int feedbackId, FeedbackCategory category, int score, String comment) {
-        this.id = id;
-        this.feedbackId = feedbackId;
+    public FeedbackItem(FeedbackCategory category, int score, String comment) {
         this.category = category;
         this.score = score;
         this.comment = comment;

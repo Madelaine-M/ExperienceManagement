@@ -44,7 +44,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             pstmt.setString(2, advisor.getLastName());
             pstmt.setString(3, advisor.getEmail());
             pstmt.setString(4, advisor.getSpeciality());
-            pstmt.setDouble(5, advisor.getWorkloadScore());
+            pstmt.setInt(5, advisor.getWorkloadScore());
 
             pstmt.executeUpdate();
             advisor.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "advisor"));

@@ -8,6 +8,8 @@ public class SimulationConfig {
     private final int maxDelayMinutes;
     private final double lowScoreFeedbackProbability;
     private final int lowScoreThreshold;
+    private final int onboardingStuckAfterSeconds;
+    private final double onboardingIncidentProbability;
 
     public SimulationConfig(int customerCreationIntervalSeconds,
                             int journeyAdvanceIntervalSeconds,
@@ -15,7 +17,9 @@ public class SimulationConfig {
                             int minDelayMinutes,
                             int maxDelayMinutes,
                             double lowScoreFeedbackProbability,
-                            int lowScoreThreshold) {
+                            int lowScoreThreshold,
+                            int onboardingStuckAfterSeconds,
+                            double onboardingIncidentProbability) {
         this.customerCreationIntervalSeconds = customerCreationIntervalSeconds;
         this.journeyAdvanceIntervalSeconds = journeyAdvanceIntervalSeconds;
         this.preFlightDelayProbability = preFlightDelayProbability;
@@ -23,6 +27,8 @@ public class SimulationConfig {
         this.maxDelayMinutes = maxDelayMinutes;
         this.lowScoreFeedbackProbability = lowScoreFeedbackProbability;
         this.lowScoreThreshold = lowScoreThreshold;
+        this.onboardingStuckAfterSeconds = onboardingStuckAfterSeconds;
+        this.onboardingIncidentProbability = onboardingIncidentProbability;
     }
 
     public int getCustomerCreationIntervalSeconds() {
@@ -51,5 +57,13 @@ public class SimulationConfig {
 
     public int getLowScoreThreshold() {
         return lowScoreThreshold;
+    }
+
+    public int getOnboardingStuckAfterSeconds() {
+        return onboardingStuckAfterSeconds;
+    }
+
+    public double getOnboardingIncidentProbability() {
+        return onboardingIncidentProbability;
     }
 }

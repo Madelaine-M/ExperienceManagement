@@ -53,8 +53,8 @@ public class DataSeeder {
             return;
         }
 
-        Advisor advisorOne = createAdvisor("Anna", "Schmidt", "anna.schmidt@test.de", "Premium Support", 42.5, advisorRepo);
-        Advisor advisorTwo = createAdvisor("Lukas", "Weber", "lukas.weber@test.de", "Flight Recovery", 27.0, advisorRepo);
+        Advisor advisorOne = createAdvisor("Anna", "Schmidt", "anna.schmidt@test.de", "Premium Support", 43, advisorRepo);
+        Advisor advisorTwo = createAdvisor("Lukas", "Weber", "lukas.weber@test.de", "Flight Recovery", 27, advisorRepo);
 
         Customer customerOne = createCustomer(
                 "Max", "Mustermann", "max@test.de", "1989-04-17",
@@ -120,8 +120,8 @@ public class DataSeeder {
                 feedbackOne.getId(),
                 FeedbackCategory.FOOD,
                 "VIP passenger reported disappointing in-flight meal quality.",
-                8.7,
-                1.4,
+                9,
+                1,
                 12000,
                 IncidentStatus.OPEN,
                 advisorOne.getId(),
@@ -135,8 +135,8 @@ public class DataSeeder {
                 null,
                 null,
                 "Customer reported missed assistance during a schedule change.",
-                9.4,
-                2.1,
+                9,
+                2,
                 18500,
                 IncidentStatus.OPEN,
                 advisorTwo.getId(),
@@ -150,9 +150,9 @@ public class DataSeeder {
                 "Provide a goodwill onboard dining credit as part of the recovery plan.",
                 "Flag the customer's meal preferences for the next flight and confirm them in advance.",
                 8,
-                0.9,
-                0.15,
-                0.22,
+                1,
+                15,
+                22,
                 actionUpdate
         );
         createAction(
@@ -161,16 +161,16 @@ public class DataSeeder {
                 "Provide a goodwill service credit for the disruption.",
                 "Escalate future schedule changes to the assigned advisor immediately.",
                 10,
-                1.8,
-                0.28,
-                0.35,
+                2,
+                28,
+                35,
                 actionUpdate
         );
     }
 
     private static Advisor createAdvisor(String firstName, String lastName, String email, String speciality,
-                                         double workloadScore, AdvisorRepository advisorRepo) {
-        Advisor advisor = new Advisor(0, firstName, lastName, email, speciality, workloadScore);
+                                         int workloadScore, AdvisorRepository advisorRepo) {
+        Advisor advisor = new Advisor(firstName, lastName, email, speciality, workloadScore);
         advisorRepo.save(advisor);
         return advisor;
     }
@@ -179,7 +179,6 @@ public class DataSeeder {
                                            boolean returning, Integer advisorId,
                                            String preferences, CustomerUpdate customerUpdate) {
         Customer customer = new Customer(
-                0,
                 firstName,
                 lastName,
                 email,
@@ -215,7 +214,7 @@ public class DataSeeder {
     private static CustomerNote createCustomerNote(int customerId, int advisorId, String noteText,
                                                    CustomerNoteUpdate customerNoteUpdate) {
         LocalDateTime now = LocalDateTime.now();
-        CustomerNote customerNote = new CustomerNote(0, customerId, advisorId, noteText, now, now);
+        CustomerNote customerNote = new CustomerNote(customerId, advisorId, noteText, now, now);
         customerNoteUpdate.save(customerNote);
         return customerNote;
     }
@@ -223,7 +222,7 @@ public class DataSeeder {
     private static Flight createFlight(int customerId, String flightNumber, String bookingDate, String flightDate,
                                        Packages bookingPackage, String status, boolean current,
                                        FlightRepository flightRepository) {
-        Flight flight = new Flight(0, customerId, flightNumber, bookingDate, flightDate, bookingPackage, status, current);
+        Flight flight = new Flight(customerId, flightNumber, bookingDate, flightDate, bookingPackage, status, current);
         flightRepository.save(flight);
         return flight;
     }
@@ -231,25 +230,24 @@ public class DataSeeder {
     private static Feedback createFeedback(int customerId, int flightId, LocalDateTime createdAt,
                                            int customerSatScore, int referralScore, List<FeedbackItem> items,
                                            FeedbackUpdate feedbackUpdate) {
-        Feedback feedback = new Feedback(0, customerId, createdAt, items, 0.0, customerSatScore, referralScore, flightId);
+        Feedback feedback = new Feedback(customerId, createdAt, items, 0, customerSatScore, referralScore, flightId);
         feedback.setTotalScore(feedback.getOverallScore());
         feedbackUpdate.save(feedback);
         return feedback;
     }
 
     private static FeedbackItem feedbackItem(FeedbackCategory category, int score, String comment) {
-        return new FeedbackItem(0, 0, category, score, comment);
+        return new FeedbackItem(category, score, comment);
     }
 
     private static Incident createIncident(int customerId, int flightId, IncidentType type, Integer feedbackId,
                                            FeedbackCategory feedbackCategory, String description,
-                                           double priorityScore, double scoreImpact, int revenueRisk,
+                                           double priorityScore, int scoreImpact, int revenueRisk,
                                            IncidentStatus status, Integer advisorId, Integer delayMinutes,
                                            IncidentUpdate incidentUpdate) {
         Incident incident;
         if (type == IncidentType.FEEDBACK) {
             incident = new FeedbackIncident(
-                    0,
                     customerId,
                     description,
                     scoreImpact,
@@ -265,7 +263,6 @@ public class DataSeeder {
             );
         } else if (type == IncidentType.DELAY) {
             incident = new DelayIncident(
-                    0,
                     customerId,
                     description,
                     scoreImpact,
@@ -285,11 +282,10 @@ public class DataSeeder {
     }
 
     private static ActionItem createAction(int incidentId, String description, String suggestionOne,
-                                           String suggestionTwo, int priority, double scoreImpact,
-                                           double expectedRec, double expectedRebooking,
+                                           String suggestionTwo, int priority, int scoreImpact,
+                                           int expectedRec, int expectedRebooking,
                                            ActionUpdate actionUpdate) {
         ActionItem actionItem = new ActionItem(
-                0,
                 incidentId,
                 description,
                 suggestionOne,

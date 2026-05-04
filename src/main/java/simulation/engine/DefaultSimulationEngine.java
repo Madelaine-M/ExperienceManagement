@@ -6,9 +6,11 @@ import repository.interfaces.CustomerUpdate;
 import repository.interfaces.FeedbackLookup;
 import repository.interfaces.FeedbackUpdate;
 import repository.interfaces.FlightRepository;
+import repository.interfaces.IncidentLookup;
 import service.interfaces.internal.AdvisorAssignmentService;
 import service.interfaces.internal.CreateDelayIncidentService;
 import service.interfaces.internal.CreateFeedbackIncidentService;
+import service.interfaces.internal.CreateOnboardingIncidentService;
 import service.interfaces.internal.CreateSuggestedActionService;
 import simulation.model.SimulationSnapshot;
 import simulation.model.SimulationTickResult;
@@ -27,13 +29,16 @@ public class DefaultSimulationEngine implements SimulationEngine {
                                    FlightRepository flightRepository,
                                    FeedbackLookup feedbackLookup,
                                    FeedbackUpdate feedbackUpdate,
+                                   IncidentLookup incidentLookup,
                                    AdvisorAssignmentService advisorAssignmentService,
                                    CreateDelayIncidentService createDelayIncidentService,
                                    CreateFeedbackIncidentService createFeedbackIncidentService,
+                                   CreateOnboardingIncidentService createOnboardingIncidentService,
                                    CreateSuggestedActionService createSuggestedActionService,
                                    Random random) {
         this.customerCreationProcessor = new CustomerCreationProcessor(
                 customerUpdate,
+                customerLookup,
                 customerCvProfileUpdate,
                 flightRepository,
                 feedbackUpdate,
@@ -46,8 +51,10 @@ public class DefaultSimulationEngine implements SimulationEngine {
                 flightRepository,
                 feedbackLookup,
                 feedbackUpdate,
+                incidentLookup,
                 createDelayIncidentService,
                 createFeedbackIncidentService,
+                createOnboardingIncidentService,
                 createSuggestedActionService,
                 random
         );
@@ -56,7 +63,7 @@ public class DefaultSimulationEngine implements SimulationEngine {
     @Override
     public SimulationTickResult tick(SimulationSnapshot snapshot) {
         if (snapshot == null || snapshot.getConfig() == null) {
-            return new SimulationTickResult(0, 0, 0, 0, 0, LocalDateTime.now());
+            return new SimulationTickResult(0, 0, 0, 0, 0, 0, LocalDateTime.now());
         }
 
         if (!runtimeState.matches(snapshot.getConfig())) {
@@ -71,6 +78,7 @@ public class DefaultSimulationEngine implements SimulationEngine {
                 createdCustomers,
                 journeyResult.getAdvancedJourneys(),
                 journeyResult.getGeneratedDelayIncidents(),
+                journeyResult.getGeneratedOnboardingIncidents(),
                 journeyResult.getGeneratedFeedbacks(),
                 journeyResult.getGeneratedFeedbackIncidents(),
                 now

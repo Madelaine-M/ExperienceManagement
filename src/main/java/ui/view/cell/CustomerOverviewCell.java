@@ -50,13 +50,17 @@ public class CustomerOverviewCell extends ListCell<Object> {
                 + DashboardFormatters.formatValue(overview.getCustomerType()));
         customerType.getStyleClass().add("list-card-meta");
 
+        Label journeyStatus = new Label("Journey Status: "
+                + DashboardFormatters.formatValue(overview.getStatus()));
+        journeyStatus.getStyleClass().add("list-card-meta");
+
         Label incidentInfo = new Label(overview.hasOpenIncident()
                 ? "Open Incident: " + DashboardFormatters.defaultText(overview.getIncidentDescription(), "Incident recorded")
                 : "No active incidents");
         incidentInfo.getStyleClass().add(overview.hasOpenIncident() ? "list-card-meta" : "list-card-muted");
         incidentInfo.setWrapText(true);
 
-        card.getChildren().addAll(header, cvScore, customerType, incidentInfo);
+        card.getChildren().addAll(header, cvScore, customerType, journeyStatus, incidentInfo);
         setText(null);
         setGraphic(card);
     }

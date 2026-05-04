@@ -21,9 +21,9 @@ public class ActionItemResultSetMapper {
             actionItem.setStatus(ActionStatus.valueOf(status));
         }
 
-        actionItem.setScoreImpact(rs.getDouble("score_impact"));
-        actionItem.setExpectedRec(rs.getDouble("expected_rec"));
-        actionItem.setExpectedRebooking(rs.getDouble("expected_rebooking"));
+        actionItem.setScoreImpact(rs.getInt("score_impact"));
+        actionItem.setExpectedRec(rs.getInt("expected_rec"));
+        actionItem.setExpectedRebooking(rs.getInt("expected_rebooking"));
         return actionItem;
     }
 }

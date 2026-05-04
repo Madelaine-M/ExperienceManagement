@@ -2,7 +2,6 @@ package ui.navigation;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ui.controller.FlightDetailController;
 import ui.controller.JourneyDetailController;
@@ -38,11 +37,8 @@ public class JourneyDetailNavigatorImpl implements JourneyDetailNavigator {
             JourneyDetailController controller = loader.getController();
             controller.initializeJourney(journeyDetailService, this, customerId, incidentId);
 
-            Scene scene = new Scene(root, primaryStage.getWidth(), primaryStage.getHeight());
-            scene.getStylesheets().add(getClass().getResource("/ui/view/dashboard.css").toExternalForm());
-
             primaryStage.setTitle("Customer Journey");
-            primaryStage.setScene(scene);
+            primaryStage.getScene().setRoot(root);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to open journey detail view.", e);
         }
@@ -58,11 +54,8 @@ public class JourneyDetailNavigatorImpl implements JourneyDetailNavigator {
             FlightDetailController controller = loader.getController();
             controller.initializeFlightDetail(flightDetailService, this, flightId);
 
-            Scene scene = new Scene(root, primaryStage.getWidth(), primaryStage.getHeight());
-            scene.getStylesheets().add(getClass().getResource("/ui/view/dashboard.css").toExternalForm());
-
             primaryStage.setTitle("Flight Detail");
-            primaryStage.setScene(scene);
+            primaryStage.getScene().setRoot(root);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to open flight detail view.", e);
         }
@@ -74,17 +67,17 @@ public class JourneyDetailNavigatorImpl implements JourneyDetailNavigator {
             return;
         }
         SceneState previous = sceneStack.pop();
-        primaryStage.setScene(previous.scene());
         primaryStage.setTitle(previous.title());
+        primaryStage.getScene().setRoot(previous.root());
     }
 
     private void pushCurrentScene() {
         if (primaryStage.getScene() == null) {
             return;
         }
-        sceneStack.push(new SceneState(primaryStage.getScene(), primaryStage.getTitle()));
+        sceneStack.push(new SceneState(primaryStage.getScene().getRoot(), primaryStage.getTitle()));
     }
 
-    private record SceneState(Scene scene, String title) {
+    private record SceneState(Parent root, String title) {
     }
 }

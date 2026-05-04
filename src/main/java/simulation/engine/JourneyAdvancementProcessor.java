@@ -4,15 +4,19 @@ import model.domain.Customer;
 import model.domain.Feedback;
 import model.domain.FeedbackItem;
 import model.domain.Flight;
+import model.domain.Incident;
 import model.enums.CustomerStatus;
 import model.enums.FeedbackCategory;
+import model.enums.IncidentStatus;
 import repository.interfaces.CustomerLookup;
 import repository.interfaces.CustomerUpdate;
 import repository.interfaces.FeedbackLookup;
 import repository.interfaces.FeedbackUpdate;
 import repository.interfaces.FlightRepository;
+import repository.interfaces.IncidentLookup;
 import service.interfaces.internal.CreateDelayIncidentService;
 import service.interfaces.internal.CreateFeedbackIncidentService;
+import service.interfaces.internal.CreateOnboardingIncidentService;
 import service.interfaces.internal.CreateSuggestedActionService;
 import simulation.model.SimulationConfig;
 import simulation.model.SimulationSnapshot;
@@ -32,8 +36,10 @@ class JourneyAdvancementProcessor {
     private final FlightRepository flightRepository;
     private final FeedbackLookup feedbackLookup;
     private final FeedbackUpdate feedbackUpdate;
+    private final IncidentLookup incidentLookup;
     private final CreateDelayIncidentService createDelayIncidentService;
     private final CreateFeedbackIncidentService createFeedbackIncidentService;
+    private final CreateOnboardingIncidentService createOnboardingIncidentService;
     private final CreateSuggestedActionService createSuggestedActionService;
     private final Random random;
 
@@ -42,8 +48,10 @@ class JourneyAdvancementProcessor {
                                 FlightRepository flightRepository,
                                 FeedbackLookup feedbackLookup,
                                 FeedbackUpdate feedbackUpdate,
+                                IncidentLookup incidentLookup,
                                 CreateDelayIncidentService createDelayIncidentService,
                                 CreateFeedbackIncidentService createFeedbackIncidentService,
+                                CreateOnboardingIncidentService createOnboardingIncidentService,
                                 CreateSuggestedActionService createSuggestedActionService,
                                 Random random) {
         this.customerLookup = customerLookup;
@@ -51,8 +59,10 @@ class JourneyAdvancementProcessor {
         this.flightRepository = flightRepository;
         this.feedbackLookup = feedbackLookup;
         this.feedbackUpdate = feedbackUpdate;
+        this.incidentLookup = incidentLookup;
         this.createDelayIncidentService = createDelayIncidentService;
         this.createFeedbackIncidentService = createFeedbackIncidentService;
+        this.createOnboardingIncidentService = createOnboardingIncidentService;
         this.createSuggestedActionService = createSuggestedActionService;
         this.random = random;
     }
@@ -79,6 +89,7 @@ class JourneyAdvancementProcessor {
 
         int advancedJourneys = 0;
         int generatedDelayIncidents = 0;
+        int generatedOnboardingIncidents = 0;
         int generatedFeedbacks = 0;
         int generatedFeedbackIncidents = 0;
 
@@ -91,12 +102,34 @@ class JourneyAdvancementProcessor {
                     continue;
                 }
 
+                boolean hasOpenIncident = hasOpenIncident(customer.getId());
+                boolean onboardingStuck = isOnboardingStuck(customer, config, now);
+                if (!hasOpenIncident
+                        && onboardingStuck
+                        && shouldGenerate(config.getOnboardingIncidentProbability())) {
+                    var createdOnboardingIncident = createOnboardingIncidentService.createOnboardingIncident(customer.getId());
+                    if (createdOnboardingIncident != null) {
+                        createSuggestedActionService.createSuggestedAction(createdOnboardingIncident);
+                        generatedOnboardingIncidents += 1;
+                        hasOpenIncident = true;
+                    }
+                }
+
+                if (hasOpenIncident) {
+                    continue;
+                }
+
+                if (customer.getStatus() == CustomerStatus.ONBOARDING && !onboardingStuck) {
+                    continue;
+                }
+
                 CustomerStatus nextStatus = nextStatus(customer.getStatus());
                 if (nextStatus == customer.getStatus()) {
                     continue;
                 }
 
                 customer.setStatus(nextStatus);
+                customer.setStatusUpdatedAt(now);
                 customerUpdate.update(customer);
                 advancedJourneys += 1;
 
@@ -136,10 +169,29 @@ class JourneyAdvancementProcessor {
                 0,
                 advancedJourneys,
                 generatedDelayIncidents,
+                generatedOnboardingIncidents,
                 generatedFeedbacks,
                 generatedFeedbackIncidents,
                 now
         );
+    }
+
+    private boolean isOnboardingStuck(Customer customer, SimulationConfig config, LocalDateTime now) {
+        if (customer.getStatus() != CustomerStatus.ONBOARDING || customer.getStatusUpdatedAt() == null) {
+            return false;
+        }
+        long secondsInStatus = Duration.between(customer.getStatusUpdatedAt(), now).getSeconds();
+        return secondsInStatus >= config.getOnboardingStuckAfterSeconds();
+    }
+
+    private boolean hasOpenIncident(int customerId) {
+        List<Incident> incidents = incidentLookup.findAllByCustomerId(customerId);
+        for (Incident incident : incidents) {
+            if (incident.getStatus() == IncidentStatus.OPEN) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Feedback generateFeedbackIfMissing(Customer customer, SimulationConfig config) {
@@ -156,11 +208,10 @@ class JourneyAdvancementProcessor {
         List<FeedbackItem> items = generateFeedbackItems(generateLowScore, config.getLowScoreThreshold());
 
         Feedback feedback = new Feedback(
-                0,
                 customer.getId(),
                 LocalDateTime.now(),
                 items,
-                0.0,
+                0,
                 6 + random.nextInt(5),
                 6 + random.nextInt(5),
                 currentFlight.getId()
@@ -188,7 +239,7 @@ class JourneyAdvancementProcessor {
             } else {
                 score = 4 + random.nextInt(7);
             }
-            items.add(new FeedbackItem(0, 0, category, score, commentFor(category, score)));
+            items.add(new FeedbackItem(category, score, commentFor(category, score)));
         }
 
         return items;
@@ -234,7 +285,7 @@ class JourneyAdvancementProcessor {
     }
 
     private SimulationTickResult emptyTick(LocalDateTime now) {
-        return new SimulationTickResult(0, 0, 0, 0, 0, now);
+        return new SimulationTickResult(0, 0, 0, 0, 0, 0, now);
     }
 
     private int countDueSteps(LocalDateTime lastProcessedAt,

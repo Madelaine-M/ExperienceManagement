@@ -11,10 +11,10 @@ public class DelayIncident extends Incident {
     public DelayIncident() {
     }
 
-    public DelayIncident(int id, int customerId, String description, double scoreImpact,
+    public DelayIncident(int customerId, String description, int scoreImpact,
                          int revenueRisk, IncidentStatus status, Integer assignedAdvisorId, Integer delayMinutes,
                          LocalDateTime createdAt, Integer flightId, ActionItem suggestedAction) {
-        super(id, customerId, description, scoreImpact, revenueRisk, status, assignedAdvisorId,
+        super(customerId, description, scoreImpact, revenueRisk, status, assignedAdvisorId,
                 createdAt, flightId, suggestedAction);
         this.delayMinutes = delayMinutes;
     }

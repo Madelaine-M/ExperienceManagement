@@ -126,7 +126,7 @@ public class SimulationServiceImpl implements SimulationService {
     }
 
     private SimulationMetrics emptyMetrics() {
-        return new SimulationMetrics(0, 0, 0, 0, 0);
+        return new SimulationMetrics(0, 0, 0, 0, 0, 0);
     }
 
     private SimulationMetrics mergeMetrics(SimulationMetrics currentMetrics, SimulationTickResult tickResult) {
@@ -134,6 +134,7 @@ public class SimulationServiceImpl implements SimulationService {
                 currentMetrics.getCreatedCustomers() + tickResult.getCreatedCustomers(),
                 currentMetrics.getAdvancedJourneys() + tickResult.getAdvancedJourneys(),
                 currentMetrics.getGeneratedDelayIncidents() + tickResult.getGeneratedDelayIncidents(),
+                currentMetrics.getGeneratedOnboardingIncidents() + tickResult.getGeneratedOnboardingIncidents(),
                 currentMetrics.getGeneratedFeedbacks() + tickResult.getGeneratedFeedbacks(),
                 currentMetrics.getGeneratedFeedbackIncidents() + tickResult.getGeneratedFeedbackIncidents()
         );

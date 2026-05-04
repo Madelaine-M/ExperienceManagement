@@ -46,9 +46,9 @@ public class DatabaseActionRepository implements ActionLookup, ActionUpdate {
             pstmt.setString(3, actionItem.getSuggestion1());
             pstmt.setString(4, actionItem.getSuggestion2());
             pstmt.setString(5, actionItem.getStatus() != null ? actionItem.getStatus().name() : null);
-            pstmt.setDouble(6, actionItem.getScoreImpact());
-            pstmt.setDouble(7, actionItem.getExpectedRec());
-            pstmt.setDouble(8, actionItem.getExpectedRebooking());
+            pstmt.setInt(6, actionItem.getScoreImpact());
+            pstmt.setInt(7, actionItem.getExpectedRec());
+            pstmt.setInt(8, actionItem.getExpectedRebooking());
             pstmt.executeUpdate();
 
             actionItem.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "action item"));

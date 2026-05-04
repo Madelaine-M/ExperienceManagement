@@ -7,6 +7,7 @@ import java.util.List;
 
 public final class RecoveryActionNoteCodec {
     private static final String HEADER = "Recovery mail sent.";
+    private static final String INCIDENT_PREFIX = "Incident id: ";
     private static final String RESOLUTION_TYPE_PREFIX = "Resolution type: ";
     private static final String OPTION_PREFIX = "Resolved by option: ";
     private static final String RECOMMENDATION_PREFIX = "Selected recommendation: ";
@@ -21,7 +22,17 @@ public final class RecoveryActionNoteCodec {
                                                         String selectedRecommendation,
                                                         String subject,
                                                         String mailBody) {
+        return formatRecommendationResolution(0, optionNumber, selectedRecommendation, subject, mailBody);
+    }
+
+    public static String formatRecommendationResolution(int incidentId,
+                                                        int optionNumber,
+                                                        String selectedRecommendation,
+                                                        String subject,
+                                                        String mailBody) {
+        String incidentLine = incidentId > 0 ? INCIDENT_PREFIX + incidentId + "\n" : "";
         return HEADER + "\n"
+                + incidentLine
                 + RESOLUTION_TYPE_PREFIX + RECOMMENDATION_RESOLUTION_TYPE + "\n"
                 + OPTION_PREFIX + optionNumber + "\n"
                 + RECOMMENDATION_PREFIX + selectedRecommendation + "\n"

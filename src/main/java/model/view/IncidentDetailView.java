@@ -1,6 +1,7 @@
 package model.view;
 
 import model.domain.Flight;
+import model.enums.CustomerStatus;
 import model.enums.CustomerType;
 import model.enums.IncidentType;
 import model.enums.Packages;
@@ -13,6 +14,7 @@ public class IncidentDetailView {
     private int customerId;
     private String customerFirstName;
     private String customerLastName;
+    private CustomerStatus customerStatus;
     private Packages bookingPackage;
     private boolean returning;
     private CustomerType customerType;
@@ -85,6 +87,14 @@ public class IncidentDetailView {
 
     public void setCustomerLastName(String customerLastName) {
         this.customerLastName = customerLastName;
+    }
+
+    public CustomerStatus getCustomerStatus() {
+        return customerStatus;
+    }
+
+    public void setCustomerStatus(CustomerStatus customerStatus) {
+        this.customerStatus = customerStatus;
     }
 
     public Packages getBookingPackage() {

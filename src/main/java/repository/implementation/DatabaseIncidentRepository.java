@@ -55,7 +55,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
             pstmt.setString(2, incident.getType() != null ? incident.getType().name() : null);
             bindFeedbackFields(pstmt, incident);
             pstmt.setString(5, incident.getDescription());
-            pstmt.setDouble(6, incident.getScoreImpact());
+            pstmt.setInt(6, incident.getScoreImpact());
             pstmt.setInt(7, incident.getRevenueRisk());
             pstmt.setString(8, incident.getStatus() != null ? incident.getStatus().name() : null);
             if (incident.getAssignedAdvisorId() != null) {
@@ -64,7 +64,7 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
                 pstmt.setNull(9, Types.INTEGER);
             }
             bindSourceFeedbackItemId(pstmt, incident);
-            bindDelayFields(pstmt, incident);
+            bindDelayMinutes(pstmt, incident);
             if (resolvedFlightId != null) {
                 pstmt.setInt(12, resolvedFlightId);
                 incident.setFlightId(resolvedFlightId);
@@ -330,20 +330,20 @@ public class DatabaseIncidentRepository implements IncidentLookup, IncidentUpdat
 
     private void bindSourceFeedbackItemId(PreparedStatement pstmt, Incident incident) throws SQLException {
         if (incident instanceof FeedbackIncident feedbackIncident && feedbackIncident.getSourceFeedbackItemId() != null) {
-            pstmt.setInt(11, feedbackIncident.getSourceFeedbackItemId());
+            pstmt.setInt(10, feedbackIncident.getSourceFeedbackItemId());
+            return;
+        }
+
+        pstmt.setNull(10, Types.INTEGER);
+    }
+
+    private void bindDelayMinutes(PreparedStatement pstmt, Incident incident) throws SQLException {
+        if (incident instanceof DelayIncident delayIncident && delayIncident.getDelayMinutes() != null) {
+            pstmt.setInt(11, delayIncident.getDelayMinutes());
             return;
         }
 
         pstmt.setNull(11, Types.INTEGER);
-    }
-
-    private void bindDelayFields(PreparedStatement pstmt, Incident incident) throws SQLException {
-        if (incident instanceof DelayIncident delayIncident && delayIncident.getDelayMinutes() != null) {
-            pstmt.setInt(12, delayIncident.getDelayMinutes());
-            return;
-        }
-
-        pstmt.setNull(12, Types.INTEGER);
     }
 
 }

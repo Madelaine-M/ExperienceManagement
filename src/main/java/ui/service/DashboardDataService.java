@@ -28,4 +28,6 @@ public interface DashboardDataService {
     RecommendationEmailDraft prepareRecommendationDraft(int actionId, int optionNumber);
 
     void executeRecommendation(int actionId, int optionNumber, String subject, String emailBody);
+
+    boolean isRecommendationOptionSent(int incidentId, int optionNumber);
 }

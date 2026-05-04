@@ -13,9 +13,8 @@ public class CustomerNote {
     public CustomerNote() {
     }
 
-    public CustomerNote(int id, int customerId, int advisorId, String noteText, LocalDateTime createdAt,
+    public CustomerNote(int customerId, int advisorId, String noteText, LocalDateTime createdAt,
                         LocalDateTime updatedAt) {
-        this.id = id;
         this.customerId = customerId;
         this.advisorId = advisorId;
         this.noteText = noteText;

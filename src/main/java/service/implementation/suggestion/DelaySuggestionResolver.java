@@ -6,6 +6,7 @@ import model.domain.DelayIncident;
 import model.domain.Incident;
 import model.enums.IncidentType;
 import model.enums.Packages;
+import service.implementation.suggestion.delay.DelayShortOperationalSuggestionStrategy;
 import service.interfaces.suggestions.PackageResolver;
 import service.interfaces.suggestions.PackageSuggestionFactory;
 import service.interfaces.suggestions.SuggestionResolver;
@@ -15,6 +16,7 @@ public class DelaySuggestionResolver implements SuggestionResolver {
 
     private static final int LONG_DELAY_THRESHOLD_MINUTES = 60;
 
+    private final SuggestionStrategy shortDelayStrategy = new DelayShortOperationalSuggestionStrategy();
     private final PackageSuggestionFactory longDelayFactory;
     private final PackageResolver packageResolver;
 
@@ -33,11 +35,12 @@ public class DelaySuggestionResolver implements SuggestionResolver {
     public SuggestionStrategy resolve(Incident incident) {
         DelayIncident delayIncident = (DelayIncident) incident;
 
-        if (delayIncident.getDelayMinutes() > LONG_DELAY_THRESHOLD_MINUTES) {
+        if (delayIncident.getDelayMinutes() != null
+                && delayIncident.getDelayMinutes() > LONG_DELAY_THRESHOLD_MINUTES) {
             Packages pkg = packageResolver.getPackage(incident);
             return longDelayFactory.getStrategy(pkg);
         }
 
-        throw new IllegalArgumentException("No suggestion strategy for delay under threshold");
+        return shortDelayStrategy;
     }
 }

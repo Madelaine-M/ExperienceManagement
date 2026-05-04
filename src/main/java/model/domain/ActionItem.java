@@ -9,24 +9,22 @@ public class ActionItem {
     private String suggestion1;
     private String suggestion2;
     private ActionStatus status = ActionStatus.SUGGESTED;
-    private double scoreImpact = 0; //raus
-    private double expectedRec = 0;
-    private double expectedRebooking = 0;
+    private int scoreImpact = 0; //raus
+    private int expectedRec = 0;
+    private int expectedRebooking = 0;
 
 
     public ActionItem() {
     }
 
-    public ActionItem(int id, int incidentId, String description) {
-        this.id = id;
+    public ActionItem(int incidentId, String description) {
         this.incidentId = incidentId;
         this.description = description;
     }
 
-    public ActionItem(int id, int incidentId, String description, String suggestion1, String suggestion2,
-                      ActionStatus status, double scoreImpact, double expectedRec,
-                      double expectedRebooking) {
-        this.id = id;
+    public ActionItem(int incidentId, String description, String suggestion1, String suggestion2,
+                      ActionStatus status, int scoreImpact, int expectedRec,
+                      int expectedRebooking) {
         this.incidentId = incidentId;
         this.description = description;
         this.suggestion1 = suggestion1;
@@ -85,27 +83,27 @@ public class ActionItem {
         this.suggestion2 = suggestion2;
     }
 
-    public double getScoreImpact() {
+    public int getScoreImpact() {
         return scoreImpact;
     }
 
-    public void setScoreImpact(double scoreImpact) {
+    public void setScoreImpact(int scoreImpact) {
         this.scoreImpact = scoreImpact;
     }
 
-    public double getExpectedRec() {
+    public int getExpectedRec() {
         return expectedRec;
     }
 
-    public void setExpectedRec(double expectedRec) {
+    public void setExpectedRec(int expectedRec) {
         this.expectedRec = expectedRec;
     }
 
-    public double getExpectedRebooking() {
+    public int getExpectedRebooking() {
         return expectedRebooking;
     }
 
-    public void setExpectedRebooking(double expectedRebooking) {
+    public void setExpectedRebooking(int expectedRebooking) {
         this.expectedRebooking = expectedRebooking;
     }
 }

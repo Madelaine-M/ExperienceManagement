@@ -56,6 +56,8 @@ public class SuggestionServiceConfig {
                 packageResolver
         );
 
-        return new SuggestionService(List.of(feedbackResolver, delayResolver));
+        SuggestionResolver onboardingResolver = new OnboardingSuggestionResolver();
+
+        return new SuggestionService(List.of(feedbackResolver, delayResolver, onboardingResolver));
     }
 }

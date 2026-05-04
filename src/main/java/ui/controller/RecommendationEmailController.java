@@ -24,7 +24,13 @@ public class RecommendationEmailController {
     private static final String MAIL_TEXT_STYLE = "-fx-fill: #f8fafc;";
 
     @FXML
+    private Label titleLabel;
+    @FXML
+    private Label primaryKeyLabel;
+    @FXML
     private Label customerValueLabel;
+    @FXML
+    private Label secondaryKeyLabel;
     @FXML
     private Label advisorValueLabel;
     @FXML
@@ -35,6 +41,8 @@ public class RecommendationEmailController {
     private TextField subjectField;
     @FXML
     private TextArea bodyArea;
+    @FXML
+    private javafx.scene.control.Button sendButton;
 
     private RecommendationEmailDraft draft;
     private DashboardDataService dashboardDataService;
@@ -50,9 +58,13 @@ public class RecommendationEmailController {
         this.recommendationSentHandler = recommendationSentHandler;
         this.dialogStage = dialogStage;
 
-        customerValueLabel.setText(draft.getCustomerName());
+        titleLabel.setText(draft.getDialogTitle());
+        primaryKeyLabel.setText(draft.getPrimaryLabel());
+        customerValueLabel.setText(draft.getPrimaryValue());
+        secondaryKeyLabel.setText(draft.getSecondaryLabel());
         advisorValueLabel.setText(draft.getAdvisorName());
         suggestionValueLabel.setText(draft.getSelectedSuggestion());
+        sendButton.setText(draft.getSendButtonText());
         subjectField.setText(draft.getSubject());
         bodyArea.setText(draft.getBody());
         subjectField.setStyle(MAIL_INPUT_STYLE);

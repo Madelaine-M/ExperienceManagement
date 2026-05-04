@@ -7,13 +7,12 @@ public class Advisor {
     private String lastName;
     private String email;
     private String speciality;
-    private double workloadScore;
+    private int workloadScore;
 
     public Advisor() {
     }
 
-    public Advisor(int id, String firstName, String lastName, String email, String speciality, double workloadScore) {
-        this.id = id;
+    public Advisor(String firstName, String lastName, String email, String speciality, int workloadScore) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -61,11 +60,11 @@ public class Advisor {
         this.speciality = speciality;
     }
 
-    public double getWorkloadScore() {
+    public int getWorkloadScore() {
         return workloadScore;
     }
 
-    public void setWorkloadScore(double workloadScore) {
+    public void setWorkloadScore(int workloadScore) {
         this.workloadScore = workloadScore;
     }
 }

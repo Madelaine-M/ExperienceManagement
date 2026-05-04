@@ -9,7 +9,7 @@ public abstract class Incident {
     private int id;
     private int customerId;
     private String description;
-    private double scoreImpact = 0;
+    private int scoreImpact = 0;
     private int revenueRisk = 0;
     private IncidentStatus status = IncidentStatus.OPEN;
     private Integer assignedAdvisorId;
@@ -20,10 +20,9 @@ public abstract class Incident {
     protected Incident() {
     }
 
-    protected Incident(int id, int customerId, String description, double scoreImpact,
+    protected Incident(int customerId, String description, int scoreImpact,
                        int revenueRisk, IncidentStatus status, Integer assignedAdvisorId, LocalDateTime createdAt,
                        Integer flightId, ActionItem suggestedAction) {
-        this.id = id;
         this.customerId = customerId;
         this.description = description;
         this.scoreImpact = scoreImpact;
@@ -61,11 +60,11 @@ public abstract class Incident {
         this.description = description;
     }
 
-    public double getScoreImpact() {
+    public int getScoreImpact() {
         return scoreImpact;
     }
 
-    public void setScoreImpact(double scoreImpact) {
+    public void setScoreImpact(int scoreImpact) {
         this.scoreImpact = scoreImpact;
     }
 

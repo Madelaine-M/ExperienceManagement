@@ -3,6 +3,7 @@ package repository.implementation.mapper;
 import model.domain.DelayIncident;
 import model.domain.FeedbackIncident;
 import model.domain.Incident;
+import model.domain.OnboardingIncident;
 import model.enums.FeedbackCategory;
 import model.enums.IncidentStatus;
 import model.enums.IncidentType;
@@ -44,7 +45,7 @@ public class IncidentResultSetMapper {
             }
         }
         incident.setDescription(rs.getString("description"));
-        incident.setScoreImpact(rs.getDouble("score_impact"));
+        incident.setScoreImpact(rs.getInt("score_impact"));
         incident.setRevenueRisk(rs.getInt("revenue_risk"));
 
         String statusStr = rs.getString("status");
@@ -78,6 +79,7 @@ public class IncidentResultSetMapper {
         return switch (incidentType) {
             case FEEDBACK -> new FeedbackIncident();
             case DELAY -> new DelayIncident();
+            case ONBOARDING -> new OnboardingIncident();
         };
     }
 }

@@ -55,7 +55,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     @Override
-    public double getAverageRating(String category) {
+    public int getAverageRating(String category) {
         return feedbackAnalytics.getAverageRating(category);
     }
 }

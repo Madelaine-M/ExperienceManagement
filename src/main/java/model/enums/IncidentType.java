@@ -2,5 +2,6 @@ package model.enums;
 
 public enum IncidentType {
     DELAY,
-    FEEDBACK
+    FEEDBACK,
+    ONBOARDING
 }

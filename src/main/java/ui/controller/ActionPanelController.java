@@ -11,6 +11,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.layout.VBox;
 import model.domain.ActionItem;
+import model.workflow.RecommendationEmailDraft;
 import ui.view.DashboardFormatters;
 import ui.view.render.DashboardNodeFactory;
 import ui.service.DashboardDataService;
@@ -18,7 +19,6 @@ import ui.service.DashboardDataService;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
-import java.util.Locale;
 
 public class ActionPanelController {
     @FXML
@@ -85,6 +85,11 @@ public class ActionPanelController {
                                             DashboardDataService dashboardDataService,
                                             Runnable recommendationSentHandler) {
         VBox optionCard = nodeFactory.createCard("recommendation-option");
+        boolean alreadySent = dashboardDataService.isRecommendationOptionSent(actionItem.getIncidentId(), optionNumber);
+        if (alreadySent) {
+            optionCard.getStyleClass().add("recommendation-option-sent");
+        }
+
         Label optionLabel = new Label("Option " + optionNumber);
         optionLabel.getStyleClass().add("recommendation-label");
 
@@ -93,12 +98,19 @@ public class ActionPanelController {
         suggestion.setWrapText(true);
 
         var button = nodeFactory.createActionButton(
-                "Compose recovery mail",
+                isInternalTeamSuggestion(text) ? "Compose team mail" : "Compose recovery mail",
                 "primary-button",
                 () -> openRecommendationDialog(actionItem.getId(), optionNumber, dashboardDataService, recommendationSentHandler)
         );
+        button.setDisable(alreadySent);
 
-        optionCard.getChildren().addAll(optionLabel, suggestion, button);
+        optionCard.getChildren().addAll(optionLabel, suggestion);
+        if (alreadySent) {
+            Label sentLabel = new Label("Mail sent");
+            sentLabel.getStyleClass().add("recommendation-sent-label");
+            optionCard.getChildren().add(sentLabel);
+        }
+        optionCard.getChildren().add(button);
         return optionCard;
     }
 
@@ -106,11 +118,19 @@ public class ActionPanelController {
         VBox card = nodeFactory.createCard("impact-card");
         card.getChildren().addAll(
                 nodeFactory.createSectionLabel("Expected Impact"),
-                nodeFactory.createMetricLine("Recommendation", String.format(Locale.ENGLISH, "%.2f", actionItem.getExpectedRec())),
-                nodeFactory.createMetricLine("Book again", String.format(Locale.ENGLISH, "%.2f", actionItem.getExpectedRebooking())),
-                nodeFactory.createMetricLine("Score impact", String.format(Locale.ENGLISH, "%.2f", actionItem.getScoreImpact()))
+                nodeFactory.createMetricLine("Recommendation", String.valueOf(actionItem.getExpectedRec())),
+                nodeFactory.createMetricLine("Book again", String.valueOf(actionItem.getExpectedRebooking())),
+                nodeFactory.createMetricLine("Score impact", String.valueOf(actionItem.getScoreImpact()))
         );
         return card;
+    }
+
+    private boolean isInternalTeamSuggestion(String text) {
+        String normalizedText = text == null ? "" : text.toLowerCase();
+        return normalizedText.contains("driver")
+                || normalizedText.contains("detour")
+                || normalizedText.contains("lunch")
+                || normalizedText.contains("onboarding team");
     }
 
     private void openRecommendationDialog(int actionId,
@@ -132,10 +152,11 @@ public class ActionPanelController {
             Scene scene = new Scene(dialogRoot, 720, 620);
             scene.getStylesheets().add(ActionPanelController.class.getResource("/ui/view/dashboard.css").toExternalForm());
             dialogStage.setScene(scene);
-            dialogStage.setTitle("Recovery Mail");
+            RecommendationEmailDraft draft = dashboardDataService.prepareRecommendationDraft(actionId, optionNumber);
+            dialogStage.setTitle(draft.getDialogTitle());
 
             controller.configure(
-                    dashboardDataService.prepareRecommendationDraft(actionId, optionNumber),
+                    draft,
                     dashboardDataService,
                     recommendationSentHandler,
                     dialogStage

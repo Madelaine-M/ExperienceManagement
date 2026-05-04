@@ -12,6 +12,7 @@ import repository.interfaces.CustomerSearch;
 import repository.interfaces.CustomerUpdate;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +33,8 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
     public void save(Customer customer) {
         String sql = """
             INSERT INTO customers (first_name, last_name, email, birth_date, status,
-                                 is_returning, assigned_advisor_id, preferences, apply_to_next_booking)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                                 is_returning, assigned_advisor_id, preferences, apply_to_next_booking, status_updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (Connection conn = connectionProvider.getConnection();
@@ -52,6 +53,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             }
             pstmt.setString(8, customer.getPreferences());
             pstmt.setString(9, customer.getApplyToNextBooking());
+            setStatusUpdatedAt(pstmt, 10, ensureStatusUpdatedAt(customer));
 
             pstmt.executeUpdate();
             customer.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "customer"));
@@ -69,7 +71,7 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             UPDATE customers
             SET first_name = ?, last_name = ?, email = ?, birth_date = ?, status = ?,
                 is_returning = ?, assigned_advisor_id = ?,
-                preferences = ?, apply_to_next_booking = ?
+                preferences = ?, apply_to_next_booking = ?, status_updated_at = ?
             WHERE id = ?;
             """;
 
@@ -89,7 +91,8 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
             }
             pstmt.setString(8, customer.getPreferences());
             pstmt.setString(9, customer.getApplyToNextBooking());
-            pstmt.setInt(10, customer.getId());
+            setStatusUpdatedAt(pstmt, 10, ensureStatusUpdatedAt(customer));
+            pstmt.setInt(11, customer.getId());
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -187,4 +190,15 @@ public class DatabaseCustomerRepository implements CustomerLookup, CustomerUpdat
         return customers;
     }
 
+    private LocalDateTime ensureStatusUpdatedAt(Customer customer) {
+        if (customer.getStatusUpdatedAt() == null) {
+            customer.setStatusUpdatedAt(LocalDateTime.now());
+        }
+        return customer.getStatusUpdatedAt();
+    }
+
+    private void setStatusUpdatedAt(PreparedStatement pstmt, int index, LocalDateTime statusUpdatedAt)
+            throws SQLException {
+        pstmt.setTimestamp(index, Timestamp.valueOf(statusUpdatedAt));
+    }
 }

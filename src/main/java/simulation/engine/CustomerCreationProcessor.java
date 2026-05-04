@@ -10,6 +10,7 @@ import model.enums.CustomerType;
 import model.enums.FeedbackCategory;
 import model.enums.Packages;
 import model.enums.PaymentMethod;
+import repository.interfaces.CustomerLookup;
 import repository.interfaces.CustomerCvProfileUpdate;
 import repository.interfaces.CustomerUpdate;
 import repository.interfaces.FeedbackUpdate;
@@ -32,6 +33,7 @@ class CustomerCreationProcessor {
     private static final double PREVIOUS_FEEDBACK_PROBABILITY = 0.7;
 
     private final CustomerUpdate customerUpdate;
+    private final CustomerLookup customerLookup;
     private final CustomerCvProfileUpdate customerCvProfileUpdate;
     private final FlightRepository flightRepository;
     private final FeedbackUpdate feedbackUpdate;
@@ -39,12 +41,14 @@ class CustomerCreationProcessor {
     private final Random random;
 
     CustomerCreationProcessor(CustomerUpdate customerUpdate,
+                              CustomerLookup customerLookup,
                               CustomerCvProfileUpdate customerCvProfileUpdate,
                               FlightRepository flightRepository,
                               FeedbackUpdate feedbackUpdate,
                               AdvisorAssignmentService advisorAssignmentService,
                               Random random) {
         this.customerUpdate = customerUpdate;
+        this.customerLookup = customerLookup;
         this.customerCvProfileUpdate = customerCvProfileUpdate;
         this.flightRepository = flightRepository;
         this.feedbackUpdate = feedbackUpdate;
@@ -83,14 +87,13 @@ class CustomerCreationProcessor {
     }
 
     private void createCustomer(SimulationConfig config, SimulationRuntimeState runtimeState) {
-        int sequence = runtimeState.nextCustomerSequence();
+        int sequence = nextAvailableCustomerSequence(runtimeState);
         int assignedAdvisorId = advisorAssignmentService.assignAdvisorIdForNewCustomer();
         String firstName = FIRST_NAMES[random.nextInt(FIRST_NAMES.length)];
         String lastName = LAST_NAMES[random.nextInt(LAST_NAMES.length)] + sequence;
         String email = ("sim.customer." + sequence + "@example.com").toLowerCase();
 
         Customer customer = new Customer(
-                0,
                 firstName,
                 lastName,
                 email,
@@ -108,6 +111,24 @@ class CustomerCreationProcessor {
         flightRepository.save(createCurrentFlight(customer.getId(), sequence));
     }
 
+    private int nextAvailableCustomerSequence(SimulationRuntimeState runtimeState) {
+        int sequence;
+        do {
+            sequence = runtimeState.nextCustomerSequence();
+        } while (simulationEmailExists(sequence));
+        return sequence;
+    }
+
+    private boolean simulationEmailExists(int sequence) {
+        String email = ("sim.customer." + sequence + "@example.com").toLowerCase();
+        for (Customer customer : customerLookup.findAll()) {
+            if (email.equalsIgnoreCase(customer.getEmail())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void createPreviousFlights(int customerId, int sequence, boolean returningCustomer) {
         if (!returningCustomer || random.nextDouble() > PREVIOUS_FLIGHT_PROBABILITY) {
             return;
@@ -120,7 +141,6 @@ class CustomerCreationProcessor {
             LocalDate bookingDate = baseDate.minusDays(14 + random.nextInt(45));
             LocalDate flightDate = baseDate.plusDays(index * (20 + random.nextInt(40)));
             Flight previousFlight = new Flight(
-                    0,
                     customerId,
                     "SIM-PREV-" + String.format("%04d", sequence) + "-" + (index + 1),
                     bookingDate.toString(),
@@ -149,8 +169,6 @@ class CustomerCreationProcessor {
         for (FeedbackCategory category : categories) {
             int score = 5 + random.nextInt(6);
             items.add(new FeedbackItem(
-                    0,
-                    0,
                     category,
                     score,
                     "Historical simulation feedback for " + category + "."
@@ -158,11 +176,10 @@ class CustomerCreationProcessor {
         }
 
         Feedback feedback = new Feedback(
-                0,
                 customerId,
                 LocalDateTime.now().minusDays(15 + random.nextInt(120)),
                 items,
-                0.0,
+                0,
                 6 + random.nextInt(5),
                 6 + random.nextInt(5),
                 previousFlight.getId()
@@ -187,7 +204,6 @@ class CustomerCreationProcessor {
         LocalDate today = LocalDate.now();
         Packages bookingPackage = randomEnum(Packages.values());
         return new Flight(
-                0,
                 customerId,
                 "SIM-" + String.format("%04d", sequence),
                 today.toString(),

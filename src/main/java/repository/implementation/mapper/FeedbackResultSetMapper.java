@@ -18,7 +18,7 @@ public class FeedbackResultSetMapper {
             feedback.setCreatedAt(createdAt.toLocalDateTime());
         }
 
-        feedback.setTotalScore(rs.getDouble("total_score"));
+        feedback.setTotalScore(rs.getInt("total_score"));
         feedback.setCustomerSatScore(rs.getInt("customer_sat_score"));
         feedback.setReferralScore(rs.getInt("referral_score"));
         int flightId = rs.getInt("flight_id");

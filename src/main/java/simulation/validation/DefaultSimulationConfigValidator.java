@@ -18,6 +18,7 @@ public class DefaultSimulationConfigValidator implements SimulationConfigValidat
         }
         validateProbability(config.getPreFlightDelayProbability(), "Pre-flight delay probability");
         validateProbability(config.getLowScoreFeedbackProbability(), "Low-score feedback probability");
+        validateProbability(config.getOnboardingIncidentProbability(), "Onboarding incident probability");
         if (config.getMinDelayMinutes() <= 0) {
             throw new IllegalArgumentException("Minimum delay minutes must be greater than 0.");
         }
@@ -26,6 +27,9 @@ public class DefaultSimulationConfigValidator implements SimulationConfigValidat
         }
         if (config.getLowScoreThreshold() < 0 || config.getLowScoreThreshold() > MAX_FEEDBACK_SCORE) {
             throw new IllegalArgumentException("Low-score threshold must be between 0 and " + MAX_FEEDBACK_SCORE + ".");
+        }
+        if (config.getOnboardingStuckAfterSeconds() <= 0) {
+            throw new IllegalArgumentException("Onboarding stuck threshold must be greater than 0.");
         }
     }
 

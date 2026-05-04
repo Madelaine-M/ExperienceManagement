@@ -49,6 +49,7 @@ public final class DatabaseInitializer {
                 assigned_advisor_id INTEGER,
                 preferences TEXT,
                 apply_to_next_booking TEXT,
+                status_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
                 FOREIGN KEY (assigned_advisor_id) REFERENCES advisors(id)
                     ON DELETE SET NULL
@@ -82,7 +83,7 @@ public final class DatabaseInitializer {
                 feedback_id INTEGER,
                 feedback_type TEXT,
                 description TEXT,
-                score_impact REAL DEFAULT 0.0,
+                score_impact INTEGER DEFAULT 0,
                 revenue_risk INTEGER DEFAULT 0,
                 status TEXT,
                 assigned_advisor_id INTEGER,
@@ -111,7 +112,7 @@ public final class DatabaseInitializer {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 customer_id INTEGER NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                total_score REAL DEFAULT 0.0,
+                total_score INTEGER DEFAULT 0,
                 customer_sat_score INTEGER DEFAULT 0,
                 referral_score INTEGER DEFAULT 0,
                 flight_id INTEGER DEFAULT 0,
@@ -147,7 +148,7 @@ public final class DatabaseInitializer {
                 last_name TEXT NOT NULL,
                 email TEXT UNIQUE,
                 speciality TEXT,
-                workload_score REAL DEFAULT 0.0
+                workload_score INTEGER DEFAULT 0
             );
             """;
     }
@@ -161,9 +162,9 @@ public final class DatabaseInitializer {
                 suggestion_1 TEXT,
                 suggestion_2 TEXT,
                 status TEXT NOT NULL,
-                score_impact REAL DEFAULT 0.0,
-                expected_rec REAL DEFAULT 0.0,
-                expected_rebooking REAL DEFAULT 0.0,
+                score_impact INTEGER DEFAULT 0,
+                expected_rec INTEGER DEFAULT 0,
+                expected_rebooking INTEGER DEFAULT 0,
 
                 FOREIGN KEY (incident_id) REFERENCES incidents(id)
                     ON DELETE CASCADE
@@ -212,4 +213,5 @@ public final class DatabaseInitializer {
             pstmt.execute();
         }
     }
+
 }

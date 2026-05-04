@@ -15,9 +15,8 @@ public class Flight {
     public Flight() {
     }
 
-    public Flight(int id, int customerId, String flightNumber, String bookingDate, String flightDate,
+    public Flight(int customerId, String flightNumber, String bookingDate, String flightDate,
                   Packages bookingPackage, String status, boolean current) {
-        this.id = id;
         this.customerId = customerId;
         this.flightNumber = flightNumber;
         this.bookingDate = bookingDate;

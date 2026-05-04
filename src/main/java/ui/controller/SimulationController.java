@@ -39,6 +39,10 @@ public class SimulationController {
     @FXML
     private TextField lowScoreThresholdField;
     @FXML
+    private TextField onboardingStuckThresholdField;
+    @FXML
+    private TextField onboardingProbabilityField;
+    @FXML
     private Label statusValueLabel;
     @FXML
     private Label startedAtValueLabel;
@@ -52,6 +56,8 @@ public class SimulationController {
     private Label journeysMetricLabel;
     @FXML
     private Label delayMetricLabel;
+    @FXML
+    private Label onboardingMetricLabel;
     @FXML
     private Label feedbackMetricLabel;
     @FXML
@@ -188,6 +194,7 @@ public class SimulationController {
             customersMetricLabel.setText(String.valueOf(snapshot.getMetrics().getCreatedCustomers()));
             journeysMetricLabel.setText(String.valueOf(snapshot.getMetrics().getAdvancedJourneys()));
             delayMetricLabel.setText(String.valueOf(snapshot.getMetrics().getGeneratedDelayIncidents()));
+            onboardingMetricLabel.setText(String.valueOf(snapshot.getMetrics().getGeneratedOnboardingIncidents()));
             feedbackMetricLabel.setText(String.valueOf(snapshot.getMetrics().getGeneratedFeedbacks()));
             feedbackIncidentMetricLabel.setText(String.valueOf(snapshot.getMetrics().getGeneratedFeedbackIncidents()));
 
@@ -211,7 +218,9 @@ public class SimulationController {
                 parseInteger(minDelayField.getText(), "Minimum delay minutes"),
                 parseInteger(maxDelayField.getText(), "Maximum delay minutes"),
                 parseDouble(feedbackProbabilityField.getText(), "Low-score feedback probability"),
-                parseInteger(lowScoreThresholdField.getText(), "Low-score threshold")
+                parseInteger(lowScoreThresholdField.getText(), "Low-score threshold"),
+                parseInteger(onboardingStuckThresholdField.getText(), "Onboarding stuck threshold"),
+                parseDouble(onboardingProbabilityField.getText(), "Onboarding incident probability")
         );
     }
 
@@ -228,7 +237,9 @@ public class SimulationController {
                 && left.getMinDelayMinutes() == right.getMinDelayMinutes()
                 && left.getMaxDelayMinutes() == right.getMaxDelayMinutes()
                 && Double.compare(left.getLowScoreFeedbackProbability(), right.getLowScoreFeedbackProbability()) == 0
-                && left.getLowScoreThreshold() == right.getLowScoreThreshold();
+                && left.getLowScoreThreshold() == right.getLowScoreThreshold()
+                && left.getOnboardingStuckAfterSeconds() == right.getOnboardingStuckAfterSeconds()
+                && Double.compare(left.getOnboardingIncidentProbability(), right.getOnboardingIncidentProbability()) == 0;
     }
 
     private int parseInteger(String value, String label) {

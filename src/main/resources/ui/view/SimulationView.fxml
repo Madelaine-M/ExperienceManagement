@@ -69,6 +69,12 @@
 
                         <Label text="Low-score threshold" styleClass="metric-key" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
                         <TextField fx:id="lowScoreThresholdField" text="3" GridPane.rowIndex="7" GridPane.columnIndex="1" styleClass="simulation-input"/>
+
+                        <Label text="Onboarding stuck threshold (s)" styleClass="metric-key" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                        <TextField fx:id="onboardingStuckThresholdField" text="60" GridPane.rowIndex="8" GridPane.columnIndex="1" styleClass="simulation-input"/>
+
+                        <Label text="Onboarding incident probability" styleClass="metric-key" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                        <TextField fx:id="onboardingProbabilityField" text="0.25" GridPane.rowIndex="9" GridPane.columnIndex="1" styleClass="simulation-input"/>
                     </GridPane>
                 </VBox>
 
@@ -85,6 +91,7 @@
                         <HBox spacing="10"><Label text="Created customers:" styleClass="metric-key"/><Label fx:id="customersMetricLabel" text="0" styleClass="metric-value"/></HBox>
                         <HBox spacing="10"><Label text="Advanced journeys:" styleClass="metric-key"/><Label fx:id="journeysMetricLabel" text="0" styleClass="metric-value"/></HBox>
                         <HBox spacing="10"><Label text="Delay incidents:" styleClass="metric-key"/><Label fx:id="delayMetricLabel" text="0" styleClass="metric-value"/></HBox>
+                        <HBox spacing="10"><Label text="Onboarding incidents:" styleClass="metric-key"/><Label fx:id="onboardingMetricLabel" text="0" styleClass="metric-value"/></HBox>
                         <HBox spacing="10"><Label text="Generated feedbacks:" styleClass="metric-key"/><Label fx:id="feedbackMetricLabel" text="0" styleClass="metric-value"/></HBox>
                         <HBox spacing="10"><Label text="Feedback incidents:" styleClass="metric-key"/><Label fx:id="feedbackIncidentMetricLabel" text="0" styleClass="metric-value"/></HBox>
                     </VBox>

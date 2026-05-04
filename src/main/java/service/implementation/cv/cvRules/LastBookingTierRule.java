@@ -13,7 +13,7 @@ public class LastBookingTierRule implements CVScoringRuleService {
             return 0;
         }
         if (cvc.getLastBookingPackage().orElse(null) != Packages.STANDARD){
-            return 10;
+            return 20;
         }
         else {
             return 0;

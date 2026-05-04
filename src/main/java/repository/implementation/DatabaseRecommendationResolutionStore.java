@@ -11,6 +11,7 @@ import repository.interfaces.RecommendationResolutionStore;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
@@ -24,6 +25,11 @@ public class DatabaseRecommendationResolutionStore implements RecommendationReso
 
     @Override
     public void completeRecommendationResolution(int incidentId, CustomerNote note) {
+        saveRecommendationStep(incidentId, note, true);
+    }
+
+    @Override
+    public void saveRecommendationStep(int incidentId, CustomerNote note, boolean closeIncident) {
         String updateActionsSql = "UPDATE action_items SET status = ? WHERE incident_id = ?;";
         String updateIncidentSql = "UPDATE incidents SET status = ? WHERE id = ?;";
         String insertNoteSql = """
@@ -34,22 +40,25 @@ public class DatabaseRecommendationResolutionStore implements RecommendationReso
         try (Connection connection = connectionProvider.getConnection()) {
             connection.setAutoCommit(false);
 
-            try (PreparedStatement actionStatement = connection.prepareStatement(updateActionsSql);
-                 PreparedStatement incidentStatement = connection.prepareStatement(updateIncidentSql);
-                 PreparedStatement noteStatement = connection.prepareStatement(insertNoteSql)) {
+            try (PreparedStatement noteStatement = connection.prepareStatement(insertNoteSql)) {
+                if (closeIncident) {
+                    try (PreparedStatement actionStatement = connection.prepareStatement(updateActionsSql);
+                         PreparedStatement incidentStatement = connection.prepareStatement(updateIncidentSql)) {
 
-                actionStatement.setString(1, ActionStatus.COMPLETED.name());
-                actionStatement.setInt(2, incidentId);
-                int updatedActions = actionStatement.executeUpdate();
-                if (updatedActions <= 0) {
-                    throw new IllegalStateException("No action items were completed for incident " + incidentId + ".");
-                }
+                        actionStatement.setString(1, ActionStatus.COMPLETED.name());
+                        actionStatement.setInt(2, incidentId);
+                        int updatedActions = actionStatement.executeUpdate();
+                        if (updatedActions <= 0) {
+                            throw new IllegalStateException("No action items were completed for incident " + incidentId + ".");
+                        }
 
-                incidentStatement.setString(1, IncidentStatus.CLOSED.name());
-                incidentStatement.setInt(2, incidentId);
-                int updatedIncidents = incidentStatement.executeUpdate();
-                if (updatedIncidents != 1) {
-                    throw new IllegalStateException("Incident " + incidentId + " could not be closed.");
+                        incidentStatement.setString(1, IncidentStatus.CLOSED.name());
+                        incidentStatement.setInt(2, incidentId);
+                        int updatedIncidents = incidentStatement.executeUpdate();
+                        if (updatedIncidents != 1) {
+                            throw new IllegalStateException("Incident " + incidentId + " could not be closed.");
+                        }
+                    }
                 }
 
                 noteStatement.setInt(1, note.getCustomerId());
@@ -72,6 +81,31 @@ public class DatabaseRecommendationResolutionStore implements RecommendationReso
         } catch (SQLException exception) {
             logger.error("Error while completing recommendation resolution for incident {}", incidentId, exception);
             throw new RepositoryException("Failed to complete recommendation resolution for incident " + incidentId, exception);
+        }
+    }
+
+    @Override
+    public boolean hasRecommendationStep(int incidentId, int optionNumber) {
+        String sql = """
+                SELECT 1
+                FROM customer_notes
+                WHERE note_text LIKE ?
+                  AND note_text LIKE ?
+                LIMIT 1;
+                """;
+
+        try (Connection connection = connectionProvider.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, "%Incident id: " + incidentId + "\n%");
+            statement.setString(2, "%Resolved by option: " + optionNumber + "\n%");
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
+        } catch (SQLException exception) {
+            logger.error("Error while checking recommendation step for incident {}", incidentId, exception);
+            throw new RepositoryException("Failed to check recommendation step for incident " + incidentId, exception);
         }
     }
 }

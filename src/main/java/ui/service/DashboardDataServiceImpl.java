@@ -72,7 +72,7 @@ public class DashboardDataServiceImpl implements DashboardDataService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        customerNoteService.save(new CustomerNote(0, customerId, advisorId, sanitized, now, now));
+        customerNoteService.save(new CustomerNote(customerId, advisorId, sanitized, now, now));
     }
 
     @Override
@@ -88,5 +88,10 @@ public class DashboardDataServiceImpl implements DashboardDataService {
     @Override
     public void executeRecommendation(int actionId, int optionNumber, String subject, String emailBody) {
         recommendationExecutionService.sendRecommendation(actionId, optionNumber, subject, emailBody);
+    }
+
+    @Override
+    public boolean isRecommendationOptionSent(int incidentId, int optionNumber) {
+        return recommendationExecutionService.isRecommendationStepSent(incidentId, optionNumber);
     }
 }

@@ -63,7 +63,7 @@ public class JourneyDetailServiceImpl implements JourneyDetailService {
         String sanitized = noteText == null ? "" : noteText.trim();
         if (!sanitized.isBlank()) {
             LocalDateTime now = LocalDateTime.now();
-            customerNoteService.save(new CustomerNote(0, customerId, advisorId, sanitized, now, now));
+            customerNoteService.save(new CustomerNote(customerId, advisorId, sanitized, now, now));
         }
         return loadJourneyDetail(customerId, incidentId);
     }

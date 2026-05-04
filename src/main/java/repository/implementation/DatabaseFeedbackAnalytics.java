@@ -73,8 +73,8 @@ public class DatabaseFeedbackAnalytics implements FeedbackAnalytics {
     }
 
     @Override
-    public double getAverageRating(String category) {
-        String sql = "SELECT AVG(score) AS average_score FROM feedback_items WHERE category = ?;";
+    public int getAverageRating(String category) {
+        String sql = "SELECT ROUND(AVG(score)) AS average_score FROM feedback_items WHERE category = ?;";
 
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -83,7 +83,7 @@ public class DatabaseFeedbackAnalytics implements FeedbackAnalytics {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getDouble("average_score");
+                    return rs.getInt("average_score");
                 }
             }
         } catch (SQLException e) {
@@ -91,6 +91,6 @@ public class DatabaseFeedbackAnalytics implements FeedbackAnalytics {
             throw new RepositoryException("Failed to calculate average rating for category " + category, e);
         }
 
-        return 0.0;
+        return 0;
     }
 }

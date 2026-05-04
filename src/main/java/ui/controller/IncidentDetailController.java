@@ -50,6 +50,7 @@ public class IncidentDetailController {
                         buildInitials(detail.getCustomerFirstName(), detail.getCustomerLastName()),
                         "INCIDENT VIEW",
                         nodeFactory.createDetailLine("Package type", DashboardFormatters.formatPackage(detail.getBookingPackage())),
+                        nodeFactory.createDetailLine("Status", DashboardFormatters.formatValue(detail.getCustomerStatus())),
                         nodeFactory.createDetailLine("Customer type", detail.isReturning() ? "Returning" : "New"),
                         nodeFactory.createDetailLine("Customer segment", DashboardFormatters.formatValue(detail.getCustomerType())),
                         nodeFactory.createDetailLine("Flight", formatFlight(detail))
@@ -83,7 +84,7 @@ public class IncidentDetailController {
         VBox facts = nodeFactory.createCard("inner-card");
         facts.getChildren().addAll(
                 nodeFactory.createMetricLine("Revenue Risk", DashboardFormatters.formatCurrency(overview.getRevenueRisk())),
-                nodeFactory.createMetricLine("Score Impact", String.format(Locale.ENGLISH, "%.1f", overview.getScoreImpact())),
+                nodeFactory.createMetricLine("Score Impact", String.valueOf(overview.getScoreImpact())),
                 nodeFactory.createMetricLine("Priority Score", String.format(Locale.ENGLISH, "%.1f", overview.getPriorityScore()))
         );
 

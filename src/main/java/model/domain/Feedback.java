@@ -9,7 +9,7 @@ public class Feedback {
     private int customerId;
     private LocalDateTime createdAt;
     private List<FeedbackItem> items;
-    private double totalScore;
+    private int totalScore;
     private int customerSatScore; // weiß nciht ob das nciht rauas kann
     private int referralScore; //noch in DB und getter setter
     private Integer flightId;
@@ -18,9 +18,8 @@ public class Feedback {
         this.items = new ArrayList<>();
     }
 
-    public Feedback(int id, int customerId, LocalDateTime createdAt, List<FeedbackItem> items, double totalScore,
+    public Feedback(int customerId, LocalDateTime createdAt, List<FeedbackItem> items, int totalScore,
                     int customerSatScore, int referralScore, Integer flightId) {
-        this.id = id;
         this.customerId = customerId;
         this.createdAt = createdAt;
         this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
@@ -62,9 +61,9 @@ public class Feedback {
         this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
     }
 
-    public double getOverallScore() {
+    public int getOverallScore() {
         if (items == null || items.isEmpty()) {
-            return 0.0;
+            return 0;
         }
 
         int totalScore = 0;
@@ -72,7 +71,7 @@ public class Feedback {
             totalScore += item.getScore();
         }
 
-        return (double) totalScore / items.size();
+        return Math.round((float) totalScore / items.size());
     }
 
     public int getCustomerSatScore() {
@@ -91,11 +90,11 @@ public class Feedback {
         this.referralScore = referralScore;
     }
 
-    public double getTotalScore() {
+    public int getTotalScore() {
         return totalScore;
     }
 
-    public void setTotalScore(double totalScore) {
+    public void setTotalScore(int totalScore) {
         this.totalScore = totalScore;
     }
 

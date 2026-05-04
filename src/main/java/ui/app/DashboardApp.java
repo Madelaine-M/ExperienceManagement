@@ -29,7 +29,8 @@ public class DashboardApp extends Application {
     private FlightDetailService flightDetailService;
     private SimulationControlService simulationControlService;
     private Stage primaryStage;
-    private Scene simulationScene;
+    private Scene mainScene;
+    private Parent simulationRoot;
     private SimulationController simulationController;
     private DashboardController dashboardController;
     private SimulationDataCleanupService simulationDataCleanupService;
@@ -60,11 +61,9 @@ public class DashboardApp extends Application {
             dashboardController = null;
         }
 
-        if (simulationScene == null) {
+        if (simulationRoot == null) {
             FXMLLoader loader = new FXMLLoader(DashboardApp.class.getResource("/ui/view/SimulationView.fxml"));
-            Parent root = loader.load();
-            simulationScene = new Scene(root, 1560, 920);
-            simulationScene.getStylesheets().add(DashboardApp.class.getResource("/ui/view/dashboard.css").toExternalForm());
+            simulationRoot = loader.load();
             simulationController = loader.getController();
             simulationController.initializeSimulation(simulationControlService, advisor -> {
                 try {
@@ -76,22 +75,19 @@ public class DashboardApp extends Application {
         }
 
         primaryStage.setTitle("Simulation Control");
-        primaryStage.setScene(simulationScene);
+        showRoot(simulationRoot);
         primaryStage.setMinWidth(1280);
         primaryStage.setMinHeight(820);
 
-        primaryStage.show();
+        showIfNeeded();
     }
 
     private void showDashboardScene(Advisor advisor) throws IOException {
         FXMLLoader loader = new FXMLLoader(DashboardApp.class.getResource("/ui/view/DashboardView.fxml"));
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1560, 920);
-        scene.getStylesheets().add(DashboardApp.class.getResource("/ui/view/dashboard.css").toExternalForm());
-
         primaryStage.setTitle("Advisor Dashboard");
-        primaryStage.setScene(scene);
+        showRoot(root);
         primaryStage.setMinWidth(1280);
         primaryStage.setMinHeight(820);
 
@@ -111,7 +107,26 @@ public class DashboardApp extends Application {
                 }
         );
 
-        primaryStage.show();
+        showIfNeeded();
+    }
+
+    private void showRoot(Parent root) {
+        if (primaryStage == null) {
+            return;
+        }
+        if (mainScene == null) {
+            mainScene = new Scene(root, 1560, 920);
+            mainScene.getStylesheets().add(DashboardApp.class.getResource("/ui/view/dashboard.css").toExternalForm());
+            primaryStage.setScene(mainScene);
+            return;
+        }
+        mainScene.setRoot(root);
+    }
+
+    private void showIfNeeded() {
+        if (primaryStage != null && !primaryStage.isShowing()) {
+            primaryStage.show();
+        }
     }
 
     @Override

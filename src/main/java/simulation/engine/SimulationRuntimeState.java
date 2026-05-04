@@ -20,7 +20,8 @@ class SimulationRuntimeState {
                 && config.getMinDelayMinutes() == other.getMinDelayMinutes()
                 && config.getMaxDelayMinutes() == other.getMaxDelayMinutes()
                 && Double.compare(config.getLowScoreFeedbackProbability(), other.getLowScoreFeedbackProbability()) == 0
-                && config.getLowScoreThreshold() == other.getLowScoreThreshold();
+                && config.getLowScoreThreshold() == other.getLowScoreThreshold()
+                && config.getOnboardingStuckAfterSeconds() == other.getOnboardingStuckAfterSeconds();
     }
 
     void reset(SimulationConfig config) {

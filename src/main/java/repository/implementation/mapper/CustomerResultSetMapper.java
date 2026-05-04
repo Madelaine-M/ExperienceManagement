@@ -5,6 +5,7 @@ import model.enums.CustomerStatus;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 public class CustomerResultSetMapper {
 
@@ -28,6 +29,10 @@ public class CustomerResultSetMapper {
         }
         customer.setPreferences(rs.getString("preferences"));
         customer.setApplyToNextBooking(rs.getString("apply_to_next_booking"));
+        Timestamp statusUpdatedAt = rs.getTimestamp("status_updated_at");
+        if (statusUpdatedAt != null) {
+            customer.setStatusUpdatedAt(statusUpdatedAt.toLocalDateTime());
+        }
         return customer;
     }
 }

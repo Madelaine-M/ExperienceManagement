@@ -50,11 +50,14 @@ public class IncidentOverviewCell extends ListCell<Object> {
         Label revenueRisk = new Label("Revenue Risk: " + DashboardFormatters.formatCurrency(overview.getRevenueRisk()));
         revenueRisk.getStyleClass().add("list-card-meta");
 
-        Label scoreImpact = new Label("Score Impact: "
-                + String.format(java.util.Locale.ENGLISH, "%.1f", overview.getScoreImpact()));
+        Label journeyStatus = new Label("Journey Status: "
+                + DashboardFormatters.formatValue(overview.getCustomerStatus()));
+        journeyStatus.getStyleClass().add("list-card-meta");
+
+        Label scoreImpact = new Label("Score Impact: " + overview.getScoreImpact());
         scoreImpact.getStyleClass().add("list-card-meta");
 
-        card.getChildren().addAll(header, description, revenueRisk, scoreImpact);
+        card.getChildren().addAll(header, description, revenueRisk, journeyStatus, scoreImpact);
         setText(null);
         setGraphic(card);
     }
