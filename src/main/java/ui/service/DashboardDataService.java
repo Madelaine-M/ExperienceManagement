@@ -30,4 +30,6 @@ public interface DashboardDataService {
     void executeRecommendation(int actionId, int optionNumber, String subject, String emailBody);
 
     boolean isRecommendationOptionSent(int incidentId, int optionNumber);
+
+    boolean isRecommendationOptionInternalTeamMail(int actionId, int optionNumber);
 }

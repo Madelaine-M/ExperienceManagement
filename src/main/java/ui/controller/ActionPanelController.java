@@ -97,8 +97,9 @@ public class ActionPanelController {
         suggestion.getStyleClass().add("recommendation-text");
         suggestion.setWrapText(true);
 
+        boolean internalTeamMail = dashboardDataService.isRecommendationOptionInternalTeamMail(actionItem.getId(), optionNumber);
         var button = nodeFactory.createActionButton(
-                isInternalTeamSuggestion(text) ? "Compose team mail" : "Compose recovery mail",
+                internalTeamMail ? "Compose team mail" : "Compose recovery mail",
                 "primary-button",
                 () -> openRecommendationDialog(actionItem.getId(), optionNumber, dashboardDataService, recommendationSentHandler)
         );
@@ -123,14 +124,6 @@ public class ActionPanelController {
                 nodeFactory.createMetricLine("Score impact", String.valueOf(actionItem.getScoreImpact()))
         );
         return card;
-    }
-
-    private boolean isInternalTeamSuggestion(String text) {
-        String normalizedText = text == null ? "" : text.toLowerCase();
-        return normalizedText.contains("driver")
-                || normalizedText.contains("detour")
-                || normalizedText.contains("lunch")
-                || normalizedText.contains("onboarding team");
     }
 
     private void openRecommendationDialog(int actionId,

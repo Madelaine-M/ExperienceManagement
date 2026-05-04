@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class JourneyDetailController {
-    private static final int ADVISOR_ID = 1;
     private static final DateTimeFormatter NOTE_TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @FXML
@@ -58,15 +57,18 @@ public class JourneyDetailController {
     private JourneyDetailNavigator journeyDetailNavigator;
     private int customerId;
     private Integer incidentId;
+    private int advisorId;
 
     public void initializeJourney(JourneyDetailService journeyDetailService,
                                   JourneyDetailNavigator journeyDetailNavigator,
                                   int customerId,
-                                  Integer incidentId) {
+                                  Integer incidentId,
+                                  int advisorId) {
         this.journeyDetailService = journeyDetailService;
         this.journeyDetailNavigator = journeyDetailNavigator;
         this.customerId = customerId;
         this.incidentId = incidentId;
+        this.advisorId = advisorId;
         refresh();
     }
 
@@ -79,7 +81,7 @@ public class JourneyDetailController {
 
     @FXML
     private void saveNote() {
-        JourneyDetailData refreshed = journeyDetailService.saveAdvisorNote(customerId, incidentId, ADVISOR_ID, noteInput.getText());
+        JourneyDetailData refreshed = journeyDetailService.saveAdvisorNote(customerId, incidentId, advisorId, noteInput.getText());
         noteInput.clear();
         saveStatusLabel.setText("Note saved.");
         populate(refreshed);

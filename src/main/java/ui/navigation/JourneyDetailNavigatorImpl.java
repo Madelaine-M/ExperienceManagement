@@ -17,14 +17,17 @@ public class JourneyDetailNavigatorImpl implements JourneyDetailNavigator {
     private final JourneyDetailService journeyDetailService;
     private final FlightDetailService flightDetailService;
     private final Stage primaryStage;
+    private final int advisorId;
     private final Deque<SceneState> sceneStack = new ArrayDeque<>();
 
     public JourneyDetailNavigatorImpl(JourneyDetailService journeyDetailService,
                                       FlightDetailService flightDetailService,
-                                      Stage primaryStage) {
+                                      Stage primaryStage,
+                                      int advisorId) {
         this.journeyDetailService = journeyDetailService;
         this.flightDetailService = flightDetailService;
         this.primaryStage = primaryStage;
+        this.advisorId = advisorId;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class JourneyDetailNavigatorImpl implements JourneyDetailNavigator {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/view/JourneyDetailView.fxml"));
             Parent root = loader.load();
             JourneyDetailController controller = loader.getController();
-            controller.initializeJourney(journeyDetailService, this, customerId, incidentId);
+            controller.initializeJourney(journeyDetailService, this, customerId, incidentId, advisorId);
 
             primaryStage.setTitle("Customer Journey");
             primaryStage.getScene().setRoot(root);

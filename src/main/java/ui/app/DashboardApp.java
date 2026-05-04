@@ -91,7 +91,12 @@ public class DashboardApp extends Application {
         primaryStage.setMinWidth(1280);
         primaryStage.setMinHeight(820);
 
-        journeyDetailNavigator = new JourneyDetailNavigatorImpl(journeyDetailService, flightDetailService, primaryStage);
+        journeyDetailNavigator = new JourneyDetailNavigatorImpl(
+                journeyDetailService,
+                flightDetailService,
+                primaryStage,
+                advisor.getId()
+        );
 
         dashboardController = loader.getController();
         dashboardController.initializeDashboard(

@@ -4,12 +4,14 @@ import model.domain.ActionItem;
 import model.domain.Advisor;
 import model.domain.Customer;
 import model.domain.CustomerNote;
-import model.domain.DelayIncident;
 import model.domain.Incident;
-import model.enums.IncidentType;
 import repository.interfaces.AdvisorRepository;
 import repository.interfaces.RecommendationResolutionStore;
 import model.workflow.RecommendationEmailDraft;
+import service.implementation.recommendation.RecommendationCompletionPolicy;
+import service.implementation.recommendation.RecommendationMailContext;
+import service.implementation.recommendation.RecommendationMailPolicy;
+import service.implementation.recommendation.RecommendationMailPolicyResolver;
 import service.interfaces.frontend.ActionService;
 import service.interfaces.frontend.CustomerService;
 import service.interfaces.frontend.IncidentService;
@@ -24,17 +26,39 @@ public class RecommendationExecutionServiceImpl implements RecommendationExecuti
     private final CustomerService customerService;
     private final AdvisorRepository advisorRepository;
     private final RecommendationResolutionStore recommendationResolutionStore;
+    private final RecommendationMailPolicyResolver mailPolicyResolver;
+    private final RecommendationCompletionPolicy completionPolicy;
 
     public RecommendationExecutionServiceImpl(ActionService actionService,
                                               IncidentService incidentService,
                                               CustomerService customerService,
                                               AdvisorRepository advisorRepository,
                                               RecommendationResolutionStore recommendationResolutionStore) {
+        this(
+                actionService,
+                incidentService,
+                customerService,
+                advisorRepository,
+                recommendationResolutionStore,
+                new RecommendationMailPolicyResolver(),
+                new RecommendationCompletionPolicy()
+        );
+    }
+
+    public RecommendationExecutionServiceImpl(ActionService actionService,
+                                              IncidentService incidentService,
+                                              CustomerService customerService,
+                                              AdvisorRepository advisorRepository,
+                                              RecommendationResolutionStore recommendationResolutionStore,
+                                              RecommendationMailPolicyResolver mailPolicyResolver,
+                                              RecommendationCompletionPolicy completionPolicy) {
         this.actionService = actionService;
         this.incidentService = incidentService;
         this.customerService = customerService;
         this.advisorRepository = advisorRepository;
         this.recommendationResolutionStore = recommendationResolutionStore;
+        this.mailPolicyResolver = mailPolicyResolver;
+        this.completionPolicy = completionPolicy;
     }
 
     @Override
@@ -47,12 +71,20 @@ public class RecommendationExecutionServiceImpl implements RecommendationExecuti
         String selectedSuggestion = resolveSuggestion(actionItem, optionNumber);
         String customerName = buildCustomerName(customer);
         String advisorName = buildAdvisorName(advisor);
-        boolean internalTeamMail = isInternalTeamMail(incident, selectedSuggestion);
-        String recipientName = internalTeamMail ? resolveInternalRecipient(selectedSuggestion) : customerName;
-        boolean onboardingRequiresBothMails = incident.getType() == IncidentType.ONBOARDING;
-        boolean closesIncident = !onboardingRequiresBothMails || recommendationResolutionStore.hasRecommendationStep(
-                incident.getId(),
-                otherOptionNumber(optionNumber)
+        RecommendationMailContext context = new RecommendationMailContext(
+                incident,
+                customer,
+                advisor,
+                selectedSuggestion,
+                customerName,
+                advisorName
+        );
+        RecommendationMailPolicy mailPolicy = mailPolicyResolver.resolve(context);
+        String recipientName = mailPolicy.recipientName(context);
+        boolean closesIncident = completionPolicy.closesIncidentAfterSend(
+                incident,
+                optionNumber,
+                recommendationResolutionStore
         );
 
         return new RecommendationEmailDraft(
@@ -64,15 +96,13 @@ public class RecommendationExecutionServiceImpl implements RecommendationExecuti
                 customerName,
                 advisorName,
                 selectedSuggestion,
-                internalTeamMail ? "Team Mail" : "Recovery Mail",
-                internalTeamMail ? "Recipient:" : "Customer:",
+                mailPolicy.isInternalTeamMail() ? "Team Mail" : "Recovery Mail",
+                mailPolicy.isInternalTeamMail() ? "Recipient:" : "Customer:",
                 recipientName,
-                internalTeamMail ? "Advisor:" : "Advisor:",
-                sendButtonText(internalTeamMail, onboardingRequiresBothMails, closesIncident),
-                internalTeamMail ? buildInternalSubject(selectedSuggestion) : buildSubject(customer, incident),
-                internalTeamMail
-                        ? buildInternalBody(recipientName, customerName, advisorName, selectedSuggestion, incident)
-                        : buildBody(customerName, advisorName, selectedSuggestion, incident)
+                "Advisor:",
+                completionPolicy.sendButtonText(mailPolicy, closesIncident),
+                mailPolicy.subject(context),
+                mailPolicy.body(context, recipientName)
         );
     }
 
@@ -96,13 +126,34 @@ public class RecommendationExecutionServiceImpl implements RecommendationExecuti
                 trimmedSubject,
                 trimmedBody
         );
-        boolean closeIncident = shouldCloseIncidentAfterSend(incident, optionNumber);
+        boolean closeIncident = completionPolicy.closesIncidentAfterSend(
+                incident,
+                optionNumber,
+                recommendationResolutionStore
+        );
         recommendationResolutionStore.saveRecommendationStep(incident.getId(), note, closeIncident);
     }
 
     @Override
     public boolean isRecommendationStepSent(int incidentId, int optionNumber) {
         return recommendationResolutionStore.hasRecommendationStep(incidentId, optionNumber);
+    }
+
+    @Override
+    public boolean isRecommendationOptionInternalTeamMail(int actionId, int optionNumber) {
+        ActionItem actionItem = requireActionItem(actionId);
+        Incident incident = requireIncident(actionItem.getIncidentId());
+        Customer customer = requireCustomer(incident.getCustomerId());
+        Advisor advisor = advisorRepository.findById(resolveAdvisorId(incident, customer));
+        RecommendationMailContext context = new RecommendationMailContext(
+                incident,
+                customer,
+                advisor,
+                resolveSuggestion(actionItem, optionNumber),
+                buildCustomerName(customer),
+                buildAdvisorName(advisor)
+        );
+        return mailPolicyResolver.resolve(context).isInternalTeamMail();
     }
 
     private CustomerNote buildRecommendationNote(int customerId,
@@ -126,24 +177,6 @@ public class RecommendationExecutionServiceImpl implements RecommendationExecuti
                 emailBody
         ));
         return note;
-    }
-
-    private boolean shouldCloseIncidentAfterSend(Incident incident, int optionNumber) {
-        if (incident.getType() != IncidentType.ONBOARDING) {
-            return true;
-        }
-        return recommendationResolutionStore.hasRecommendationStep(incident.getId(), otherOptionNumber(optionNumber));
-    }
-
-    private int otherOptionNumber(int optionNumber) {
-        return optionNumber == 1 ? 2 : 1;
-    }
-
-    private String sendButtonText(boolean internalTeamMail, boolean onboardingRequiresBothMails, boolean closesIncident) {
-        if (onboardingRequiresBothMails && !closesIncident) {
-            return internalTeamMail ? "Send Team Mail" : "Send Customer Mail";
-        }
-        return internalTeamMail ? "Send Team Mail and Close Incident" : "Send and Close Incident";
     }
 
     private ActionItem requireActionItem(int actionId) {
@@ -197,113 +230,6 @@ public class RecommendationExecutionServiceImpl implements RecommendationExecuti
             return "Your advisor";
         }
         return (advisor.getFirstName() + " " + advisor.getLastName()).trim();
-    }
-
-    private String buildSubject(Customer customer, Incident incident) {
-        if (incident.getType() == IncidentType.ONBOARDING) {
-            return "Support with your onboarding, " + customer.getFirstName();
-        }
-        return "Support for your upcoming trip, " + customer.getFirstName();
-    }
-
-    private boolean isInternalTeamMail(Incident incident, String selectedSuggestion) {
-        String normalizedSuggestion = selectedSuggestion == null ? "" : selectedSuggestion.toLowerCase();
-        if (incident.getType() == IncidentType.ONBOARDING) {
-            return normalizedSuggestion.contains("onboarding team")
-                    || normalizedSuggestion.contains("review");
-        }
-        if (!(incident instanceof DelayIncident delayIncident)
-                || delayIncident.getDelayMinutes() == null
-                || delayIncident.getDelayMinutes() > 60) {
-            return false;
-        }
-        return normalizedSuggestion.contains("driver")
-                || normalizedSuggestion.contains("detour")
-                || normalizedSuggestion.contains("lunch");
-    }
-
-    private String resolveInternalRecipient(String selectedSuggestion) {
-        String normalizedSuggestion = selectedSuggestion == null ? "" : selectedSuggestion.toLowerCase();
-        if (normalizedSuggestion.contains("onboarding")) {
-            return "Onboarding Team";
-        }
-        if (normalizedSuggestion.contains("driver") || normalizedSuggestion.contains("detour")) {
-            return "Pick-up Driver / Transport Team";
-        }
-        if (normalizedSuggestion.contains("lunch")) {
-            return "Service Personnel / Catering Team";
-        }
-        return "Responsible Operations Team";
-    }
-
-    private String buildInternalSubject(String selectedSuggestion) {
-        String normalizedSuggestion = selectedSuggestion == null ? "" : selectedSuggestion.toLowerCase();
-        if (normalizedSuggestion.contains("onboarding")) {
-            return "Onboarding support review needed";
-        }
-        if (normalizedSuggestion.contains("driver") || normalizedSuggestion.contains("detour")) {
-            return "Operational support needed: adjust pick-up route";
-        }
-        if (normalizedSuggestion.contains("lunch")) {
-            return "Operational support needed: quick lunch preparation";
-        }
-        return "Operational support needed for short delay";
-    }
-
-    private String buildInternalBody(String recipientName,
-                                     String customerName,
-                                     String advisorName,
-                                     String selectedSuggestion,
-                                     Incident incident) {
-        if (incident.getType() == IncidentType.ONBOARDING) {
-            return "Hello " + recipientName + ",\n\n"
-                    + customerName + " appears to be having trouble with the onboarding process.\n"
-                    + "Please review the customer case and provide targeted support where needed.\n\n"
-                    + "Suggested action:\n"
-                    + selectedSuggestion + "\n\n"
-                    + "Incident context: " + normalizeIncidentDescription(incident.getDescription()) + "\n\n"
-                    + "Please document the follow-up once this has been handled.\n\n"
-                    + "Best regards,\n"
-                    + advisorName + "\n"
-                    + "Experience Management Advisor";
-        }
-        return "Hello " + recipientName + ",\n\n"
-                + "A short delay has been detected for " + customerName + ".\n"
-                + "Please take the following operational action:\n"
-                + selectedSuggestion + "\n\n"
-                + "Incident context: " + normalizeIncidentDescription(incident.getDescription()) + "\n\n"
-                + "Please confirm once this has been handled.\n\n"
-                + "Best regards,\n"
-                + advisorName + "\n"
-                + "Experience Management Advisor";
-    }
-
-    private String buildBody(String customerName, String advisorName, String selectedSuggestion, Incident incident) {
-        if (incident.getType() == IncidentType.ONBOARDING) {
-            return "Dear " + customerName + ",\n\n"
-                    + "I noticed that your onboarding process may be taking longer than expected.\n"
-                    + "If anything is unclear or if you would like additional support, please reply to this message and I will help you directly.\n\n"
-                    + "Suggested next step:\n"
-                    + selectedSuggestion + "\n\n"
-                    + "Best regards,\n"
-                    + advisorName + "\n"
-                    + "Experience Management Advisor";
-        }
-        return "Dear " + customerName + ",\n\n"
-                + "I am sorry for the inconvenience regarding " + normalizeIncidentDescription(incident.getDescription()) + ".\n"
-                + "To support you, I would like to offer the following next step:\n"
-                + selectedSuggestion + "\n\n"
-                + "If you have any questions, please reply and I will help you directly.\n\n"
-                + "Best regards,\n"
-                + advisorName + "\n"
-                + "Experience Management Advisor";
-    }
-
-    private String normalizeIncidentDescription(String incidentDescription) {
-        if (incidentDescription == null || incidentDescription.isBlank()) {
-            return "your recent experience";
-        }
-        return incidentDescription.trim();
     }
 
     private String normalizeRequiredText(String value, String fieldName) {

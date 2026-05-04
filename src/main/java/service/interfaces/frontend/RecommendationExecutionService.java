@@ -9,4 +9,6 @@ public interface RecommendationExecutionService {
     void sendRecommendation(int actionId, int optionNumber, String subject, String emailBody);
 
     boolean isRecommendationStepSent(int incidentId, int optionNumber);
+
+    boolean isRecommendationOptionInternalTeamMail(int actionId, int optionNumber);
 }

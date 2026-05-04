@@ -1,13 +1,13 @@
 package service.implementation.cv.cvRules;
 
-import service.implementation.cv.CVCustomer;
+import model.domain.CVCustomer;
 import service.interfaces.internal.CVScoringRuleService;
 
 public class ReturningCustomerRule implements CVScoringRuleService {
 
     @Override
     public int evaluate(CVCustomer cvc) {
-        if (cvc.isReturningCustomer()){
+        if (cvc.isReturningCustomer()) {
             return 10;
         }
         return 0;

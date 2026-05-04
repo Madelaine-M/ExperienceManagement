@@ -1,21 +1,19 @@
 package service.implementation.cv.cvRules;
 
+import model.domain.CVCustomer;
 import model.enums.Packages;
-import service.implementation.cv.CVCustomer;
 import service.interfaces.internal.CVScoringRuleService;
 
 public class LastBookingTierRule implements CVScoringRuleService {
 
-
     @Override
     public int evaluate(CVCustomer cvc) {
-        if (!cvc.isReturningCustomer()){
+        if (!cvc.isReturningCustomer()) {
             return 0;
         }
-        if (cvc.getLastBookingPackage().orElse(null) != Packages.STANDARD){
+        if (cvc.getLastBookingPackage().orElse(null) != Packages.STANDARD) {
             return 20;
-        }
-        else {
+        } else {
             return 0;
         }
     }

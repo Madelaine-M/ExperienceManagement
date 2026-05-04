@@ -94,4 +94,9 @@ public class DashboardDataServiceImpl implements DashboardDataService {
     public boolean isRecommendationOptionSent(int incidentId, int optionNumber) {
         return recommendationExecutionService.isRecommendationStepSent(incidentId, optionNumber);
     }
+
+    @Override
+    public boolean isRecommendationOptionInternalTeamMail(int actionId, int optionNumber) {
+        return recommendationExecutionService.isRecommendationOptionInternalTeamMail(actionId, optionNumber);
+    }
 }

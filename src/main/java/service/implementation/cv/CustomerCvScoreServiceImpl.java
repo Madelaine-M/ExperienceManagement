@@ -1,5 +1,6 @@
 package service.implementation.cv;
 
+import model.domain.CVCustomer;
 import model.domain.Customer;
 import model.domain.CustomerCvProfile;
 import model.domain.Flight;

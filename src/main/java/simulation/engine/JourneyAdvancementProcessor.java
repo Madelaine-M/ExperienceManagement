@@ -1,13 +1,7 @@
 package simulation.engine;
 
 import model.domain.Customer;
-import model.domain.Feedback;
-import model.domain.FeedbackItem;
-import model.domain.Flight;
-import model.domain.Incident;
 import model.enums.CustomerStatus;
-import model.enums.FeedbackCategory;
-import model.enums.IncidentStatus;
 import repository.interfaces.CustomerLookup;
 import repository.interfaces.CustomerUpdate;
 import repository.interfaces.FeedbackLookup;
@@ -24,8 +18,6 @@ import simulation.model.SimulationTickResult;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
@@ -33,15 +25,11 @@ import java.util.Random;
 class JourneyAdvancementProcessor {
     private final CustomerLookup customerLookup;
     private final CustomerUpdate customerUpdate;
-    private final FlightRepository flightRepository;
-    private final FeedbackLookup feedbackLookup;
-    private final FeedbackUpdate feedbackUpdate;
-    private final IncidentLookup incidentLookup;
-    private final CreateDelayIncidentService createDelayIncidentService;
-    private final CreateFeedbackIncidentService createFeedbackIncidentService;
-    private final CreateOnboardingIncidentService createOnboardingIncidentService;
-    private final CreateSuggestedActionService createSuggestedActionService;
-    private final Random random;
+    private final OpenIncidentBlockPolicy openIncidentBlockPolicy;
+    private final OnboardingIncidentGenerator onboardingIncidentGenerator;
+    private final DelayIncidentGenerator delayIncidentGenerator;
+    private final SimulationFeedbackGenerator feedbackGenerator;
+    private final JourneyStatusTransitionPolicy transitionPolicy;
 
     JourneyAdvancementProcessor(CustomerLookup customerLookup,
                                 CustomerUpdate customerUpdate,
@@ -56,15 +44,26 @@ class JourneyAdvancementProcessor {
                                 Random random) {
         this.customerLookup = customerLookup;
         this.customerUpdate = customerUpdate;
-        this.flightRepository = flightRepository;
-        this.feedbackLookup = feedbackLookup;
-        this.feedbackUpdate = feedbackUpdate;
-        this.incidentLookup = incidentLookup;
-        this.createDelayIncidentService = createDelayIncidentService;
-        this.createFeedbackIncidentService = createFeedbackIncidentService;
-        this.createOnboardingIncidentService = createOnboardingIncidentService;
-        this.createSuggestedActionService = createSuggestedActionService;
-        this.random = random;
+        this.openIncidentBlockPolicy = new OpenIncidentBlockPolicy(incidentLookup);
+        this.onboardingIncidentGenerator = new OnboardingIncidentGenerator(
+                createOnboardingIncidentService,
+                createSuggestedActionService,
+                random
+        );
+        this.delayIncidentGenerator = new DelayIncidentGenerator(
+                createDelayIncidentService,
+                createSuggestedActionService,
+                random
+        );
+        this.feedbackGenerator = new SimulationFeedbackGenerator(
+                flightRepository,
+                feedbackLookup,
+                feedbackUpdate,
+                createFeedbackIncidentService,
+                createSuggestedActionService,
+                random
+        );
+        this.transitionPolicy = new JourneyStatusTransitionPolicy();
     }
 
     SimulationTickResult processJourneyAdvancement(SimulationSnapshot snapshot,
@@ -102,17 +101,11 @@ class JourneyAdvancementProcessor {
                     continue;
                 }
 
-                boolean hasOpenIncident = hasOpenIncident(customer.getId());
-                boolean onboardingStuck = isOnboardingStuck(customer, config, now);
-                if (!hasOpenIncident
-                        && onboardingStuck
-                        && shouldGenerate(config.getOnboardingIncidentProbability())) {
-                    var createdOnboardingIncident = createOnboardingIncidentService.createOnboardingIncident(customer.getId());
-                    if (createdOnboardingIncident != null) {
-                        createSuggestedActionService.createSuggestedAction(createdOnboardingIncident);
-                        generatedOnboardingIncidents += 1;
-                        hasOpenIncident = true;
-                    }
+                boolean hasOpenIncident = openIncidentBlockPolicy.hasOpenIncident(customer.getId());
+                boolean onboardingStuck = onboardingIncidentGenerator.isStuck(customer, config, now);
+                if (!hasOpenIncident && onboardingStuck && onboardingIncidentGenerator.tryGenerate(customer, config)) {
+                    generatedOnboardingIncidents += 1;
+                    hasOpenIncident = true;
                 }
 
                 if (hasOpenIncident) {
@@ -123,7 +116,7 @@ class JourneyAdvancementProcessor {
                     continue;
                 }
 
-                CustomerStatus nextStatus = nextStatus(customer.getStatus());
+                CustomerStatus nextStatus = transitionPolicy.nextStatus(customer.getStatus());
                 if (nextStatus == customer.getStatus()) {
                     continue;
                 }
@@ -133,30 +126,14 @@ class JourneyAdvancementProcessor {
                 customerUpdate.update(customer);
                 advancedJourneys += 1;
 
-                if (nextStatus == CustomerStatus.PRE_FLIGHT && shouldGenerate(config.getPreFlightDelayProbability())) {
-                    int delayMinutes = randomDelayMinutes(config);
-                    var createdDelayIncident = createDelayIncidentService.createDelayIncident(customer.getId(), delayMinutes, null);
-                    if (createdDelayIncident != null) {
-                        createSuggestedActionService.createSuggestedAction(createdDelayIncident);
-                        generatedDelayIncidents += 1;
-                    }
+                if (nextStatus == CustomerStatus.PRE_FLIGHT && delayIncidentGenerator.tryGenerate(customer.getId(), config)) {
+                    generatedDelayIncidents += 1;
                 }
 
                 if (nextStatus == CustomerStatus.FEEDBACK) {
-                    Feedback feedback = generateFeedbackIfMissing(customer, config);
-                    if (feedback != null) {
-                        generatedFeedbacks += 1;
-                        if (hasLowScoreItem(feedback, config.getLowScoreThreshold())) {
-                            List<FeedbackItem> lowItems = findLowItems(feedback, config.getLowScoreThreshold());
-                            var createdFeedbackIncidents = createFeedbackIncidentService.createFeedbackIncident(lowItems);
-                            if (!createdFeedbackIncidents.isEmpty()) {
-                                for (var incident : createdFeedbackIncidents) {
-                                    createSuggestedActionService.createSuggestedAction(incident);
-                                }
-                                generatedFeedbackIncidents += createdFeedbackIncidents.size();
-                            }
-                        }
-                    }
+                    FeedbackGenerationResult feedbackResult = feedbackGenerator.generateIfMissing(customer, config);
+                    generatedFeedbacks += feedbackResult.generatedFeedbacks();
+                    generatedFeedbackIncidents += feedbackResult.generatedFeedbackIncidents();
                 }
             }
         }
@@ -174,114 +151,6 @@ class JourneyAdvancementProcessor {
                 generatedFeedbackIncidents,
                 now
         );
-    }
-
-    private boolean isOnboardingStuck(Customer customer, SimulationConfig config, LocalDateTime now) {
-        if (customer.getStatus() != CustomerStatus.ONBOARDING || customer.getStatusUpdatedAt() == null) {
-            return false;
-        }
-        long secondsInStatus = Duration.between(customer.getStatusUpdatedAt(), now).getSeconds();
-        return secondsInStatus >= config.getOnboardingStuckAfterSeconds();
-    }
-
-    private boolean hasOpenIncident(int customerId) {
-        List<Incident> incidents = incidentLookup.findAllByCustomerId(customerId);
-        for (Incident incident : incidents) {
-            if (incident.getStatus() == IncidentStatus.OPEN) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Feedback generateFeedbackIfMissing(Customer customer, SimulationConfig config) {
-        Flight currentFlight = flightRepository.findCurrentByCustomerId(customer.getId());
-        if (currentFlight == null) {
-            return null;
-        }
-
-        if (!feedbackLookup.findAllByFlightId(currentFlight.getId()).isEmpty()) {
-            return null;
-        }
-
-        boolean generateLowScore = shouldGenerate(config.getLowScoreFeedbackProbability());
-        List<FeedbackItem> items = generateFeedbackItems(generateLowScore, config.getLowScoreThreshold());
-
-        Feedback feedback = new Feedback(
-                customer.getId(),
-                LocalDateTime.now(),
-                items,
-                0,
-                6 + random.nextInt(5),
-                6 + random.nextInt(5),
-                currentFlight.getId()
-        );
-        feedback.setTotalScore(feedback.getOverallScore());
-        feedbackUpdate.save(feedback);
-        return feedback;
-    }
-
-    private List<FeedbackItem> generateFeedbackItems(boolean generateLowScore, int lowScoreThreshold) {
-        List<FeedbackCategory> categories = new ArrayList<>(Arrays.asList(
-                FeedbackCategory.FLIGHT,
-                FeedbackCategory.FOOD,
-                FeedbackCategory.HOTEL
-        ));
-
-        List<FeedbackItem> items = new ArrayList<>();
-        int lowScoreCategoryIndex = generateLowScore ? random.nextInt(categories.size()) : -1;
-
-        for (int index = 0; index < categories.size(); index++) {
-            FeedbackCategory category = categories.get(index);
-            int score;
-            if (index == lowScoreCategoryIndex) {
-                score = 1 + random.nextInt(Math.max(1, lowScoreThreshold));
-            } else {
-                score = 4 + random.nextInt(7);
-            }
-            items.add(new FeedbackItem(category, score, commentFor(category, score)));
-        }
-
-        return items;
-    }
-
-    private String commentFor(FeedbackCategory category, int score) {
-        if (score <= 3) {
-            return "Low score recorded for " + category + " during simulation.";
-        }
-        return "Positive simulation feedback for " + category + ".";
-    }
-
-    private boolean hasLowScoreItem(Feedback feedback, int threshold) {
-        return feedback.getItems().stream().anyMatch(item -> item.getScore() <= threshold);
-    }
-
-    private List<FeedbackItem> findLowItems(Feedback feedback, int threshold) {
-        List<FeedbackItem> lowItems = new ArrayList<>();
-        for (FeedbackItem item : feedback.getItems()) {
-            if (item.getScore() <= threshold) {
-                lowItems.add(item);
-            }
-        }
-        return lowItems;
-    }
-
-    private boolean shouldGenerate(double probability) {
-        return random.nextDouble() < probability;
-    }
-
-    private int randomDelayMinutes(SimulationConfig config) {
-        int range = config.getMaxDelayMinutes() - config.getMinDelayMinutes() + 1;
-        return config.getMinDelayMinutes() + random.nextInt(range);
-    }
-
-    private CustomerStatus nextStatus(CustomerStatus status) {
-        if (status == null) {
-            return CustomerStatus.INTERESTED;
-        }
-        CustomerStatus[] values = CustomerStatus.values();
-        int nextIndex = Math.min(status.ordinal() + 1, values.length - 1);
-        return values[nextIndex];
     }
 
     private SimulationTickResult emptyTick(LocalDateTime now) {

@@ -20,6 +20,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JourneyDetailServiceImpl implements JourneyDetailService {
+    private static final List<CustomerStatus> JOURNEY_ORDER = List.of(
+            CustomerStatus.INTERESTED,
+            CustomerStatus.INFO_SESSION_INVITED,
+            CustomerStatus.INFO_SESSION_ATTENDED,
+            CustomerStatus.BOOKED,
+            CustomerStatus.ADVISOR_ASSIGNED,
+            CustomerStatus.ONBOARDING,
+            CustomerStatus.MEDICAL_CHECK,
+            CustomerStatus.HOTEL,
+            CustomerStatus.SHUTTLE,
+            CustomerStatus.PRE_FLIGHT,
+            CustomerStatus.FLIGHT,
+            CustomerStatus.LANDING,
+            CustomerStatus.FEEDBACK,
+            CustomerStatus.COMPLETED
+    );
+
     private final CustomerService customerService;
     private final IncidentService incidentService;
     private final FeedbackService feedbackService;
@@ -90,10 +107,9 @@ public class JourneyDetailServiceImpl implements JourneyDetailService {
 
     private List<JourneyStepView> buildJourneySteps(CustomerStatus currentStatus) {
         List<JourneyStepView> steps = new ArrayList<>();
-        CustomerStatus[] statuses = CustomerStatus.values();
-        int currentIndex = currentStatus == null ? -1 : currentStatus.ordinal();
+        int currentIndex = currentStatus == null ? -1 : JOURNEY_ORDER.indexOf(currentStatus);
 
-        for (int index = 0; index < statuses.length; index++) {
+        for (int index = 0; index < JOURNEY_ORDER.size(); index++) {
             JourneyStepState state;
             if (currentIndex < 0 || index > currentIndex) {
                 state = JourneyStepState.UPCOMING;
@@ -102,7 +118,7 @@ public class JourneyDetailServiceImpl implements JourneyDetailService {
             } else {
                 state = JourneyStepState.COMPLETED;
             }
-            steps.add(new JourneyStepView(formatStatus(statuses[index]), state));
+            steps.add(new JourneyStepView(formatStatus(JOURNEY_ORDER.get(index)), state));
         }
 
         return steps;

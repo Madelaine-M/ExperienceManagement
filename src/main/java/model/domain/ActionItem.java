@@ -9,7 +9,7 @@ public class ActionItem {
     private String suggestion1;
     private String suggestion2;
     private ActionStatus status = ActionStatus.SUGGESTED;
-    private int scoreImpact = 0; //raus
+    private int scoreImpact = 0;
     private int expectedRec = 0;
     private int expectedRebooking = 0;
 

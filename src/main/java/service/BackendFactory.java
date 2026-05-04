@@ -36,7 +36,19 @@ import repository.implementation.support.OpenIncidentSummaryLoader;
 import repository.implementation.support.PreviousFlightsSummaryFormatter;
 import service.implementation.cv.CVScoreCalcServiceImpl;
 import service.implementation.cv.CustomerCvScoreServiceImpl;
+import service.implementation.cv.cvRules.BookingConnectionRule;
+import service.implementation.cv.cvRules.CurrentBookingStatusRule;
+import service.implementation.cv.cvRules.LastBookingTierRule;
+import service.implementation.cv.cvRules.MarketingConsentRule;
+import service.implementation.cv.cvRules.NewsletterSubscriptionRule;
+import service.implementation.cv.cvRules.PaymentMethodRule;
+import service.implementation.cv.cvRules.PublicFigureRule;
+import service.implementation.cv.cvRules.ReturningCustomerRule;
+import service.implementation.cv.cvRules.TravelingAsScientistRule;
+import service.interfaces.internal.CVScoringRuleService;
 import service.interfaces.internal.CustomerCvScoreService;
+
+import java.util.List;
 
 public class BackendFactory {
     public Backend create() {
@@ -76,11 +88,22 @@ public class BackendFactory {
                 new AdvisorResultSetMapper(),
                 generatedKeyExtractor
         );
+        List<CVScoringRuleService> cvScoringRules = List.of(
+                new LastBookingTierRule(),
+                new CurrentBookingStatusRule(),
+                new ReturningCustomerRule(),
+                new MarketingConsentRule(),
+                new BookingConnectionRule(),
+                new PaymentMethodRule(),
+                new PublicFigureRule(),
+                new TravelingAsScientistRule(),
+                new NewsletterSubscriptionRule()
+        );
         CustomerCvScoreService customerCvScoreService = new CustomerCvScoreServiceImpl(
                 customerRepository,
                 customerCvProfileRepository,
                 flightRepository,
-                new CVScoreCalcServiceImpl()
+                new CVScoreCalcServiceImpl(cvScoringRules)
         );
         DatabaseCustomerView customerViewRepository = new DatabaseCustomerView(
                 connectionProvider,

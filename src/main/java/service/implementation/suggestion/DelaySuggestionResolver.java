@@ -1,12 +1,9 @@
 package service.implementation.suggestion;
 
-
-
 import model.domain.DelayIncident;
 import model.domain.Incident;
 import model.enums.IncidentType;
 import model.enums.Packages;
-import service.implementation.suggestion.delay.DelayShortOperationalSuggestionStrategy;
 import service.interfaces.suggestions.PackageResolver;
 import service.interfaces.suggestions.PackageSuggestionFactory;
 import service.interfaces.suggestions.SuggestionResolver;
@@ -16,12 +13,14 @@ public class DelaySuggestionResolver implements SuggestionResolver {
 
     private static final int LONG_DELAY_THRESHOLD_MINUTES = 60;
 
-    private final SuggestionStrategy shortDelayStrategy = new DelayShortOperationalSuggestionStrategy();
+    private final SuggestionStrategy shortDelayStrategy;
     private final PackageSuggestionFactory longDelayFactory;
     private final PackageResolver packageResolver;
 
-    public DelaySuggestionResolver(PackageSuggestionFactory longDelayFactory,
+    public DelaySuggestionResolver(SuggestionStrategy shortDelayStrategy,
+                                   PackageSuggestionFactory longDelayFactory,
                                    PackageResolver packageResolver) {
+        this.shortDelayStrategy = shortDelayStrategy;
         this.longDelayFactory = longDelayFactory;
         this.packageResolver = packageResolver;
     }
