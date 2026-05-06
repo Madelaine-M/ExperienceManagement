@@ -108,7 +108,7 @@ public class DataSeeder {
                 4,
                 List.of(
                         feedbackItem(FeedbackCategory.FLIGHT, 4, "Delay communication was weak."),
-                        feedbackItem(FeedbackCategory.ORGANIZATION, 6, "Transfer details arrived too late.")
+                        feedbackItem(FeedbackCategory.HOTEL, 6, "Transfer details arrived too late.")
                 ),
                 feedbackUpdate
         );
@@ -146,9 +146,9 @@ public class DataSeeder {
 
         createAction(
                 firstIncident.getId(),
-                "Offer a personalized meal replacement or special dining arrangement before departure.",
-                "Provide a goodwill onboard dining credit as part of the recovery plan.",
-                "Flag the customer's meal preferences for the next flight and confirm them in advance.",
+                "VIP passenger reported disappointing in-flight meal quality.",
+                "Private Michelin Home-Cooking before the next flight",
+                "Pre-Paid Table Reservation at a high class restaurant the day before the next flight",
                 8,
                 1,
                 15,
@@ -157,15 +157,37 @@ public class DataSeeder {
         );
         createAction(
                 secondIncident.getId(),
-                "Proactively confirm the revised transfer and boarding timeline.",
-                "Provide a goodwill service credit for the disruption.",
-                "Escalate future schedule changes to the assigned advisor immediately.",
+                "Customer reported missed assistance during a schedule change.",
+                "Lounge access",
+                "Invitation to VIP After-Party",
                 10,
                 2,
                 28,
                 35,
                 actionUpdate
         );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
     private static Advisor createAdvisor(String firstName, String lastName, String email, String speciality,
