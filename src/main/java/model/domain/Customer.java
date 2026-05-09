@@ -13,7 +13,7 @@ public class Customer {
     private CustomerStatus status = CustomerStatus.BOOKED;
     private boolean returning;
     private Integer assignedAdvisorId;
-    private String preferences = ""; //als extra Klasse / Objekt
+    private String preferences = "";
     private String applyToNextBooking = ""; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
     private LocalDateTime statusUpdatedAt;
 

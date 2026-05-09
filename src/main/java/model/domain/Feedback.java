@@ -10,8 +10,8 @@ public class Feedback {
     private LocalDateTime createdAt;
     private List<FeedbackItem> items;
     private int totalScore;
-    private int customerSatScore; // weiß nciht ob das nciht rauas kann
-    private int referralScore; //noch in DB und getter setter
+    private int customerSatScore;
+    private int referralScore;
     private Integer flightId;
 
     public Feedback() {

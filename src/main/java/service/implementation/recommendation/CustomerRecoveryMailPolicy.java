@@ -18,7 +18,7 @@ public class CustomerRecoveryMailPolicy implements RecommendationMailPolicy {
 
     @Override
     public String subject(RecommendationMailContext context) {
-        return "Support for your upcoming trip, " + context.customer().getFirstName();
+        return "Support regarding your trip, " + context.customer().getFirstName();
     }
 
     @Override

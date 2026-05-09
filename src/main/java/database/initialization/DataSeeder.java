@@ -100,18 +100,6 @@ public class DataSeeder {
                 ),
                 feedbackUpdate
         );
-        Feedback feedbackTwo = createFeedback(
-                customerTwo.getId(),
-                customerTwoCurrentFlight.getId(),
-                LocalDateTime.now().minusDays(2),
-                5,
-                4,
-                List.of(
-                        feedbackItem(FeedbackCategory.FLIGHT, 4, "Delay communication was weak."),
-                        feedbackItem(FeedbackCategory.HOTEL, 6, "Transfer details arrived too late.")
-                ),
-                feedbackUpdate
-        );
 
         Incident firstIncident = createIncident(
                 customerOne.getId(),
@@ -128,21 +116,6 @@ public class DataSeeder {
                 null,
                 incidentUpdate
         );
-        Incident secondIncident = createIncident(
-                customerTwo.getId(),
-                customerTwoCurrentFlight.getId(),
-                IncidentType.DELAY,
-                null,
-                null,
-                "Customer reported missed assistance during a schedule change.",
-                9,
-                2,
-                18500,
-                IncidentStatus.OPEN,
-                advisorTwo.getId(),
-                95,
-                incidentUpdate
-        );
 
         createAction(
                 firstIncident.getId(),
@@ -153,17 +126,6 @@ public class DataSeeder {
                 1,
                 15,
                 22,
-                actionUpdate
-        );
-        createAction(
-                secondIncident.getId(),
-                "Customer reported missed assistance during a schedule change.",
-                "Lounge access",
-                "Invitation to VIP After-Party",
-                10,
-                2,
-                28,
-                35,
                 actionUpdate
         );
 

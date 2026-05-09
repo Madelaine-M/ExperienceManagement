@@ -26,7 +26,7 @@ public class Advisor {
 
     public void setId(int id) {
         this.id = id;
-    } // muss glaub raus, ID soll ja nciht geändert werdne können --> bei allen klassen dann
+    }
 
     public String getFirstName() {
         return firstName;
