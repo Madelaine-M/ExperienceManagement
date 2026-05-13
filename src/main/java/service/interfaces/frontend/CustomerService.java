@@ -12,8 +12,6 @@ public interface CustomerService {
 
     List<Customer> findAll();
 
-    //Customer findById(int id); Dopplung im Repo
-
     List<Customer> findByAdvisorId(int advisorId);
 
     List<Customer> findByStatus(String status);

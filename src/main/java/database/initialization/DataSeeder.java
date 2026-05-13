@@ -53,8 +53,8 @@ public class DataSeeder {
             return;
         }
 
-        Advisor advisorOne = createAdvisor("Anna", "Schmidt", "anna.schmidt@test.de", "Premium Support", 43, advisorRepo);
-        Advisor advisorTwo = createAdvisor("Lukas", "Weber", "lukas.weber@test.de", "Flight Recovery", 27, advisorRepo);
+        Advisor advisorOne = createAdvisor("Klara", "Fall", "klara.fall@test.de", "Premium Support", 43, advisorRepo);
+        Advisor advisorTwo = createAdvisor("Tom", "Mayor", "tom.mayor@test.de", "Premium Support", 27, advisorRepo);
 
         Customer customerOne = createCustomer(
                 "Max", "Mustermann", "max@test.de", "1989-04-17",
@@ -128,28 +128,6 @@ public class DataSeeder {
                 22,
                 actionUpdate
         );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
     private static Advisor createAdvisor(String firstName, String lastName, String email, String speciality,

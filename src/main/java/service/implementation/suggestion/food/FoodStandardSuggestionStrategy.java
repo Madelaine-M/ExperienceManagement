@@ -1,6 +1,5 @@
 package service.implementation.suggestion.food;
 
-
 import model.domain.ActionItem;
 import model.domain.Incident;
 import service.interfaces.suggestions.SuggestionStrategy;

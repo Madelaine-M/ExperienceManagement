@@ -10,6 +10,7 @@ import java.util.List;
 public class ActionServiceImpl implements ActionService {
     private final ActionLookup actionLookup;
     private final ActionUpdate actionUpdate;
+
     public ActionServiceImpl(ActionLookup actionLookup, ActionUpdate actionUpdate) {
         this.actionLookup = actionLookup;
         this.actionUpdate = actionUpdate;

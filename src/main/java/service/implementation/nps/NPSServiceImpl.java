@@ -12,13 +12,15 @@ public class NPSServiceImpl implements NPSService {
 
     @Override
     public float getNPS() {
-        return getPromoters()-getCritics();
+        int total = npsScores.countByScoreRange(0,10);
+        if (total == 0) return 0.0f;
+        return getPromoters(total)-getCritics(total);
     }
 
-    private float getPromoters(){
-        return ((float) npsScores.countByScoreRange(9, 10) /npsScores.countByScoreRange(0,10))*100;
+    private float getPromoters(int total){
+        return ((float) npsScores.countByScoreRange(9, 10) /total)*100;
     }
-    private float getCritics(){
-        return ((float) npsScores.countByScoreRange(0, 6) /npsScores.countByScoreRange(0,10))*100;
+    private float getCritics(int total){
+        return ((float) npsScores.countByScoreRange(0, 6) /total)*100;
     }
 }

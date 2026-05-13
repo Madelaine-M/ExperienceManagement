@@ -14,7 +14,7 @@ public class Customer {
     private boolean returning;
     private Integer assignedAdvisorId;
     private String preferences = "";
-    private String applyToNextBooking = ""; // incentive wenn etwas beim letzten Mal schiefgealufen ist? --> vormerken, dwas geoofered wurde
+    private String applyToNextBooking = "";
     private LocalDateTime statusUpdatedAt;
 
     private int id;
