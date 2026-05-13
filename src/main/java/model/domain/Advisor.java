@@ -7,17 +7,15 @@ public class Advisor {
     private String lastName;
     private String email;
     private String speciality;
-    private int workloadScore;
 
     public Advisor() {
     }
 
-    public Advisor(String firstName, String lastName, String email, String speciality, int workloadScore) {
+    public Advisor(String firstName, String lastName, String email, String speciality) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.speciality = speciality;
-        this.workloadScore = workloadScore;
     }
 
     public int getId() {
@@ -58,13 +56,5 @@ public class Advisor {
 
     public void setSpeciality(String speciality) {
         this.speciality = speciality;
-    }
-
-    public int getWorkloadScore() {
-        return workloadScore;
-    }
-
-    public void setWorkloadScore(int workloadScore) {
-        this.workloadScore = workloadScore;
     }
 }

@@ -33,7 +33,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
     @Override
     public void save(Advisor advisor) {
         String sql = """
-            INSERT INTO advisors (first_name, last_name, email, speciality, workload_score)
+            INSERT INTO advisors (first_name, last_name, email, speciality)
             VALUES (?, ?, ?, ?, ?);
             """;
 
@@ -44,7 +44,6 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
             pstmt.setString(2, advisor.getLastName());
             pstmt.setString(3, advisor.getEmail());
             pstmt.setString(4, advisor.getSpeciality());
-            pstmt.setInt(5, advisor.getWorkloadScore());
 
             pstmt.executeUpdate();
             advisor.setId(generatedKeyExtractor.extractGeneratedId(pstmt, "advisor"));

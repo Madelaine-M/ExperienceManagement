@@ -14,7 +14,6 @@ public class AdvisorResultSetMapper {
         advisor.setLastName(rs.getString("last_name"));
         advisor.setEmail(rs.getString("email"));
         advisor.setSpeciality(rs.getString("speciality"));
-        advisor.setWorkloadScore(rs.getInt("workload_score"));
         return advisor;
     }
 }

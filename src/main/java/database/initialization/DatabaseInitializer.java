@@ -147,8 +147,7 @@ public final class DatabaseInitializer {
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 email TEXT UNIQUE,
-                speciality TEXT,
-                workload_score INTEGER DEFAULT 0
+                speciality TEXT
             );
             """;
     }
