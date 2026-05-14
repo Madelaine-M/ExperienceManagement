@@ -13,7 +13,7 @@ public final class PriorityScoreSupport {
         int defaultScoreImpact = expectedImpactCalcService.calculateDefaultScoreImpact(incidentType);
         int revenueImpact = expectedImpactCalcService.calculateRevenueImpact(defaultScoreImpact);
 
-        return (getBaseSeverity(incidentType) * getCvPart(customerCvScore))
+        return (getBaseSeverity(incidentType) * customerCvScore)
                 + (defaultScoreImpact * 10)
                 + (revenueImpact / 2000.0);
     }
@@ -22,7 +22,4 @@ public final class PriorityScoreSupport {
         return type == IncidentType.DELAY ? 1.3 : 1.5;
     }
 
-    private static double getCvPart(float customerCvScore) {
-        return 1 + customerCvScore / 100;
-    }
 }

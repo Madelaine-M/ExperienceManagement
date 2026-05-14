@@ -31,20 +31,20 @@ public final class DashboardFormatters {
     }
 
     public static String priorityLabel(double score) {
-        if (score >= 8) {
+        if (score >= 100) {
             return "HIGH PRIORITY";
         }
-        if (score >= 5) {
+        if (score >= 60) {
             return "MEDIUM PRIORITY";
         }
         return "LOW PRIORITY";
     }
 
     public static String priorityStyle(double score) {
-        if (score >= 8) {
+        if (score >= 100) {
             return "priority-high";
         }
-        if (score >= 5) {
+        if (score >= 60) {
             return "priority-medium";
         }
         return "priority-low";

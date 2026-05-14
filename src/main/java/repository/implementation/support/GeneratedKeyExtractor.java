@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+// AI used
 public class GeneratedKeyExtractor {
 
     public int extractGeneratedId(PreparedStatement pstmt, String entityName) throws SQLException {
