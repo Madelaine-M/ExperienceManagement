@@ -68,7 +68,7 @@ src/main/java/
 
 ### Prerequisites
 
-- Java 21+
+- Java 25+
 - Maven 3.9+
 
 ### Run
