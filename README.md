@@ -74,8 +74,8 @@ src/main/java/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/orbit.git
-cd orbit
+git clone https://github.com/Madelaine-M/ExperienceManagement.git
+cd ExperienceManagement
 
 # Download dependencies
 mvn clean install
