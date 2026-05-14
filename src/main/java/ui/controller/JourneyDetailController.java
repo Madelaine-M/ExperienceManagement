@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
+// AI used
 public class JourneyDetailController {
     private static final DateTimeFormatter NOTE_TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 

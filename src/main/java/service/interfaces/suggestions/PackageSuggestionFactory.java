@@ -5,6 +5,7 @@ import model.enums.Packages;
 
 import java.util.Map;
 
+//AI was used for the implementation
 public class PackageSuggestionFactory {
 
     private final Map<Packages, SuggestionStrategy> strategyMap;

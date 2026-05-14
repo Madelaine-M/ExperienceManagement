@@ -10,6 +10,7 @@ public class NPSServiceImpl implements NPSService {
         this.npsScores = npsScores;
     }
 
+    // NPS = % promoters (score 9-10) minus % critics (score 0-6)
     @Override
     public float getNPS() {
         int total = npsScores.countByScoreRange(0,10);

@@ -85,6 +85,7 @@ public class CreateFeedbackIncidentServiceImpl implements CreateFeedbackIncident
         return createdIncidents;
     }
 
+    // AI used
     private Map<Integer, FeedbackItem> selectWorstItemPerFeedback(List<FeedbackItem> feedbackItems) {
         Map<Integer, FeedbackItem> worstByFeedbackId = new LinkedHashMap<>();
 

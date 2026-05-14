@@ -9,6 +9,7 @@ import model.enums.Packages;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+//was implemented based on AI implemented mapper CustomerViewMapper
 public class IncidentViewMapper {
 
     public IncidentOverview mapOverview(ResultSet rs) throws SQLException {

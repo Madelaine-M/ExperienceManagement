@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+//AI was used to implement the idea of mapping between database to object
 public class CustomerResultSetMapper {
 
     public Customer map(ResultSet rs) throws SQLException {

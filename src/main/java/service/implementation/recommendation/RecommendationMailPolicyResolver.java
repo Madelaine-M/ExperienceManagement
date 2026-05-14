@@ -2,6 +2,7 @@ package service.implementation.recommendation;
 
 import java.util.List;
 
+//AI used
 public class RecommendationMailPolicyResolver {
     private final List<RecommendationMailPolicy> policies;
 

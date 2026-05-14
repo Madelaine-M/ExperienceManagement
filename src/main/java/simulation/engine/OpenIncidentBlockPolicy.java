@@ -13,6 +13,8 @@ class OpenIncidentBlockPolicy {
         this.incidentLookup = incidentLookup;
     }
 
+    // Prevents journey advancement for customers with unresolved incidents.
+    // Ensures advisors must handle incidents before the simulation moves the customer forward.
     boolean hasOpenIncident(int customerId) {
         List<Incident> incidents = incidentLookup.findAllByCustomerId(customerId);
         for (Incident incident : incidents) {

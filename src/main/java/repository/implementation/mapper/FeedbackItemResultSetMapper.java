@@ -6,6 +6,7 @@ import model.enums.FeedbackCategory;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+//was implemented based on AI implemented mapper CustomerResultSetMapper
 public class FeedbackItemResultSetMapper {
 
     public FeedbackItem map(ResultSet rs) throws SQLException {

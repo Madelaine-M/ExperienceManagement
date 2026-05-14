@@ -13,6 +13,7 @@ import java.io.UncheckedIOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+// AI used to fully implement functionality
 public class JourneyDetailNavigatorImpl implements JourneyDetailNavigator {
     private final JourneyDetailService journeyDetailService;
     private final FlightDetailService flightDetailService;

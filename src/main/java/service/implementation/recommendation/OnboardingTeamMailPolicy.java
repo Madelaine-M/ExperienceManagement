@@ -3,6 +3,8 @@ package service.implementation.recommendation;
 import model.enums.IncidentType;
 
 public class OnboardingTeamMailPolicy implements RecommendationMailPolicy {
+
+    // AI used
     @Override
     public boolean supports(RecommendationMailContext context) {
         String suggestion = RecommendationMailTextSupport.normalizedSuggestion(context);

@@ -11,6 +11,7 @@ import ui.view.factory.DashboardSubviewFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+// AI used
 public class CustomerDashboardModeHandler implements DashboardModeHandler {
     private final DashboardDataService dashboardDataService;
     private final DashboardSubviewFactory subviewFactory;

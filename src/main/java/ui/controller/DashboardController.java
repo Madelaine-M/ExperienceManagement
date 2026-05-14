@@ -20,6 +20,7 @@ import ui.service.DashboardDataService;
 import ui.view.factory.DashboardSubviewFactory;
 import ui.view.render.DashboardNodeFactory;
 
+// AI used
 public class DashboardController implements DashboardPaneHost {
     @FXML
     private Label npsValueLabel;

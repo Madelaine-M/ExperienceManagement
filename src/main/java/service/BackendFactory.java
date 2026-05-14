@@ -50,6 +50,7 @@ import service.interfaces.internal.CustomerCvScoreService;
 
 import java.util.List;
 
+//idea and help with implementation through AI assistant based on given SOLID criteria
 public class BackendFactory {
     public Backend create() {
         DatabaseInitializer.initialize();

@@ -9,8 +9,11 @@ import service.interfaces.suggestions.PackageSuggestionFactory;
 import service.interfaces.suggestions.SuggestionResolver;
 import service.interfaces.suggestions.SuggestionStrategy;
 
+//AI used for resolver concept
 public class DelaySuggestionResolver implements SuggestionResolver {
 
+    // Delays under 60 minutes receive a generic operational response.
+    // Delays of 60 minutes or more trigger tier-specific suggestions based on booking package.
     private static final int LONG_DELAY_THRESHOLD_MINUTES = 60;
 
     private final SuggestionStrategy shortDelayStrategy;

@@ -63,6 +63,7 @@ public class CreateSuggestedActionServiceImpl implements CreateSuggestedActionSe
         return actionItem;
     }
 
+    //idea and implementation through AI
     private void applySuggestionsSafely(ActionItem actionItem, Incident incident) {
         try {
             suggestionService.applySuggestions(actionItem, incident);

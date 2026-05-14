@@ -8,6 +8,7 @@ import model.enums.Packages;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+//AI was used to implement the idea of mapping between database to object
 public class CustomerViewMapper {
 
     public CustomerOverview mapOverview(ResultSet rs) throws SQLException {

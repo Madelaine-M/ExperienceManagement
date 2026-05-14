@@ -25,6 +25,7 @@ public class LowestLoadAdvisorAssignmentServiceImpl implements AdvisorAssignment
             throw new IllegalStateException("No advisors available for customer assignment.");
         }
 
+        //AI suggested method structure
         return advisors.stream()
                 .min(Comparator
                         .comparingInt(this::assignedCustomerCount)

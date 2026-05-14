@@ -6,6 +6,7 @@ import model.enums.ActionStatus;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+//was implemented based on AI implemented mapper CustomerResultSetMapper
 public class ActionItemResultSetMapper {
 
     public ActionItem map(ResultSet rs) throws SQLException {

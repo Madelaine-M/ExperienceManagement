@@ -6,6 +6,7 @@ import model.domain.Incident;
 
 import java.util.List;
 
+//AI was used for the implementation
 public class SuggestionService {
 
     private final List<SuggestionResolver> resolvers;

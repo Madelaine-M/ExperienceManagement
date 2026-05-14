@@ -15,6 +15,7 @@ import ui.view.render.DashboardNodeFactory;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
+// AI used
 public class FlightDetailController {
     private static final DateTimeFormatter FEEDBACK_TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 

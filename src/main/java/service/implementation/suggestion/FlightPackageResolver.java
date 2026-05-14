@@ -6,6 +6,7 @@ import model.enums.Packages;
 import repository.interfaces.FlightRepository;
 import service.interfaces.suggestions.PackageResolver;
 
+//AI used for resolver concept
 public class FlightPackageResolver implements PackageResolver {
 
     private final FlightRepository flightRepository;

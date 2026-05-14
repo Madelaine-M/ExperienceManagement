@@ -11,6 +11,7 @@ final class RecommendationMailTextSupport {
         return incidentDescription.trim();
     }
 
+    //idea from AI as lower case is needed for ShortDelayTeamMailPolicy
     static String normalizedSuggestion(RecommendationMailContext context) {
         return context.selectedSuggestion() == null ? "" : context.selectedSuggestion().toLowerCase();
     }

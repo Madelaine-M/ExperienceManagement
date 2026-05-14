@@ -7,6 +7,7 @@ import model.enums.PaymentMethod;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+//was implemented based on AI implemented mapper CustomerResultSetMapper
 public class CustomerCvProfileResultSetMapper {
 
     public CustomerCvProfile map(ResultSet rs) throws SQLException {

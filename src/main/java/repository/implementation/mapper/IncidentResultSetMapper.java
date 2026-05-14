@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+//was implemented based on AI implemented mapper CustomerResultSetMapper
 public class IncidentResultSetMapper {
 
     public Incident map(ResultSet rs) throws SQLException {

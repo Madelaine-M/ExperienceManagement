@@ -9,6 +9,7 @@ import ui.controller.IncidentDetailController;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+// AI used
 public class DashboardSubviewFactory {
 
     public LoadedSubview<IncidentDetailController> loadIncidentDetailView() {

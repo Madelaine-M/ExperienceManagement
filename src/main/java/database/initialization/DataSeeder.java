@@ -57,9 +57,9 @@ public class DataSeeder {
         Advisor advisorTwo = createAdvisor("Tom", "Mayor", "tom.mayor@test.de", "Premium Support", advisorRepo);
 
         Customer customerOne = createCustomer(
-                "Max", "Mustermann", "max@test.de", "1989-04-17",
+                "Marie", "Lilienthal", "marie.lilienthal@test.de", "1985-04-17",
                 true, advisorOne.getId(),
-                "Quiet cabin", customerUpdate
+                "Time-efficient support", customerUpdate
         );
         Customer customerTwo = createCustomer(
                 "Erika", "Musterfrau", "erika@web.de", "1993-09-02",
@@ -67,9 +67,9 @@ public class DataSeeder {
                 "Aisle seat", customerUpdate
         );
         createCustomerCvProfile(customerOne.getId(), false, true, false, PaymentMethod.IMMEDIATE, false,
-                CustomerType.SCIENTIST, customerCvProfileUpdate);
-        createCustomerCvProfile(customerTwo.getId(), false, true, false, PaymentMethod.MONTHS, false,
                 CustomerType.NORMAL, customerCvProfileUpdate);
+        createCustomerCvProfile(customerTwo.getId(), false, true, false, PaymentMethod.MONTHS, false,
+                CustomerType.SCIENTIST, customerCvProfileUpdate);
 
         createCustomerNote(
                 customerOne.getId(),
@@ -85,43 +85,45 @@ public class DataSeeder {
         );
 
         Flight customerOnePreviousFlight = createFlight(customerOne.getId(), "EM1001", "2025-10-10", "2025-11-03", Packages.GOLD, "COMPLETED", false, flightRepository);
-        Flight customerOneCurrentFlight = createFlight(customerOne.getId(), "EM2001", "2026-05-20", "2026-05-22", Packages.VIP, "BOOKED", true, flightRepository);
+        Flight customerOneCurrentFlight = createFlight(customerOne.getId(), "EM2001", "2026-05-20", "2026-05-22", Packages.GOLD, "BOOKED", true, flightRepository);
         Flight customerTwoCurrentFlight = createFlight(customerTwo.getId(), "EM2104", "2026-06-11", "2026-06-14", Packages.STANDARD, "BOOKED", true, flightRepository);
 
-        Feedback feedbackOne = createFeedback(
+        createFeedback(
                 customerOne.getId(),
                 customerOnePreviousFlight.getId(),
                 LocalDateTime.now().minusMonths(3),
-                4,
-                3,
+                8,
+                9,
                 List.of(
-                        feedbackItem(FeedbackCategory.FLIGHT, 9, "Smooth boarding and attentive crew."),
-                        feedbackItem(FeedbackCategory.FOOD, 3, "In-flight meal quality was disappointing.")
+                        feedbackItem(FeedbackCategory.FLIGHT, 8, "Smooth flight, excellent crew service."),
+                        feedbackItem(FeedbackCategory.HOTEL, 7, "Hotel accommodation was comfortable and well-organised."),
+                        feedbackItem(FeedbackCategory.FOOD, 9, "Catering was exceptional.")
                 ),
                 feedbackUpdate
         );
 
+
         Incident firstIncident = createIncident(
                 customerOne.getId(),
                 customerOneCurrentFlight.getId(),
-                IncidentType.FEEDBACK,
-                feedbackOne.getId(),
-                FeedbackCategory.FOOD,
-                "VIP passenger reported disappointing in-flight meal quality.",
+                IncidentType.DELAY,
+                null,
+                null,
+                "Pre-flight delay of 90 minutes detected for flight EM2001.",
                 9,
                 1,
                 12000,
                 IncidentStatus.OPEN,
                 advisorOne.getId(),
-                null,
+                90,
                 incidentUpdate
         );
 
         createAction(
                 firstIncident.getId(),
-                "VIP passenger reported disappointing in-flight meal quality.",
-                "Private Michelin Home-Cooking before the next flight",
-                "Pre-Paid Table Reservation at a high class restaurant the day before the next flight",
+                "Pre-flight delay of 90 minutes detected for flight EM2001.",
+                "Superbowl Ticket",
+                "Piece of a Space Rocket",
                 8,
                 1,
                 15,

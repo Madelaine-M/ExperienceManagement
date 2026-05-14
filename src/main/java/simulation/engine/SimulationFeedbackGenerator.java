@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+// AI used
 class SimulationFeedbackGenerator {
     private final FlightRepository flightRepository;
     private final FeedbackLookup feedbackLookup;

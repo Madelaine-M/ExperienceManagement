@@ -6,6 +6,7 @@ import service.implementation.suggestion.onboarding.OnboardingSuggestionStrategy
 import service.interfaces.suggestions.SuggestionResolver;
 import service.interfaces.suggestions.SuggestionStrategy;
 
+//AI used for resolver concept
 public class OnboardingSuggestionResolver implements SuggestionResolver {
     private final SuggestionStrategy strategy = new OnboardingSuggestionStrategy();
 

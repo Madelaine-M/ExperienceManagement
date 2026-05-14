@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+// AI used to help with implementation
 class JourneyAdvancementProcessor {
     private final CustomerLookup customerLookup;
     private final CustomerUpdate customerUpdate;

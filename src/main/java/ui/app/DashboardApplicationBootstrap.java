@@ -52,6 +52,10 @@ import ui.service.SimulationControlServiceImpl;
 
 import java.util.Random;
 
+// AI used to help with implementation and to ensure completeness
+// Wires the complete application on startup using manual dependency injection
+// Builds the backend (repositories), seeds the database with demo data, constructs all business and UI services, and assembles the simulation engine.
+// Returns a context object holding all services needed by the UI layer
 public class DashboardApplicationBootstrap {
     public DashboardApplicationContext bootstrap() {
         Backend backend = new BackendFactory().create();

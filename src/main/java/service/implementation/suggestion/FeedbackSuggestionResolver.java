@@ -13,6 +13,7 @@ import service.interfaces.suggestions.SuggestionStrategy;
 
 import java.util.Map;
 
+//AI used for resolver concept
 public class FeedbackSuggestionResolver implements SuggestionResolver {
 
     private final Map<FeedbackCategory, PackageSuggestionFactory> categoryFactoryMap;

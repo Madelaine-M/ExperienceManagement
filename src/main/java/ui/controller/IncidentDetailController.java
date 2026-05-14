@@ -19,6 +19,7 @@ import ui.view.render.DashboardNodeFactory;
 import java.util.List;
 import java.util.Locale;
 
+// AI used
 public class IncidentDetailController {
     @FXML
     private VBox root;

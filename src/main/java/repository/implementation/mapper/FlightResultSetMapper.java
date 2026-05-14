@@ -6,6 +6,7 @@ import model.enums.Packages;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+//was implemented based on AI implemented mapper CustomerResultSetMapper
 public class FlightResultSetMapper {
 
     public Flight map(ResultSet rs) throws SQLException {

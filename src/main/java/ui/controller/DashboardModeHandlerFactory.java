@@ -4,6 +4,7 @@ import ui.navigation.JourneyDetailNavigator;
 import ui.service.DashboardDataService;
 import ui.view.factory.DashboardSubviewFactory;
 
+// Concept for factory created with AI use
 public class DashboardModeHandlerFactory {
     private final DashboardDataService dashboardDataService;
     private final DashboardSubviewFactory subviewFactory;

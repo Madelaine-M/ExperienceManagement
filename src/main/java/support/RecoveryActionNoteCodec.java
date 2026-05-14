@@ -5,6 +5,8 @@ import model.workflow.RecoveryActionSummary;
 
 import java.util.List;
 
+// Encodes recommendation actions as structured text in customer notes.
+// This allows the system to detect previously sent recommendations without a dedicated table.
 public final class RecoveryActionNoteCodec {
     private static final String HEADER = "Recovery mail sent.";
     private static final String INCIDENT_PREFIX = "Incident id: ";
@@ -54,6 +56,7 @@ public final class RecoveryActionNoteCodec {
         return null;
     }
 
+    //AI used
     public static RecoveryActionSummary parse(CustomerNote note) {
         if (note == null || note.getNoteText() == null || !note.getNoteText().startsWith(HEADER)) {
             return null;

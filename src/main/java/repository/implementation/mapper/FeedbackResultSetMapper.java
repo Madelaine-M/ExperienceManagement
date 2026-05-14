@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+//was implemented based on AI implemented mapper CustomerResultSetMapper
 public class FeedbackResultSetMapper {
 
     public Feedback map(ResultSet rs) throws SQLException {

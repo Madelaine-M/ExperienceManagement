@@ -24,12 +24,12 @@ public class CVCustomer {
         this.lastFlight = Optional.ofNullable(lastFlight);
     }
 
-    // Aus ReturningCustomerRule
+    // ReturningCustomerRule
     public boolean isReturningCustomer() {
         return customer.isReturning();
     }
 
-    // Aus LastBookingTierRule
+    // LastBookingTierRule
     public boolean hasLastFlight() {
         return lastFlight.isPresent();
     }
@@ -42,34 +42,34 @@ public class CVCustomer {
         return currentFlight.getBookingPackage();
     }
 
-    // Aus MarketingConsentRule
+    // MarketingConsentRule
     public boolean hasMarketingConsent() {
         return cvProfile != null && cvProfile.isMarketingPurpose();
     }
 
-    // Aus NewsletterRule
+    // NewsletterRule
     public boolean hasNewsletterSubscription() {
         return cvProfile != null && cvProfile.isNewsletterSubscription();
     }
 
-    // Aus BookingConnectionRule
+    // BookingConnectionRule
     public boolean isBookingConnectedToOtherPerson() {
         return cvProfile != null && cvProfile.isReferralCode();
     }
 
-    // Aus PaymentMethodRule
+    // PaymentMethodRule
     public PaymentMethod getPaymentMethod() {
         return cvProfile != null && cvProfile.getPaymentMethod() != null
                 ? cvProfile.getPaymentMethod()
                 : PaymentMethod.IMMEDIATE;
     }
 
-    // Aus PublicFigureRule
+    // PublicFigureRule
     public boolean isPublicFigure() {
         return cvProfile != null && cvProfile.isPublicPerson();
     }
 
-    // Aus TravelingAsScientistRule
+    // TravelingAsScientistRule
     public CustomerType isTravelingAsScientist() {
         return cvProfile != null ? cvProfile.getCustomerType() : null;
     }

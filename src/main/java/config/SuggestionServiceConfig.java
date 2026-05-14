@@ -32,6 +32,8 @@ public class SuggestionServiceConfig {
     private SuggestionServiceConfig() {
     }
 
+    // Builds the complete suggestion system by wiring resolvers, factories and strategies together.
+    // Each factory maps a booking package (VIP, GOLD, STANDARD) to the appropriate suggestion strategy.
     public static SuggestionService build(PackageResolver packageResolver) {
         PackageSuggestionFactory foodFactory = new PackageSuggestionFactory(Map.of(
                 Packages.VIP, new FoodVipSuggestionStrategy(),

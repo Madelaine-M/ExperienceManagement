@@ -52,6 +52,7 @@ public class JourneyDetailServiceImpl implements JourneyDetailService {
         this.customerNoteService = customerNoteService;
     }
 
+    //AI used
     @Override
     public JourneyDetailData loadJourneyDetail(int customerId, Integer incidentId) {
         CustomerDetailView customerDetail = customerService.findDetailByCustomerId(customerId);
@@ -105,6 +106,7 @@ public class JourneyDetailServiceImpl implements JourneyDetailService {
         return null;
     }
 
+    // AI used
     private List<JourneyStepView> buildJourneySteps(CustomerStatus currentStatus) {
         List<JourneyStepView> steps = new ArrayList<>();
         int currentIndex = currentStatus == null ? -1 : JOURNEY_ORDER.indexOf(currentStatus);

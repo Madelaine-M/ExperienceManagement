@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import model.workflow.RecommendationEmailDraft;
 import ui.service.DashboardDataService;
 
+// AI used
 public class RecommendationEmailController {
     private static final String MAIL_INPUT_STYLE =
             "-fx-control-inner-background: #1b2942;"

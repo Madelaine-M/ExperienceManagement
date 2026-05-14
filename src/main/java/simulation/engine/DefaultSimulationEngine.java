@@ -18,6 +18,7 @@ import simulation.model.SimulationTickResult;
 import java.time.LocalDateTime;
 import java.util.Random;
 
+// AI used
 public class DefaultSimulationEngine implements SimulationEngine {
     private final SimulationRuntimeState runtimeState = new SimulationRuntimeState();
     private final CustomerCreationProcessor customerCreationProcessor;

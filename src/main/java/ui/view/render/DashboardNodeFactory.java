@@ -10,6 +10,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+// AI used
 public class DashboardNodeFactory {
 
     public Label createSectionTitle(String text) {

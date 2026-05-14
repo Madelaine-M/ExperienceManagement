@@ -34,7 +34,7 @@ public class DatabaseAdvisorRepository implements AdvisorRepository {
     public void save(Advisor advisor) {
         String sql = """
             INSERT INTO advisors (first_name, last_name, email, speciality)
-            VALUES (?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?);
             """;
 
         try (Connection conn = connectionProvider.getConnection();

@@ -4,6 +4,7 @@ import model.domain.Incident;
 import model.enums.IncidentType;
 import repository.interfaces.RecommendationResolutionStore;
 
+//AI used
 public class RecommendationCompletionPolicy {
     public boolean closesIncidentAfterSend(Incident incident,
                                            int optionNumber,

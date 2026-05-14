@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+// AI used to help with implementation
 class CustomerCreationProcessor {
     private static final String[] FIRST_NAMES = {"Alex", "Taylor", "Jordan", "Casey", "Morgan", "Sam", "Jamie", "Robin"};
     private static final String[] LAST_NAMES = {"Meyer", "Fischer", "Wagner", "Becker", "Hoffmann", "Keller", "Hartmann", "Schulz"};
