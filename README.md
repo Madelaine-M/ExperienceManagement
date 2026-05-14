@@ -33,7 +33,8 @@ Built for the rocket travel empire of *Elon Bezos*, Orbit is the all-seeing, all
 
 ## 🗂️ Documentation
 
-All documentation lives in the [`docs/`](docs/) folder. Here's where to find what you need:
+All documentation lives in the [`docs/`](docs/) folder. Here's where to find what you need:  
+*Note that some might be more readable when viewed in a PDF viewer.*
 
 | Document | Description                                                                                                           | Link |
 |---|-----------------------------------------------------------------------------------------------------------------------|---|
