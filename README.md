@@ -37,8 +37,8 @@ All documentation lives in the [`docs/`](docs/) folder. Here's where to find wha
 
 | Document | Description                                                                                                           | Link |
 |---|-----------------------------------------------------------------------------------------------------------------------|---|
-| 📘 Technical Documentation | Architecture, class diagrams, sequence diagrams, database schema (ER diagram), incident management & priority scoring | [`docs/TechnicalDocumentation_ATdIT_Group4.pdf`](docs/technical.pdf) |
-| 📗 User Guide (End User) | How to use Orbit — customer monitoring, incidents, incident response, customer journeys, flight details               | [`docs/EndUserDoku_Orbit_ATdIT.pdf`](docs/user-guide.pdf) |
+| 📘 Technical Documentation | Architecture, class diagrams, sequence diagrams, database schema (ER diagram), incident management & priority scoring | [`docs/TechnicalDocumentation_ATdIT_Group4.pdf`](docs/TechnicalDocumentation_ATdIT_Group4.pdf) |
+| 📗 User Guide (End User) | How to use Orbit — customer monitoring, incidents, incident response, customer journeys, flight details               | [`docs/EndUserDoku_Orbit_ATdIT.pdf`](docs/EndUserDoku_Orbit_ATdIT.pdf) |
 | 📙 BPMN Processes | Business process models for onboarding, incidents, and flight operations                                              | [`docs/bpmn.pdf`](docs/bpmn.pdf) |
 | 📐 Mockups & UI Design | Screen designs for advisor and CSO dashboards, incident workflows, customer journeys, email templates, logo & branding         | [`docs/mockups.pdf`](docs/mockups.pdf) |
 
@@ -59,7 +59,7 @@ src/main/java/
 
 ```
 
-> For a deep dive into architecture decisions and module responsibilities, see the [Technical Documentation](docs/technical.pdf).
+> For a deep dive into architecture decisions and module responsibilities, see the [Technical Documentation](docs/TechnicalDocumentation_ATdIT_Group4.pdf).
 
 ---
 
