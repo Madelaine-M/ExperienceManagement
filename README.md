@@ -6,13 +6,13 @@
 
 ## Overview
 
-Picture this: a passenger just survived a 47-minute flight delay on a rocket headed to low-Earth orbit. They're furious. Their NPS score is plummeting faster than a failed booster stage. Your advisor stares at their screen, paralyzed. What do they say? What do they *do*?
+A passenger just sat through a 47-minute flight delay on a rocket headed to low-Earth orbit. They're not happy. Their NPS score is heading in the wrong direction. Your advisor opens their dashboard — now what?
 
 **Enter Orbit** — the advisor dashboard that turns customer catastrophes into loyalty gold.
 
-Built for the fictional (but frighteningly plausible) rocket travel empire of *Elon Bezos*, Orbit is the all-seeing, all-knowing co-pilot for your customer advisors. Flight delay? Detected. Bad feedback incoming? Already flagged. Customer priority? Calculated to fourteen decimal places. The perfect recovery action — complete with a pre-written, silky-smooth apology email? Served on a silver platter before your advisor even finishes their coffee.
+Built for the rocket travel empire of *Elon Bezos*, Orbit is the all-seeing, all-knowing co-pilot for your customer advisors. Flight delay? Detected. Bad feedback incoming? Already flagged. Customer priority? Calculated to fourteen decimal places. The perfect recovery action — complete with a pre-written, silky-smooth apology email? Served on a silver platter before your advisor even finishes their coffee.
 
-**The mission is simple:** catapult your NPS into the stratosphere. Every unhappy customer is just one perfectly-timed intervention away from becoming your loudest evangelist. Orbit doesn't just manage problems — it *hunts* them, *scores* them, and hands your team the exact playbook to turn disaster into delight.
+**The mission:** improve your NPS. Unhappy customers can be turned around with the right intervention at the right time — and Orbit is here to spot the problems, score them, and hand your team a solid playbook to make it happen.
 
 ---
 
@@ -35,12 +35,12 @@ Built for the fictional (but frighteningly plausible) rocket travel empire of *E
 
 All documentation lives in the [`docs/`](docs/) folder. Here's where to find what you need:
 
-| Document | Description | Link |
-|---|---|---|
-| 📘 Technical Documentation | Architecture, class diagrams, database schema, API contracts | [`docs/technical.pdf`](docs/technical.pdf) |
-| 📗 User Guide (End User) | How to use Orbit — passenger management, dashboards, workflows | [`docs/user-guide.pdf`](docs/user-guide.pdf) |
-| 📙 BPMN Processes | Business process models for onboarding, incidents, and flight operations | [`docs/bpmn.pdf`](docs/bpmn.pdf) |
-| 📐 Mockups & UI Design | Wireframes, screen designs, and UI component references | [`docs/mockups.pdf`](docs/mockups.pdf) |
+| Document | Description                                                                                                           | Link |
+|---|-----------------------------------------------------------------------------------------------------------------------|---|
+| 📘 Technical Documentation | Architecture, class diagrams, sequence diagrams, database schema (ER diagram), incident management & priority scoring | [`docs/TechnicalDocumentation_ATdIT_Group4.pdf`](docs/technical.pdf) |
+| 📗 User Guide (End User) | How to use Orbit — customer monitoring, incidents, incident response, customer journeys, flight details               | [`docs/EndUserDoku_Orbit_ATdIT.pdf`](docs/user-guide.pdf) |
+| 📙 BPMN Processes | Business process models for onboarding, incidents, and flight operations                                              | [`docs/bpmn.pdf`](docs/bpmn.pdf) |
+| 📐 Mockups & UI Design | Screen designs for advisor and CSO dashboards, incident workflows, customer journeys, email templates, logo & branding         | [`docs/mockups.pdf`](docs/mockups.pdf) |
 
 ---
 
