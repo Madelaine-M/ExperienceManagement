@@ -42,6 +42,7 @@ All documentation lives in the [`docs/`](docs/) folder. Here's where to find wha
 | 📗 User Guide (End User) | How to use Orbit — customer monitoring, incidents, incident response, customer journeys, flight details               | [`docs/EndUserDoku_Orbit_ATdIT.pdf`](docs/EndUserDoku_Orbit_ATdIT.pdf) |
 | 📙 BPMN Processes | Business process models for onboarding, incidents, and flight operations                                              | [`docs/bpmn.pdf`](docs/bpmn.pdf) |
 | 📐 Mockups & UI Design | Screen designs for advisor and CSO dashboards, incident workflows, customer journeys, email templates, logo & branding         | [`docs/mockups.pdf`](docs/mockups.pdf) |
+| Presentation slides | Our Orbit presentation | [`docs/ExperienceManagement_ATdIT.pdf`](docs/ExperienceManagement_ATdIT.pdf)
 
 ---
 
@@ -83,3 +84,6 @@ mvn clean install
 ```
 
 Then simply execute the `Main` class from your IDE or terminal.
+
+### AI
+This text was reshaped and polished by AI.
